@@ -1,30 +1,36 @@
-/*----------------------------------------------------------------------------*/
-/* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
-/* Open Source Software - may be modified and shared by FRC teams. The code   */
-/* must be accompanied by the FIRST BSD license file in the root directory of */
-/* the project.                                                               */
-/*----------------------------------------------------------------------------*/
+#ifndef SRC_ROBOT_H_
+#define SRC_ROBOT_H_
 
-#pragma once
 
-#include <string>
+#include <frc\WPILib.h>
+#include "Const.h"
+#include "OperatorInputs.h"
+#include "Drivetrain.h"
 
-#include <frc/TimedRobot.h>
-#include <frc/smartdashboard/SendableChooser.h>
 
-class Robot : public frc::TimedRobot {
- public:
-  void RobotInit() override;
-  void RobotPeriodic() override;
-  void AutonomousInit() override;
-  void AutonomousPeriodic() override;
-  void TeleopInit() override;
-  void TeleopPeriodic() override;
-  void TestPeriodic() override;
+using namespace frc;
 
- private:
-  frc::SendableChooser<std::string> m_chooser;
-  const std::string kAutoNameDefault = "Default";
-  const std::string kAutoNameCustom = "My Auto";
-  std::string m_autoSelected;
+
+class Robot : public TimedRobot
+{
+public:
+    virtual void RobotInit();
+    virtual void RobotPeriodic();
+    virtual void AutonomousInit();
+    virtual void AutonomousPeriodic();
+    virtual void TeleopInit();
+    virtual void TeleopPeriodic();
+    virtual void TestInit();
+    virtual void TestPeriodic();
+    virtual void DisabledInit();
+    virtual void DisabledPeriodic();
+
+protected:
+    Timer m_timer;
+    OperatorInputs *m_operatorinputs;
+    Drivetrain *m_drivetrain;
+
 };
+
+
+#endif /* SRC_ROBOT_H_ */
