@@ -1,36 +1,32 @@
-#ifndef SRC_ROBOT_H_
-#define SRC_ROBOT_H_
+/*----------------------------------------------------------------------------*/
+/* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
+/* Open Source Software - may be modified and shared by FRC teams. The code   */
+/* must be accompanied by the FIRST BSD license file in the root directory of */
+/* the project.                                                               */
+/*----------------------------------------------------------------------------*/
 
+#include <string>
 
-#include <frc\WPILib.h>
-#include "Const.h"
-#include "OperatorInputs.h"
-#include "Drivetrain.h"
+#include <frc/TimedRobot.h>
+#include <frc/smartdashboard/SendableChooser.h>
 
+#include "rev/ColorSensorV3.h"
 
-using namespace frc;
+class Robot : public frc::TimedRobot {
+ public:
+  Robot();
+  void RobotInit() override;
+  void RobotPeriodic() override;
+  void AutonomousInit() override;
+  void AutonomousPeriodic() override;
+  void TeleopInit() override;
+  void TeleopPeriodic() override;
+  void TestPeriodic() override;
 
-
-class Robot : public TimedRobot
-{
-public:
-    virtual void RobotInit();
-    virtual void RobotPeriodic();
-    virtual void AutonomousInit();
-    virtual void AutonomousPeriodic();
-    virtual void TeleopInit();
-    virtual void TeleopPeriodic();
-    virtual void TestInit();
-    virtual void TestPeriodic();
-    virtual void DisabledInit();
-    virtual void DisabledPeriodic();
-
-protected:
-    Timer m_timer;
-    OperatorInputs *m_operatorinputs;
-    Drivetrain *m_drivetrain;
-
+ private:
+  frc::SendableChooser<std::string> m_chooser;
+  const std::string kAutoNameDefault = "Default";
+  const std::string kAutoNameCustom = "My Auto";
+  std::string m_autoSelected;
+  rev::ColorSensorV3 *m_colorSensor;
 };
-
-
-#endif /* SRC_ROBOT_H_ */
