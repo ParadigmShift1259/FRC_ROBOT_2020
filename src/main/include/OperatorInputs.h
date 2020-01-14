@@ -17,6 +17,10 @@ using namespace frc;
 using namespace std;
 
 
+#define TOGGLE_MAX_CONTROLLERS 4
+#define TOGGLE_MAX_BUTTONS 50
+
+
 class OperatorInputs
 {
 public:
@@ -73,12 +77,12 @@ protected:
     vector<XboxController *> m_xbox;
 
 private:
-    bool toggle(string buttonName, bool buttonValue);
+    bool toggle(unsigned int controller, int button, bool value);
     double deadzoneFilterY(double joyStickValue);
     double deadzoneFilterX(double joyStickValue);
     double deadzoneFilterZ(double joyStickValue);
 
-    map<string, bool> m_togglebuttons;
+    bool m_toggle[TOGGLE_MAX_CONTROLLERS][TOGGLE_MAX_BUTTONS];
 };
 
 
