@@ -20,6 +20,13 @@ Drivetrain::Drivetrain(OperatorInputs *inputs,
 {
     m_inputs = inputs;
     
+    m_left1owner = false;
+    m_left2owner = false;
+    m_left3owner = false;
+    m_right1owner = false;
+    m_right2owner = false;
+    m_right3owner = false;
+
     m_left1 = left1;
     m_left2 = left2;
     m_left3 = left3;
@@ -39,84 +46,129 @@ Drivetrain::Drivetrain(OperatorInputs *inputs,
 
 Drivetrain::~Drivetrain()
 {
-    if (m_left1 != nullptr)
+    if (m_left1owner && (m_left1 != nullptr))
     	delete m_left1;
-    if (m_left2 != nullptr)
+    if (m_left2owner && (m_left2 != nullptr))
     	delete m_left2;
-    if (m_left3 != nullptr)
+    if (m_left3owner && (m_left3 != nullptr))
        delete m_left3;
-    if (m_right1 != nullptr)
+    if (m_right1owner && (m_right1 != nullptr))
     	delete m_right1;
-    if (m_right2 != nullptr)
+    if (m_right2owner && (m_right2 != nullptr))
     	delete m_right2;
-    if (m_right3 != nullptr)
+    if (m_right3owner && (m_right3 != nullptr))
         delete	m_right3;
+    if (m_leftenc != nullptr)
+        delete m_leftenc;
+    if (m_rightenc != nullptr)
+        delete m_rightenc;
 }
 
 
-void Drivetrain::Init()
+void Drivetrain::Init(DriveMotors motors, DriveMode mode)
 {
-    // assigning motors to follow one main left and one main right motor
-    if ((CAN_LEFT_PORT_1 == -1) || (CAN_LEFT_PORT_2 == -1) ||
-        (CAN_RIGHT_PORT_1 == -1) || (CAN_RIGHT_PORT_2 == -1))
+    m_inited = false;
+    m_motors =  motors;
+    m_mode = mode;
+
+    switch (motors)
     {
-        DriverStation::ReportError("4WD Drivetrain Ports not assigned correctly");
-        m_inited = false;
-        return;
-    }
-
-    m_left1 = new CANSparkMax(CAN_LEFT_PORT_1, CANSparkMax::MotorType::kBrushless);
-    m_left2 = new CANSparkMax(CAN_LEFT_PORT_2, CANSparkMax::MotorType::kBrushless);
-    m_left2->Follow(*m_left1);
-
-    m_right1 = new CANSparkMax(CAN_RIGHT_PORT_1, CANSparkMax::MotorType::kBrushless);
-    m_right2 = new CANSparkMax(CAN_RIGHT_PORT_2, CANSparkMax::MotorType::kBrushless);
-    m_right2->Follow(*m_right1);
-    
-    m_inited = true;
-
-
-    if (SIX_WHEEL_DRIVE)
-    {
-        if ((CAN_LEFT_PORT_3 == -2) || (CAN_RIGHT_PORT_3 == -3))
+    case DriveMotors::k6Motors:
+        if ((CAN_LEFT_PORT_3 == -1) || (CAN_RIGHT_PORT_3 == -1))
         {
-            DriverStation::ReportError("6WD 2 Drivetrain Ports not assigned correctly");
-            m_inited = false;
-            return;
+            DriverStation::ReportError("Motor ports not assigned correctly");
+            m_mode = kNone;
+            break;
+        }
+        if (m_left3 == nullptr)
+        {
+            m_left3 = new CANSparkMax(CAN_LEFT_PORT_3, CANSparkMax::MotorType::kBrushless);
+            m_left3owner = true;
+        }
+        if (m_right3 == nullptr)
+        {
+            m_right3 = new CANSparkMax(CAN_RIGHT_PORT_3, CANSparkMax::MotorType::kBrushless);
+            m_right3owner = true;
+        }
+       
+    case DriveMotors::k4Motors:
+        if ((CAN_LEFT_PORT_2 == -1) || (CAN_RIGHT_PORT_2 == -1))
+        {
+            DriverStation::ReportError("Motor ports not assigned correctly");
+            m_mode = kNone;
+            break;
+        }
+        if (m_left2 == nullptr)
+        {
+            m_left2 = new CANSparkMax(CAN_LEFT_PORT_2, CANSparkMax::MotorType::kBrushless);
+            m_left2owner = true;
+        }
+        if (m_right2 == nullptr)
+        {
+            m_right2 = new CANSparkMax(CAN_RIGHT_PORT_2, CANSparkMax::MotorType::kBrushless);
+            m_right2owner = true;
         }
 
-        m_left3 = new CANSparkMax(CAN_LEFT_PORT_3, CANSparkMax::MotorType::kBrushless);
-        m_left3->Follow(*m_left1);
-
-        m_right3 = new CANSparkMax(CAN_RIGHT_PORT_3, CANSparkMax::MotorType::kBrushless);
-        m_right3->Follow(*m_right1);
-
-        m_inited = true;
+    case DriveMotors::k2Motors:
+        if ((CAN_LEFT_PORT_1 == -1) || (CAN_RIGHT_PORT_1 == -1))
+        {
+            DriverStation::ReportError("Motor ports not assigned correctly");
+            m_mode = kNone;
+            break;
+        }
+        if (m_left1 == nullptr)
+        {
+            m_left1 = new CANSparkMax(CAN_LEFT_PORT_1, CANSparkMax::MotorType::kBrushless);
+            m_left1owner = true;
+        }
+        if (m_right1 == nullptr)
+        {
+            m_right1 = new CANSparkMax(CAN_RIGHT_PORT_1, CANSparkMax::MotorType::kBrushless);
+            m_right1owner = true;
+        }
     }
 
-    // inverting sides
-    SetInvert(INVERT_LEFT, INVERT_RIGHT);
-    
-    // setting current limit and enabling voltage compensation on main motors
-    SetCurrentLimit(MOTOR_CURRENT_LIMIT);
+    switch (m_mode)
+    {
+    case DriveMode::kFollower:
+        switch (m_motors)
+        {
+            case DriveMotors::k6Motors:
+                m_left3->Follow(*m_left1);
+                m_right3->Follow(*m_right1);
+            case DriveMotors::k4Motors:
+                m_left2->Follow(*m_left1);
+                m_left2->Follow(*m_right1);
+            case DriveMotors::k2Motors:
+                m_drive = new DifferentialDrive(*m_left1, *m_right1);
+                m_inited = true;
+        }
+        break;
 
-    // setting voltage compensation
-    //SetVoltageCompensation(MOTOR_VOLTAGE_COMPENSATION);
+    case DriveMode::kNone:
+        break;
+    }
 
-    // setting brake mode for idling (coast for testing)
-    SetBrakeMode();
+    if (m_inited)
+    {
+        m_leftenc = new CANEncoder(*m_left1);
+        m_rightenc = new CANEncoder(*m_right1);
 
-    // setting ramp rate
-    SetRampRate(MOTOR_RAMP_RATE_TIME);
+        m_leftenc->SetPositionConversionFactor(NEO_CONVERSION);
+        m_rightenc->SetPositionConversionFactor(NEO_CONVERSION);
 
-    m_leftenc = new CANEncoder(*m_left1);
-    m_rightenc = new CANEncoder(*m_right1);
+        // invert sides
+        SetInvert(INVERT_LEFT, INVERT_RIGHT);
+        
+        // set current limit
+        SetCurrentLimit(MOTOR_CURRENT_LIMIT);
 
-    m_leftenc->SetPositionConversionFactor(NEO_CONVERSION);
-    m_rightenc->SetPositionConversionFactor(NEO_CONVERSION);
+        // set voltage compensation
+        //SetVoltageCompensation(MOTOR_VOLTAGE_COMPENSATION);
 
-
-    m_drive = new DifferentialDrive(*m_left1, *m_right1);
+        // set motor brake mode
+        SetBrakeMode();
+    }
 }
 
 

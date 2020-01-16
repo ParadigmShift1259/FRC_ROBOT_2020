@@ -20,11 +20,17 @@ using namespace rev;
 class Drivetrain
 {
 public:
+    // Drivetrain motors
+    enum DriveMotors { k2Motors, k4Motors, k6Motors };
+
+	// Drivetrain modes
+	enum DriveMode { kNone, kFollower, kDiscrete, kTank, kArcade, kCurvature };
+
     Drivetrain(OperatorInputs *inputs, 
                CANSparkMax *left1 = nullptr, CANSparkMax *left2 = nullptr, CANSparkMax *left3 = nullptr,
                CANSparkMax *right1 = nullptr, CANSparkMax *right2 = nullptr, CANSparkMax *right3 = nullptr);
     ~Drivetrain();
-    void Init();
+    void Init(DriveMotors motors = k4Motors, DriveMode mode = kFollower);
     void Loop();
     void Stop();
 
@@ -40,8 +46,10 @@ public:
 protected:
     void ExperimentalData();
 
-private:
+protected:
     OperatorInputs *m_inputs;
+    DriveMotors m_motors;
+    DriveMode m_mode;
 
     CANSparkMax *m_left1;
     CANSparkMax *m_left2;
@@ -49,6 +57,12 @@ private:
     CANSparkMax *m_right1;
     CANSparkMax *m_right2;
     CANSparkMax *m_right3;
+	bool m_left1owner;
+	bool m_left2owner;
+	bool m_left3owner;
+	bool m_right1owner;
+	bool m_right2owner;
+	bool m_right3owner;
 
     CANEncoder *m_leftenc;
     CANEncoder *m_rightenc;
