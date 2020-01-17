@@ -18,9 +18,9 @@ Turret::Turret(OperatorInputs *inputs)
 
     m_flywheelmotor = nullptr;
 
-    // P, I, D, FF, Iz, min, max
-    m_flywheelPIDvals[0] = 0.0; 
-    m_flywheelPIDvals[1] = 0.0; 
+    // P, I, D, FF, Iz, nominal, peak
+    m_flywheelPIDvals[0] = 0.001; 
+    m_flywheelPIDvals[1] = 0.0005; 
     m_flywheelPIDvals[2] = 0.0; 
     m_flywheelPIDvals[4] = 0.0;
     m_flywheelPIDvals[3] = 2000;
@@ -120,8 +120,8 @@ void Turret::Loop()
     double d = SmartDashboard::GetNumber("D Gain", 0);
     //double iz = SmartDashboard::GetNumber("I Zone", 0);
     double ff = SmartDashboard::GetNumber("Feed Forward", 0);
-    double max = SmartDashboard::GetNumber("Max Output", 0);
-    double min = SmartDashboard::GetNumber("Min Output", 0);
+    double peak = SmartDashboard::GetNumber("Max Output", 0);
+    double nominal = SmartDashboard::GetNumber("Min Output", 0);
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
     if((p != m_flywheelPIDvals[0])) { m_flywheelmotor->Config_kP(0, p, TUR_TIMEOUT_MS); m_flywheelPIDvals[0] = p; }
@@ -129,13 +129,13 @@ void Turret::Loop()
     if((d != m_flywheelPIDvals[2])) { m_flywheelmotor->Config_kD(0, d, TUR_TIMEOUT_MS); m_flywheelPIDvals[2] = d; }
     //if((iz != m_flywheelPIDvals[3])) { m_flywheelPID->SetIZone(iz); m_flywheelPIDvals[3] = iz; }
     if((ff != m_flywheelPIDvals[4])) { m_flywheelmotor->Config_kF(0, ff, TUR_TIMEOUT_MS); m_flywheelPIDvals[4] = ff; }
-    if((min != m_flywheelPIDvals[5]) || (max != m_flywheelPIDvals[6])) 
+    if((nominal != m_flywheelPIDvals[5]) || (peak != m_flywheelPIDvals[6])) 
     { 
-        m_flywheelmotor->ConfigNominalOutputForward(min, TUR_TIMEOUT_MS);
-        m_flywheelmotor->ConfigNominalOutputReverse(-1 * min, TUR_TIMEOUT_MS);
-        m_flywheelmotor->ConfigPeakOutputForward(max, TUR_TIMEOUT_MS);
-        m_flywheelmotor->ConfigPeakOutputReverse(-1 * max, TUR_TIMEOUT_MS);
-        m_flywheelPIDvals[5] = min; m_flywheelPIDvals[6] = max; 
+        m_flywheelmotor->ConfigNominalOutputForward(nominal, TUR_TIMEOUT_MS);
+        m_flywheelmotor->ConfigNominalOutputReverse(-1 * nominal, TUR_TIMEOUT_MS);
+        m_flywheelmotor->ConfigPeakOutputForward(peak, TUR_TIMEOUT_MS);
+        m_flywheelmotor->ConfigPeakOutputReverse(-1 * peak, TUR_TIMEOUT_MS);
+        m_flywheelPIDvals[5] = nominal; m_flywheelPIDvals[6] = peak; 
     }
 
     // Testing sample speeds

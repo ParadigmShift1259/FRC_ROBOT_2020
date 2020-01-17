@@ -62,7 +62,7 @@ private:
     TalonSRX *m_flywheelmotor;
     //CANPIDController *m_flywheelPID;
     //CANEncoder *m_flywheelencoder;
-    // P, I, D, FF, Iz, min, max
+    // P, I, D, FF, Iz, nominal, peak
     double m_flywheelPIDvals[7];
 
     //TalonSRX *m_hoodmotor;
