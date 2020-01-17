@@ -19,13 +19,13 @@ Turret::Turret(OperatorInputs *inputs)
     m_flywheelmotor = nullptr;
 
     // P, I, D, FF, Iz, nominal, peak
-    m_flywheelPIDvals[0] = 0.001; 
-    m_flywheelPIDvals[1] = 0.0005; 
+    m_flywheelPIDvals[0] = 0.0; 
+    m_flywheelPIDvals[1] = 0.0; 
     m_flywheelPIDvals[2] = 0.0; 
     m_flywheelPIDvals[4] = 0.0;
     m_flywheelPIDvals[3] = 2000;
     m_flywheelPIDvals[5] = 0;
-    m_flywheelPIDvals[6] = 1;
+    m_flywheelPIDvals[6] = 0.5;
 
     //m_pigeon = nullptr;
     //m_heading = 0;
@@ -157,6 +157,7 @@ void Turret::Loop()
     //m_flywheelPID->SetReference(setpoint, ControlType::kVelocity);
 
     SmartDashboard::PutNumber("SetPoint", setpoint);
+    SmartDashboard::PutNumber("Encoder", m_flywheelmotor->GetSelectedSensorVelocity(0));
     SmartDashboard::PutNumber("ClosedLoopError", m_flywheelmotor->GetClosedLoopError(0));
 
     //TurretStates();
