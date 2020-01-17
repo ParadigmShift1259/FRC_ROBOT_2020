@@ -20,7 +20,7 @@ bool Debug = true;
 void Robot::RobotInit()
 {
     m_operatorinputs = new OperatorInputs();
-    m_drivetrain = new Drivetrain(m_operatorinputs);
+    //m_drivetrain = new Drivetrain(m_operatorinputs);
 }
 
 
@@ -33,21 +33,21 @@ void Robot::TestPeriodic(){}
 
 void Robot::TeleopInit()
 {
-    m_drivetrain->Init();
+    //m_drivetrain->Init();
     m_turret->Init();
 }
 
 
 void Robot::TeleopPeriodic()
 {
-    m_drivetrain->Loop();
+    //m_drivetrain->Loop();
     m_turret->Loop();
 }
 
 
 void Robot::DisabledInit()
 {
-    m_drivetrain->Stop();
+    //m_drivetrain->Stop();
     m_turret->Stop();
 }
 

@@ -86,6 +86,9 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define WHEEL_TRACK 23.50
 #define NEO_CONVERSION (WHEEL_DIAMETER * 3.1415926535 / 5.2)
 
+//  Turret
+#define TUR_TIMEOUT_MS 30
+
 
 
 #endif /* SRC_CONST_H_ */

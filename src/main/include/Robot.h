@@ -29,7 +29,7 @@ public:
 protected:
     Timer m_timer;
     OperatorInputs *m_operatorinputs;
-    Drivetrain *m_drivetrain;
+    //Drivetrain *m_drivetrain;
     Turret *m_turret;
 
 };

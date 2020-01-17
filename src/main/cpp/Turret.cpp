@@ -6,6 +6,7 @@
 
 
 #include "Turret.h"
+#include "Const.h"
 
 
 using namespace std;
@@ -16,16 +17,14 @@ Turret::Turret(OperatorInputs *inputs)
     m_inputs = inputs;
 
     m_flywheelmotor = nullptr;
-    m_flywheelPID = nullptr;
-    m_flywheelencoder = nullptr;
 
-    // P, I, D, Iz, FF, min, max
+    // P, I, D, FF, Iz, min, max
     m_flywheelPIDvals[0] = 0.0; 
     m_flywheelPIDvals[1] = 0.0; 
     m_flywheelPIDvals[2] = 0.0; 
-    m_flywheelPIDvals[3] = 2000;
     m_flywheelPIDvals[4] = 0.0;
-    m_flywheelPIDvals[5] = -1;
+    m_flywheelPIDvals[3] = 2000;
+    m_flywheelPIDvals[5] = 0;
     m_flywheelPIDvals[6] = 1;
 
     //m_pigeon = nullptr;
@@ -77,17 +76,20 @@ void Turret::Init()
      * CAN_TURRET_PORT
      */
 
-    m_flywheelmotor = new CANSparkMax(0, CANSparkMax::MotorType::kBrushless);
+    m_flywheelmotor = new TalonSRX(0);
+    m_flywheelmotor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, TUR_TIMEOUT_MS);
+    m_flywheelmotor->SetSensorPhase(false);
 
-    m_flywheelPID = new CANPIDController(*m_flywheelmotor);
-    m_flywheelPID->SetP(m_flywheelPIDvals[0]);
-    m_flywheelPID->SetI(m_flywheelPIDvals[1]);
-    m_flywheelPID->SetD(m_flywheelPIDvals[2]);
-    m_flywheelPID->SetIZone(m_flywheelPIDvals[3]);
-    m_flywheelPID->SetFF(m_flywheelPIDvals[4]);
-    m_flywheelPID->SetOutputRange(m_flywheelPIDvals[5], m_flywheelPIDvals[6]);
-
-    m_flywheelencoder = new CANEncoder(*m_flywheelmotor);
+    /* set the peak and nominal outputs */
+    m_flywheelmotor->ConfigNominalOutputForward(m_flywheelPIDvals[5], TUR_TIMEOUT_MS);
+    m_flywheelmotor->ConfigNominalOutputReverse(-1 * m_flywheelPIDvals[5], TUR_TIMEOUT_MS);
+    m_flywheelmotor->ConfigPeakOutputForward(m_flywheelPIDvals[6], TUR_TIMEOUT_MS);
+    m_flywheelmotor->ConfigPeakOutputReverse(-1 * m_flywheelPIDvals[6], TUR_TIMEOUT_MS);
+    /* set closed loop gains in slot0 */
+    m_flywheelmotor->Config_kP(0, m_flywheelPIDvals[0], TUR_TIMEOUT_MS);
+    m_flywheelmotor->Config_kI(0, m_flywheelPIDvals[1], TUR_TIMEOUT_MS);
+    m_flywheelmotor->Config_kD(0, m_flywheelPIDvals[2], TUR_TIMEOUT_MS);
+    m_flywheelmotor->Config_kF(0, m_flywheelPIDvals[3], TUR_TIMEOUT_MS);
 
     //m_pigeon = new PigeonIMU(0);
     //m_heading = 0;
@@ -103,8 +105,8 @@ void Turret::Init()
     SmartDashboard::PutNumber("P Gain",        m_flywheelPIDvals[0]);
     SmartDashboard::PutNumber("I Gain",        m_flywheelPIDvals[1]);
     SmartDashboard::PutNumber("D Gain",        m_flywheelPIDvals[2]);
-    SmartDashboard::PutNumber("I Zone",        m_flywheelPIDvals[3]);
-    SmartDashboard::PutNumber("Feed Forward",  m_flywheelPIDvals[4]);
+    //SmartDashboard::PutNumber("I Zone",        m_flywheelPIDvals[3]);
+    SmartDashboard::PutNumber("Feed Forward",  m_flywheelPIDvals[3]);
     SmartDashboard::PutNumber("Min Output",    m_flywheelPIDvals[5]);
     SmartDashboard::PutNumber("Max Output",    m_flywheelPIDvals[6]);
 }
@@ -116,20 +118,24 @@ void Turret::Loop()
     double p = SmartDashboard::GetNumber("P Gain", 0);
     double i = SmartDashboard::GetNumber("I Gain", 0);
     double d = SmartDashboard::GetNumber("D Gain", 0);
-    double iz = SmartDashboard::GetNumber("I Zone", 0);
+    //double iz = SmartDashboard::GetNumber("I Zone", 0);
     double ff = SmartDashboard::GetNumber("Feed Forward", 0);
     double max = SmartDashboard::GetNumber("Max Output", 0);
     double min = SmartDashboard::GetNumber("Min Output", 0);
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
-    if((p != m_flywheelPIDvals[0])) { m_flywheelPID->SetP(p); m_flywheelPIDvals[0] = p; }
-    if((i != m_flywheelPIDvals[1])) { m_flywheelPID->SetI(i); m_flywheelPIDvals[1] = i; }
-    if((d != m_flywheelPIDvals[2])) { m_flywheelPID->SetD(d); m_flywheelPIDvals[2] = d; }
-    if((iz != m_flywheelPIDvals[3])) { m_flywheelPID->SetIZone(iz); m_flywheelPIDvals[3] = iz; }
-    if((ff != m_flywheelPIDvals[4])) { m_flywheelPID->SetFF(ff); m_flywheelPIDvals[4] = ff; }
-    if((min != m_flywheelPIDvals[5]) || (max != m_flywheelPIDvals[6])) { 
-      m_flywheelPID->SetOutputRange(min, max); 
-      m_flywheelPIDvals[5] = min; m_flywheelPIDvals[6] = max; 
+    if((p != m_flywheelPIDvals[0])) { m_flywheelmotor->Config_kP(0, p, TUR_TIMEOUT_MS); m_flywheelPIDvals[0] = p; }
+    if((i != m_flywheelPIDvals[1])) { m_flywheelmotor->Config_kI(0, i, TUR_TIMEOUT_MS); m_flywheelPIDvals[1] = i; }
+    if((d != m_flywheelPIDvals[2])) { m_flywheelmotor->Config_kD(0, d, TUR_TIMEOUT_MS); m_flywheelPIDvals[2] = d; }
+    //if((iz != m_flywheelPIDvals[3])) { m_flywheelPID->SetIZone(iz); m_flywheelPIDvals[3] = iz; }
+    if((ff != m_flywheelPIDvals[4])) { m_flywheelmotor->Config_kF(0, ff, TUR_TIMEOUT_MS); m_flywheelPIDvals[4] = ff; }
+    if((min != m_flywheelPIDvals[5]) || (max != m_flywheelPIDvals[6])) 
+    { 
+        m_flywheelmotor->ConfigNominalOutputForward(min, TUR_TIMEOUT_MS);
+        m_flywheelmotor->ConfigNominalOutputReverse(-1 * min, TUR_TIMEOUT_MS);
+        m_flywheelmotor->ConfigPeakOutputForward(max, TUR_TIMEOUT_MS);
+        m_flywheelmotor->ConfigPeakOutputReverse(-1 * max, TUR_TIMEOUT_MS);
+        m_flywheelPIDvals[5] = min; m_flywheelPIDvals[6] = max; 
     }
 
     // Testing sample speeds
@@ -145,10 +151,13 @@ void Turret::Loop()
         setpoint = 750;
     
 
-    m_flywheelPID->SetReference(setpoint, ControlType::kVelocity);
+    double targetVelocity_UnitsPer100ms = setpoint * 4096 / 600;
+    /* 500 RPM in either direction */
+    m_flywheelmotor->Set(ControlMode::Velocity, targetVelocity_UnitsPer100ms); 
+    //m_flywheelPID->SetReference(setpoint, ControlType::kVelocity);
 
     SmartDashboard::PutNumber("SetPoint", setpoint);
-    SmartDashboard::PutNumber("ProcessVariable", m_flywheelencoder->GetVelocity());
+    SmartDashboard::PutNumber("ClosedLoopError", m_flywheelmotor->GetClosedLoopError(0));
 
     //TurretStates();
     //FireModes();
@@ -157,7 +166,7 @@ void Turret::Loop()
 
 void Turret::Stop()
 {
-    m_flywheelPID->SetReference(0, ControlType::kVelocity);
+    //m_flywheelPID->SetReference(0, ControlType::kVelocity);
 }
 
 
