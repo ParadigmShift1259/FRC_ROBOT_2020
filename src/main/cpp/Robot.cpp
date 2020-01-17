@@ -20,6 +20,7 @@ bool Debug = true;
 void Robot::RobotInit()
 {
     m_operatorinputs = new OperatorInputs();
+    m_turret = new Turret(m_operatorinputs);
     //m_drivetrain = new Drivetrain(m_operatorinputs);
 }
 

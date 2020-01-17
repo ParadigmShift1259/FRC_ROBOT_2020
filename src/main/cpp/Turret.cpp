@@ -22,8 +22,8 @@ Turret::Turret(OperatorInputs *inputs)
     m_flywheelPIDvals[0] = 0.0; 
     m_flywheelPIDvals[1] = 0.0; 
     m_flywheelPIDvals[2] = 0.0; 
-    m_flywheelPIDvals[4] = 0.0;
-    m_flywheelPIDvals[3] = 2000;
+    m_flywheelPIDvals[3] = 0.0;
+    m_flywheelPIDvals[4] = 2000;
     m_flywheelPIDvals[5] = 0;
     m_flywheelPIDvals[6] = 0.5;
 
@@ -78,7 +78,9 @@ void Turret::Init()
 
     m_flywheelmotor = new TalonSRX(0);
     m_flywheelmotor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, TUR_TIMEOUT_MS);
-    m_flywheelmotor->SetSensorPhase(false);
+    m_flywheelmotor->SetSensorPhase(true);
+    m_flywheelmotor->SetInverted(true);
+
 
     /* set the peak and nominal outputs */
     m_flywheelmotor->ConfigNominalOutputForward(m_flywheelPIDvals[5], TUR_TIMEOUT_MS);
@@ -109,6 +111,7 @@ void Turret::Init()
     SmartDashboard::PutNumber("Feed Forward",  m_flywheelPIDvals[3]);
     SmartDashboard::PutNumber("Min Output",    m_flywheelPIDvals[5]);
     SmartDashboard::PutNumber("Max Output",    m_flywheelPIDvals[6]);
+    SmartDashboard::PutNumber("RPMScaling", 100);
 }
 
 
@@ -122,13 +125,14 @@ void Turret::Loop()
     double ff = SmartDashboard::GetNumber("Feed Forward", 0);
     double peak = SmartDashboard::GetNumber("Max Output", 0);
     double nominal = SmartDashboard::GetNumber("Min Output", 0);
+    double RPMScaling = SmartDashboard::GetNumber("RPMScaling", 100);
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
     if((p != m_flywheelPIDvals[0])) { m_flywheelmotor->Config_kP(0, p, TUR_TIMEOUT_MS); m_flywheelPIDvals[0] = p; }
     if((i != m_flywheelPIDvals[1])) { m_flywheelmotor->Config_kI(0, i, TUR_TIMEOUT_MS); m_flywheelPIDvals[1] = i; }
     if((d != m_flywheelPIDvals[2])) { m_flywheelmotor->Config_kD(0, d, TUR_TIMEOUT_MS); m_flywheelPIDvals[2] = d; }
     //if((iz != m_flywheelPIDvals[3])) { m_flywheelPID->SetIZone(iz); m_flywheelPIDvals[3] = iz; }
-    if((ff != m_flywheelPIDvals[4])) { m_flywheelmotor->Config_kF(0, ff, TUR_TIMEOUT_MS); m_flywheelPIDvals[4] = ff; }
+    if((ff != m_flywheelPIDvals[3])) { m_flywheelmotor->Config_kF(0, ff, TUR_TIMEOUT_MS); m_flywheelPIDvals[3] = ff; }
     if((nominal != m_flywheelPIDvals[5]) || (peak != m_flywheelPIDvals[6])) 
     { 
         m_flywheelmotor->ConfigNominalOutputForward(nominal, TUR_TIMEOUT_MS);
@@ -141,14 +145,14 @@ void Turret::Loop()
     // Testing sample speeds
     double setpoint = 0;
 
-    if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
+    if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kHold, 0))
         setpoint = 0;
-    else if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
-        setpoint = 250;
-    else if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0))
-        setpoint = 500;
-    else if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0))
-        setpoint = 750;
+    else if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kHold, 0))
+        setpoint = 1 * RPMScaling;
+    else if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 0))
+        setpoint = 2 * RPMScaling;
+    else if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kHold, 0))
+        setpoint = 3 * RPMScaling;
     
 
     double targetVelocity_UnitsPer100ms = setpoint * 4096 / 600;
@@ -157,8 +161,11 @@ void Turret::Loop()
     //m_flywheelPID->SetReference(setpoint, ControlType::kVelocity);
 
     SmartDashboard::PutNumber("SetPoint", setpoint);
-    SmartDashboard::PutNumber("Encoder", m_flywheelmotor->GetSelectedSensorVelocity(0));
+    SmartDashboard::PutNumber("Encoder_Position", m_flywheelmotor->GetSelectedSensorPosition(0));
+    SmartDashboard::PutNumber("Encoder_Velocity", m_flywheelmotor->GetSelectedSensorVelocity(0));
     SmartDashboard::PutNumber("ClosedLoopError", m_flywheelmotor->GetClosedLoopError(0));
+    SmartDashboard::PutNumber("ClosedLoopTarget", m_flywheelmotor->GetClosedLoopTarget(0));
+    SmartDashboard::PutNumber("Motor Voltage", m_flywheelmotor->GetMotorOutputVoltage());
 
     //TurretStates();
     //FireModes();
