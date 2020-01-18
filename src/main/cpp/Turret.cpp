@@ -19,13 +19,16 @@ Turret::Turret(OperatorInputs *inputs)
     m_flywheelmotor = nullptr;
 
     // P, I, D, FF, Iz, nominal, peak
-    m_flywheelPIDvals[0] = 0.0; 
+    // PID Values tuned for MiniCIM 1/17/20 Geoffrey
+    m_flywheelPIDvals[0] = 0.8; 
     m_flywheelPIDvals[1] = 0.0; 
-    m_flywheelPIDvals[2] = 0.0; 
-    m_flywheelPIDvals[3] = 0.0;
+    m_flywheelPIDvals[2] = 0.029; 
+    m_flywheelPIDvals[3] = 0.035;
     m_flywheelPIDvals[4] = 2000;
     m_flywheelPIDvals[5] = 0;
     m_flywheelPIDvals[6] = 0.5;
+    
+    m_flywheelsetpoint = 0;
 
     //m_pigeon = nullptr;
     //m_heading = 0;
@@ -92,6 +95,7 @@ void Turret::Init()
     m_flywheelmotor->Config_kI(0, m_flywheelPIDvals[1], TUR_TIMEOUT_MS);
     m_flywheelmotor->Config_kD(0, m_flywheelPIDvals[2], TUR_TIMEOUT_MS);
     m_flywheelmotor->Config_kF(0, m_flywheelPIDvals[3], TUR_TIMEOUT_MS);
+    m_flywheelmotor->SetNeutralMode()
 
     //m_pigeon = new PigeonIMU(0);
     //m_heading = 0;
@@ -143,26 +147,29 @@ void Turret::Loop()
     }
 
     // Testing sample speeds
-    double setpoint = 0;
 
-    if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kHold, 0))
-        setpoint = 0;
-    else if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kHold, 0))
-        setpoint = 1 * RPMScaling;
-    else if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 0))
-        setpoint = 2 * RPMScaling;
-    else if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kHold, 0))
-        setpoint = 3 * RPMScaling;
+    if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
+        m_flywheelsetpoint = 0;
+    else if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
+        m_flywheelsetpoint = 1 * RPMScaling;
+    else if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0))
+        m_flywheelsetpoint = 2 * RPMScaling;
+    else if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0))
+        m_flywheelsetpoint = 3 * RPMScaling;
     
+    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 0))
+        m_flywheelsetpoint += 10;
+    else if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0) && (m_flywheelsetpoint >= 10))
+        m_flywheelsetpoint -= 10;
 
-    double targetVelocity_UnitsPer100ms = setpoint * 4096 / 600;
+    double targetVelocity_UnitsPer100ms = m_flywheelsetpoint * ENCODER_TICKS_PER_REV * MINUTES_TO_HUNDRED_MS;
     /* 500 RPM in either direction */
     m_flywheelmotor->Set(ControlMode::Velocity, targetVelocity_UnitsPer100ms); 
     //m_flywheelPID->SetReference(setpoint, ControlType::kVelocity);
 
-    SmartDashboard::PutNumber("SetPoint", setpoint);
-    SmartDashboard::PutNumber("Encoder_Position", m_flywheelmotor->GetSelectedSensorPosition(0));
-    SmartDashboard::PutNumber("Encoder_Velocity", m_flywheelmotor->GetSelectedSensorVelocity(0));
+    SmartDashboard::PutNumber("SetPoint", m_flywheelsetpoint);
+    SmartDashboard::PutNumber("Encoder_Position in Revolutions", m_flywheelmotor->GetSelectedSensorPosition(0) / ENCODER_TICKS_PER_REV);
+    SmartDashboard::PutNumber("Encoder_Velocity in RPM", m_flywheelmotor->GetSelectedSensorVelocity(0) / MINUTES_TO_HUNDRED_MS / ENCODER_TICKS_PER_REV);
     SmartDashboard::PutNumber("ClosedLoopError", m_flywheelmotor->GetClosedLoopError(0));
     SmartDashboard::PutNumber("ClosedLoopTarget", m_flywheelmotor->GetClosedLoopTarget(0));
     SmartDashboard::PutNumber("Motor Voltage", m_flywheelmotor->GetMotorOutputVoltage());

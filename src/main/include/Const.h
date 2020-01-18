@@ -88,6 +88,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 //  Turret
 #define TUR_TIMEOUT_MS 30
+#define ENCODER_TICKS_PER_REV 4096.00
+#define MINUTES_TO_HUNDRED_MS 0.00166666
 
 
 

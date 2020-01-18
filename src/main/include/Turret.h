@@ -64,6 +64,7 @@ private:
     //CANEncoder *m_flywheelencoder;
     // P, I, D, FF, Iz, nominal, peak
     double m_flywheelPIDvals[7];
+    double m_flywheelsetpoint;
 
     //TalonSRX *m_hoodmotor;
     //TalonSRX *m_turretmotor;
