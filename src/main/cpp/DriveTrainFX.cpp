@@ -330,7 +330,7 @@ void DriveTrainFX::Drive(double x, double y, bool ramp)
 	double templeft, tempright, tempforward, temprotate;
 	bool tempspin;
 
-	if ((x == 0 || yd == 0))
+	if ((x == 0) || (yd == 0))
 	{
 		maxpower = 1;
 	}
@@ -444,17 +444,65 @@ bool DriveTrainFX::ChangeLowSpeedMode()
 	return m_lowspeedmode;
 }
 
-
 // ramp the power
 double DriveTrainFX::Ramp(double previous, double desired)
 {
-	double battery = DriverStation::GetInstance().GetBatteryVoltage();
 	// averages battery voltage over time to reduce affects of brownouts
+	double battery = DriverStation::GetInstance().GetBatteryVoltage();
 	m_battery = (m_battery + battery) / 2;
 
-	double rampmin;
-	double rampmax;
+	// return value defaults to previous
+	double newpow = previous;
 
+	bool timepassed = m_timerramp->HasPeriodPassed(RAMPING_RATE_PERIOD);
+	if (timepassed)
+	{
+		double rampmax = 0;
+		double rampmin = 0;
+		double delta = abs(desired - previous);
+
+		// if changing direction always use ramp down rates
+		// compare signs of prev and desired to determine direction change
+		if ((previous / abs(previous)) != (desired / abs(desired)))
+		{
+			rampmax = RAMPING_RATE_DOWN_MAX / m_battery;
+			rampmin = RAMPING_RATE_DOWN_MIN / m_battery;
+		}
+		else
+		// Previous is closer to 0 than desired value, ramping up
+		if (abs(previous) < abs(desired))
+		{
+			rampmax = RAMPING_RATE_UP_MAX / m_battery;
+			rampmin = RAMPING_RATE_UP_MIN / m_battery;
+		}
+		else
+		// Previous is further from 0 than desired value, ramping down
+		if (abs(previous) > abs(desired))
+		{
+			rampmax = RAMPING_RATE_DOWN_MAX / m_battery;
+			rampmin = RAMPING_RATE_DOWN_MIN / m_battery;
+		}
+		if (delta < rampmin)
+			newpow = desired;
+		else
+		if (previous < desired)
+			newpow += max((delta * rampmax), rampmin);
+		else
+		if (previous > desired)
+			newpow -= max((delta * rampmin), rampmin);
+	}
+	return newpow;
+}
+
+/*
+// ramp the power
+double DriveTrainFX::Ramp(double previous, double desired)
+{
+	// averages battery voltage over time to reduce affects of brownouts
+	double battery = DriverStation::GetInstance().GetBatteryVoltage();
+	m_battery = (m_battery + battery) / 2;
+
+	// return value defaults to previous
 	double newpow = previous;
 
 	bool timepassed = m_timerramp->HasPeriodPassed(RAMPING_RATE_PERIOD);
@@ -462,27 +510,18 @@ double DriveTrainFX::Ramp(double previous, double desired)
 	{
 		double delta = abs(desired - previous);
 
-		// Makes it so that robot can't go stop to full
-		if (delta <= rampmin)
+		if (delta <= (RAMPING_RATE_UP_MIN / m_battery))
 			newpow = desired;
 		else
 		if (previous < desired)
-		{
-			rampmin = RAMPING_RATE_UP_MIN / m_battery;
-			rampmax = RAMPING_RATE_UP_MAX / m_battery;
-			newpow += max((delta * rampmax), rampmin);
-		}
+			newpow += max((delta * (RAMPING_RATE_UP_MAX / m_battery)), (RAMPING_RATE_UP_MIN / m_battery));
 		else
 		if (previous > desired)
-		{
-			rampmin = RAMPING_RATE_DOWN_MIN / m_battery;
-			rampmax = RAMPING_RATE_DOWN_MAX / m_battery;
-			newpow -= max((delta * rampmax), rampmin);
-		}
+			newpow -= max((delta * (RAMPING_RATE_UP_MAX / m_battery)), (RAMPING_RATE_UP_MIN / m_battery));
 	}
 	return newpow;
 }
-
+*/
 
 // return left power value
 double DriveTrainFX::LeftMotor(double &maxpower)
