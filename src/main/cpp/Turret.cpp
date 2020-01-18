@@ -95,7 +95,7 @@ void Turret::Init()
     m_flywheelmotor->Config_kI(0, m_flywheelPIDvals[1], TUR_TIMEOUT_MS);
     m_flywheelmotor->Config_kD(0, m_flywheelPIDvals[2], TUR_TIMEOUT_MS);
     m_flywheelmotor->Config_kF(0, m_flywheelPIDvals[3], TUR_TIMEOUT_MS);
-    m_flywheelmotor->SetNeutralMode()
+    m_flywheelmotor->SetNeutralMode(NeutralMode::Coast);
 
     //m_pigeon = new PigeonIMU(0);
     //m_heading = 0;
@@ -181,6 +181,7 @@ void Turret::Loop()
 
 void Turret::Stop()
 {
+    m_flywheelsetpoint = 0;
     //m_flywheelPID->SetReference(0, ControlType::kVelocity);
 }
 
