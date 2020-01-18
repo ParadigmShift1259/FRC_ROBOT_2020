@@ -60,7 +60,6 @@ DriveTrainFX::DriveTrainFX(OperatorInputs *inputs, WPI_TalonFX *left1, WPI_Talon
 	m_direction = DT_DEFAULT_DIRECTION;
 
 	m_timerramp = new Timer();
-	m_rampmax = RAMPING_RATE_MAX;
 	m_ramp = true;
 
 	m_prevleftdistance = 0;
@@ -274,7 +273,6 @@ void DriveTrainFX::Init(DriveMode mode)
 	m_timerramp->Start();
 	m_lowspeedmode = false;
 	m_direction = DT_DEFAULT_DIRECTION;
-	m_rampmax = RAMPING_RATE_MAX;
 	m_ramp = true;
 
 	m_prevleftdistance = 0;
@@ -353,13 +351,8 @@ void DriveTrainFX::Drive(double x, double y, bool ramp)
 	}
 	else
 	{
-		double battery = DriverStation::GetInstance().GetBatteryVoltage();
-		// averages battery voltage over time to reduce affects of brownouts
-		m_battery = (m_battery + battery) / 2;
-		double rampmin = RAMPING_RATE_MIN / m_battery;
-		double rampmax = m_rampmax / m_battery;
 		m_previousx = x;
-		m_previousy = Ramp(m_previousy, yd, rampmin, rampmax);
+		m_previousy = Ramp(m_previousy, yd);
 		m_leftpow = m_previousy * JOYSTICK_SCALING_Y - (m_previousx * JOYSTICK_SCALING_X);
 		m_rightpow = m_previousy * JOYSTICK_SCALING_Y + (m_previousx * JOYSTICK_SCALING_X);
 	}
@@ -453,8 +446,15 @@ bool DriveTrainFX::ChangeLowSpeedMode()
 
 
 // ramp the power
-double DriveTrainFX::Ramp(double previous, double desired, double rampmin, double rampmax)
+double DriveTrainFX::Ramp(double previous, double desired)
 {
+	double battery = DriverStation::GetInstance().GetBatteryVoltage();
+	// averages battery voltage over time to reduce affects of brownouts
+	m_battery = (m_battery + battery) / 2;
+
+	double rampmin;
+	double rampmax;
+
 	double newpow = previous;
 
 	bool timepassed = m_timerramp->HasPeriodPassed(RAMPING_RATE_PERIOD);
@@ -467,10 +467,18 @@ double DriveTrainFX::Ramp(double previous, double desired, double rampmin, doubl
 			newpow = desired;
 		else
 		if (previous < desired)
-			newpow += max((delta*rampmax), rampmin);
+		{
+			rampmin = RAMPING_RATE_UP_MIN / m_battery;
+			rampmax = RAMPING_RATE_UP_MAX / m_battery;
+			newpow += max((delta * rampmax), rampmin);
+		}
 		else
 		if (previous > desired)
-			newpow -= max((delta*rampmax), rampmin);
+		{
+			rampmin = RAMPING_RATE_DOWN_MIN / m_battery;
+			rampmax = RAMPING_RATE_DOWN_MAX / m_battery;
+			newpow -= max((delta * rampmax), rampmin);
+		}
 	}
 	return newpow;
 }

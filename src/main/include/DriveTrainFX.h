@@ -33,7 +33,7 @@ public:
 		// change DriveTrain direction and return true if going forward
 	bool ChangeDirection();
 	bool ChangeLowSpeedMode();
-	double Ramp(double previousPow, double desiredPow, double rampSpeedMin, double rampSpeedMax);
+	double Ramp(double previousPow, double desiredPow);
 	double LeftMotor(double &invMaxValueXPlusY);
 	double RightMotor(double &invMaxValueXPlusY);
 
@@ -42,7 +42,6 @@ public:
 	void SetLowSpeedMode(bool mode) {m_lowspeedmode = mode;}
 	bool GetLowSpeedMode() {return m_lowspeedmode;}
 
-	void setRampMax(double newRampMax) {m_rampmax = newRampMax;}
 	void enableRamp(bool newRamp) {m_ramp = newRamp;}
 
 	double GetLeftPosition(int encoder = 0);
@@ -95,7 +94,7 @@ protected:
 	double m_rightspeed;
 	double m_leftposition;
 	double m_rightposition;
-	double m_rampmax;
+	
 	bool m_ramp;
 
 	double m_prevleftdistance;

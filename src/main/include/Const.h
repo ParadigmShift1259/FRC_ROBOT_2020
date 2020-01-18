@@ -75,8 +75,10 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define MOTOR_SUPPLY_THRESHOLD_TIME 0.1
 //   Ramping
 #define RAMPING_RATE_PERIOD 0.10
-#define RAMPING_RATE_MIN 0.6
-#define RAMPING_RATE_MAX 2.0
+#define RAMPING_RATE_UP_MIN 0.6
+#define RAMPING_RATE_UP_MAX 3.0
+#define RAMPING_RATE_DOWN_MIN 3.0
+#define RAMPING_RATE_DOWN_MAX 3.0
 //   Scaling
 #define JOYSTICK_SCALING_X 0.5
 #define JOYSTICK_SCALING_Y 1.0
