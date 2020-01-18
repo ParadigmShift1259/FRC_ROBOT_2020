@@ -56,36 +56,43 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define DEADZONE_Z  0.18
 
 
-// Drivetrain
-#define INVERT_LEFT false
-#define INVERT_RIGHT false
-//   SparkMax Ports
-#define SIX_WHEEL_DRIVE false
-#define CAN_LEFT_PORT_1 2       // Changed for test bot 2/9/19
-#define CAN_LEFT_PORT_2 4
-#define CAN_LEFT_PORT_3 -2
-#define CAN_RIGHT_PORT_1 1
-#define CAN_RIGHT_PORT_2 3
-#define CAN_RIGHT_PORT_3 -3
-//   NEO parameters
-#define MOTOR_CURRENT_LIMIT 30
-#define MOTOR_VOLTAGE_COMPENSATION 10
-#define MOTOR_RAMP_RATE_TIME 1
-// Scaling
-#define X_SCALING 0.5
+//   Direction
+#define DT_DEFAULT_DIRECTION -1.0
+//   Inverts
+#define INVERT_LEFT -1.0
+#define INVERT_RIGHT 1.0		// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
+//   CAN Ports
+#define CAN_LEFT_PORT_1 1
+#define CAN_LEFT_PORT_2 2
+#define CAN_LEFT_PORT_3 3
+#define CAN_RIGHT_PORT_1 4
+#define CAN_RIGHT_PORT_2 5
+#define CAN_RIGHT_PORT_3 6
+//   Current limiting
+#define MOTOR_SUPPLY_LIMIT_ENABLE true
+#define MOTOR_SUPPLY_CURRENT_LIMIT 20
+#define MOTOR_SUPPLY_THRESHOLD_CURRENT 0
+#define MOTOR_SUPPLY_THRESHOLD_TIME 0.1
+//   Ramping
+#define RAMPING_RATE_PERIOD 0.10
+#define RAMPING_RATE_MIN 0.6
+#define RAMPING_RATE_MAX 4.0
+#define X_SCALING 0.75
 #define Y_SCALING 1.0
+#define LEFT_MOTOR_SCALING 1
+#define RIGHT_MOTOR_SCALING 1
+#define LOWSPEED_MODIFIER_X 0.50
+#define LOWSPEED_MODIFIER_Y 0.50
 
 //   Encoders
 #define ENC_PRESENT_1 true
-#define ENC_TYPE_1 FeedbackDevice::QuadEncoder
+#define ENC_TYPE_1 FeedbackDevice::IntegratedSensor
 #define ENC_PRESENT_2 false
-#define ENC_TYPE_2 FeedbackDevice::QuadEncoder
+#define ENC_TYPE_2 FeedbackDevice::IntegratedSensor
 #define CODES_PER_REV 1382.0
 #define CODES_PER_INCH 73.317
 #define WHEEL_DIAMETER 6.0
 #define WHEEL_TRACK 23.50
-#define NEO_CONVERSION (WHEEL_DIAMETER * 3.1415926535 / 5.2)
-
 
 
 #endif /* SRC_CONST_H_ */

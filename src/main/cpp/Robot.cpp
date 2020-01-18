@@ -6,12 +6,10 @@
 /*----------------------------------------------------------------------------*/
 
 
-#include <iostream>
-#include <string>
+#include "Robot.h"
 #include <frc/LiveWindow/LiveWindow.h>
 #include <frc/SmartDashboard/SendableChooser.h>
 #include <frc/SmartDashboard/SmartDashboard.h>
-#include "Robot.h"
 
 
 bool Debug = true;
@@ -20,21 +18,38 @@ bool Debug = true;
 void Robot::RobotInit()
 {
     m_operatorinputs = new OperatorInputs();
-    m_drivetrain = new Drivetrain(m_operatorinputs);
+    m_drivetrain = new DriveTrainFX(m_operatorinputs);
 }
 
 
-void Robot::RobotPeriodic(){}
-void Robot::AutonomousInit(){}
-void Robot::AutonomousPeriodic(){}
-void Robot::TestInit(){}
-void Robot::TestPeriodic(){}
+void Robot::RobotPeriodic()
+{
+}
+
+
+void Robot::AutonomousInit()
+{
+}
+
+
+void Robot::AutonomousPeriodic()
+{ 
+}
+
+
+void Robot::TestInit()
+{    
+}
+
+
+void Robot::TestPeriodic()
+{
+}
 
 
 void Robot::TeleopInit()
 {
     m_drivetrain->Init();
-    //m_drivetrain->Loop();
 }
 
 
@@ -50,7 +65,9 @@ void Robot::DisabledInit()
 }
 
 
-void Robot::DisabledPeriodic(){}
+void Robot::DisabledPeriodic()
+{
+}
 
 
 int main()

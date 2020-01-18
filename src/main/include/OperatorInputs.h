@@ -4,11 +4,13 @@
  *  Last Edited By:
  */
 
+
 #ifndef SRC_OPERATORINPUTS_H_
 #define SRC_OPERATORINPUTS_H_
 
 
-#include <frc\WPILib.h>
+#include <frc\Joystick.h>
+#include <frc\XboxController.h>
 #include <map>
 #include <vector>
 

@@ -2,10 +2,10 @@
 #define SRC_ROBOT_H_
 
 
-#include <frc\WPILib.h>
+#include <frc\TimedRobot.h>
 #include "Const.h"
 #include "OperatorInputs.h"
-#include "Drivetrain.h"
+#include "DrivetrainFX.h"
 
 
 using namespace frc;
@@ -28,8 +28,7 @@ public:
 protected:
     Timer m_timer;
     OperatorInputs *m_operatorinputs;
-    Drivetrain *m_drivetrain;
-
+    DriveTrainFX *m_drivetrain;
 };
 
 
