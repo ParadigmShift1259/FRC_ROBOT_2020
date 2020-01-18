@@ -10,7 +10,7 @@
 
 
 #include <frc\SpeedControllerGroup.h>
-#include <frc\drive/DifferentialDrive.h>
+#include <frc\drive\DifferentialDrive.h>
 #include <ctre\Phoenix.h>
 #include "OperatorInputs.h"
 
@@ -29,7 +29,7 @@ public:
 	void Init(DriveMode mode = kFollower);
 	void Loop();
 	void Stop();
-	void Drive(double x, double y, bool ramp = false, bool tank = false);
+	void Drive(double x, double y, bool ramp = false);
 		// change DriveTrain direction and return true if going forward
 	bool ChangeDirection();
 	bool ChangeLowSpeedMode();
@@ -42,8 +42,8 @@ public:
 	void SetLowSpeedMode(bool mode) {m_lowspeedmode = mode;}
 	bool GetLowSpeedMode() {return m_lowspeedmode;}
 
-	void setCoasting(double newCoasting) {m_coasting = newCoasting;}
-	void setRamp(double newValue) {m_rampmax = newValue;}
+	void setRampMax(double newRampMax) {m_rampmax = newRampMax;}
+	void enableRamp(bool newRamp) {m_ramp = newRamp;}
 
 	double GetLeftPosition(int encoder = 0);
 	double GetRightPosition(int encoder = 0);
@@ -88,14 +88,15 @@ protected:
 	int m_lowspeedbuttonon;
 	int m_lowspeedbuttonoff;
 
+	double m_battery;
 	double m_leftpow;
 	double m_rightpow;
 	double m_leftspeed;
 	double m_rightspeed;
 	double m_leftposition;
 	double m_rightposition;
-	double m_coasting;
 	double m_rampmax;
+	bool m_ramp;
 
 	double m_prevleftdistance;
 	double m_prevrightdistance;

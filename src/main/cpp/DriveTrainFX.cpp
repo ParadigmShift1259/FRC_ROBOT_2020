@@ -50,17 +50,18 @@ DriveTrainFX::DriveTrainFX(OperatorInputs *inputs, WPI_TalonFX *left1, WPI_Talon
 	m_lowspeedbuttonon = XBOX_RIGHT_TRIGGER_AXIS;
 	m_lowspeedbuttonoff = XBOX_RIGHT_TRIGGER_AXIS;
 
+	m_battery = 12;
 	m_leftpow = 0;
 	m_rightpow = 0;
 	m_previousx = 0;
 	m_previousy = 0;
-	m_coasting = 1;
 	m_invertleft = INVERT_LEFT;
 	m_invertright = INVERT_RIGHT;
 	m_direction = DT_DEFAULT_DIRECTION;
 
 	m_timerramp = new Timer();
 	m_rampmax = RAMPING_RATE_MAX;
+	m_ramp = true;
 
 	m_prevleftdistance = 0;
 	m_prevrightdistance = 0;
@@ -260,6 +261,7 @@ void DriveTrainFX::Init(DriveMode mode)
 		m_right3->SetNeutralMode(NeutralMode::Brake);
 	}
 
+	m_battery = 12;
 	m_leftpow = 0;
 	m_rightpow = 0;
 	m_leftspeed = 0;
@@ -268,11 +270,12 @@ void DriveTrainFX::Init(DriveMode mode)
 	m_rightposition = 0;
 	m_previousx = 0;
 	m_previousy = 0;
-	m_coasting = 1;
 	m_timerramp->Reset();
 	m_timerramp->Start();
 	m_lowspeedmode = false;
 	m_direction = DT_DEFAULT_DIRECTION;
+	m_rampmax = RAMPING_RATE_MAX;
+	m_ramp = true;
 
 	m_prevleftdistance = 0;
 	m_prevrightdistance = 0;
@@ -283,7 +286,6 @@ void DriveTrainFX::Loop()
 {
 	double x;
 	double y;
-	bool tank = false;
 
 	if (m_inputs->xBox(m_changedirbutton, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		ChangeDirection();
@@ -303,20 +305,13 @@ void DriveTrainFX::Loop()
 	x = m_inputs->xBoxLeftX(0 * INP_DUAL);
 	y = m_inputs->xBoxLeftY(0 * INP_DUAL);
 
-	if ((x == 0.0) && (y == 0.0))
-	{
-		x = m_inputs->xBoxRightX(0 * INP_DUAL);
-		y = m_inputs->xBoxRightY(0 * INP_DUAL);
-		tank = true;
-	}
-
 	if (m_lowspeedmode)
 	{
 		x = x * LOWSPEED_MODIFIER_X;
 		y = y * LOWSPEED_MODIFIER_Y;
 	}
 
-	Drive(x, y, !tank, tank);		// ramp if arcade mode, no ramp if tank mode
+	Drive(x, y, m_ramp);
 
 	SmartDashboard::PutNumber("DT00_direction", m_direction);
 	SmartDashboard::PutNumber("DT01_x", x);
@@ -330,14 +325,14 @@ void DriveTrainFX::Stop()
 }
 
 
-void DriveTrainFX::Drive(double x, double y, bool ramp, bool tank)
+void DriveTrainFX::Drive(double x, double y, bool ramp)
 {
 	double yd = y * m_direction;
 	double maxpower;
 	double templeft, tempright, tempforward, temprotate;
 	bool tempspin;
 
-	if ((x == 0 || yd == 0) || tank)
+	if ((x == 0 || yd == 0))
 	{
 		maxpower = 1;
 	}
@@ -351,48 +346,25 @@ void DriveTrainFX::Drive(double x, double y, bool ramp, bool tank)
 	
 	if (!ramp)
 	{
-		m_previousx = x;	//rampInput(previousX, joyStickX, BatteryRampingMin, BatteryRampingMax);
+		m_previousx = x;
 		m_previousy = yd;
-		if (!tank)			// convert arcade values to tank power values
-		{
-			m_leftpow = m_previousy - m_previousx;
-			m_rightpow = m_previousy + m_previousx;
-		}
-		else				// tank values, set the opposite side running to 0
-		{
-			m_leftpow = m_previousy;
-			m_rightpow = m_previousy;
-			if (m_previousx < 0)
-				m_rightpow = 0;
-			else
-			if (m_previousx > 0)
-				m_leftpow = 0;
-		}	
+		m_leftpow = m_previousy - m_previousx;
+		m_rightpow = m_previousy + m_previousx;
 	}
 	else
 	{
 		double battery = DriverStation::GetInstance().GetBatteryVoltage();
-		double rampmin = RAMPING_RATE_MIN / battery;
-		double rampmax = m_rampmax / battery;
-		SmartDashboard::PutNumber("DT10_battery", battery);
-		m_previousx = x;	//rampInput(previousX, joyStickX, rampmin, rampmax);
+		// averages battery voltage over time to reduce affects of brownouts
+		m_battery = (m_battery + battery) / 2;
+		double rampmin = RAMPING_RATE_MIN / m_battery;
+		double rampmax = m_rampmax / m_battery;
+		m_previousx = x;
 		m_previousy = Ramp(m_previousy, yd, rampmin, rampmax);
-		if (!tank)
-		{
-			m_leftpow = m_previousy * Y_SCALING - (m_previousx * X_SCALING);
-			m_rightpow = m_previousy * Y_SCALING + (m_previousx * X_SCALING);
-		}
-		else
-		{
-			m_leftpow = m_previousy * Y_SCALING;
-			m_rightpow = m_previousy * Y_SCALING;
-			if (m_previousx < 0)
-				m_rightpow = 0;
-			else
-			if (m_previousx > 0)
-				m_leftpow = 0;
-		}
+		m_leftpow = m_previousy * JOYSTICK_SCALING_Y - (m_previousx * JOYSTICK_SCALING_X);
+		m_rightpow = m_previousy * JOYSTICK_SCALING_Y + (m_previousx * JOYSTICK_SCALING_X);
 	}
+	double leftpow = LeftMotor(maxpower);
+	double rightpow = RightMotor(maxpower);
 
 	if (m_left1 != nullptr)
 	{
@@ -410,33 +382,33 @@ void DriveTrainFX::Drive(double x, double y, bool ramp, bool tank)
 	{
 	case DriveMode::kFollower:
 		// can talon follower mode
-		m_left1->Set(m_invertleft * m_coasting * LeftMotor(maxpower));
-		m_right1->Set(m_invertright * m_coasting * RightMotor(maxpower));
+		m_left1->Set(leftpow);
+		m_right1->Set(rightpow);
 		break;
 
 	case DriveMode::kDiscrete:
 		// can talon discrete mode
-		m_left1->Set(m_invertleft * m_coasting * LeftMotor(maxpower));
-		m_left2->Set(m_invertleft * m_coasting * LeftMotor(maxpower));
+		m_left1->Set(leftpow);
+		m_left2->Set(leftpow);
 		if (m_left3 != nullptr)
-			m_left3->Set(m_invertleft * m_coasting * LeftMotor(maxpower));
-		m_right1->Set(m_invertright * m_coasting * RightMotor(maxpower));
-		m_right2->Set(m_invertright * m_coasting * RightMotor(maxpower));
+			m_left3->Set(leftpow);
+		m_right1->Set(rightpow);
+		m_right2->Set(rightpow);
 		if (m_right3 != nullptr)
-			m_right3->Set(m_invertleft * m_coasting * LeftMotor(maxpower));
+			m_right3->Set(leftpow);
 		break;
 
 	case DriveMode::kTank:
 		// differentialdrive tank drive
-		templeft = m_invertleft * m_coasting * LeftMotor(maxpower);
-		tempright = m_invertright * m_coasting * RightMotor(maxpower) * -1;		// -1 added to adjust for DifferentialDrive
+		templeft = leftpow;
+		tempright = rightpow * -1;					// -1 added to adjust for DifferentialDrive
 		m_differentialdrive->TankDrive(templeft, tempright, false);
 		break;
 
 	case DriveMode::kArcade:
 		// differentialdrive arcade drive
-		templeft = m_invertleft * m_coasting * LeftMotor(maxpower);
-		tempright = m_invertright * m_coasting * RightMotor(maxpower) * -1;		// -1 added to adjust for DifferentialDrive
+		templeft = leftpow;
+		tempright = rightpow * -1;					// -1 added to adjust for DifferentialDrive
 		tempforward = (templeft + tempright) / 2.0;
 		temprotate = (templeft - tempright) / 2.0;
 		m_differentialdrive->ArcadeDrive(tempforward, temprotate, false);
@@ -444,8 +416,8 @@ void DriveTrainFX::Drive(double x, double y, bool ramp, bool tank)
 
 	case DriveMode::kCurvature:
 		// differentialdrive curvature drive
-		templeft = m_invertleft * m_coasting * LeftMotor(maxpower);
-		tempright = m_invertright * m_coasting * RightMotor(maxpower) * -1;		// -1 added to adjust for DifferentialDrive
+		templeft = leftpow;
+		tempright = rightpow * -1;					// -1 added to adjust for DifferentialDrive
 		tempforward = (templeft + tempright) / 2.0;
 		temprotate = (templeft - tempright) / 2.0;
 		tempspin = abs(tempforward) < DEADZONE_Y;
@@ -456,16 +428,12 @@ void DriveTrainFX::Drive(double x, double y, bool ramp, bool tank)
 		break;
 	}
 
-	SmartDashboard::PutNumber("DT11_turningramp", m_previousx); 			//Left Motors are forward=negative
-	SmartDashboard::PutNumber("DT12_drivingramp", m_previousy); 			//Right Motors are forward=positive
-	SmartDashboard::PutNumber("DT13_leftpow", m_invertleft*m_leftpow); 		//Left Motors are forward=negative
-	SmartDashboard::PutNumber("DT14_rightpow", m_invertright*m_rightpow); 	//Right Motors are forward=positive
-	SmartDashboard::PutNumber("DT16_leftspeed", m_leftspeed);
-	SmartDashboard::PutNumber("DT17_rightspeed", m_rightspeed);
-	SmartDashboard::PutNumber("DT18_leftposition", m_leftposition);
-	SmartDashboard::PutNumber("DT19_rightposition", m_rightposition);
-	SmartDashboard::PutNumber("DT20_mode", m_mode);
-	SmartDashboard::PutNumber("DT21_maxpower", maxpower);
+	SmartDashboard::PutNumber("DT03_leftpower", leftpow);
+	SmartDashboard::PutNumber("DT04_rightpower", rightpow);
+	SmartDashboard::PutNumber("DT05_leftspeed", m_leftspeed);
+	SmartDashboard::PutNumber("DT06_rightspeed", m_rightspeed);
+	SmartDashboard::PutNumber("DT07_leftposition", m_leftposition);
+	SmartDashboard::PutNumber("DT08_rightposition", m_rightposition);
 }
 
 
@@ -508,16 +476,26 @@ double DriveTrainFX::Ramp(double previous, double desired, double rampmin, doubl
 }
 
 
+// return left power value
 double DriveTrainFX::LeftMotor(double &maxpower)
 {
-	double leftpow = m_leftpow * LEFT_MOTOR_SCALING / maxpower;
+	// take power value from joystick
+	// maxpower is calculated between 1 and 2 based on joystick position
+	// invert power based on invertleft constant
+	// scale power based on scaling constant (to adjust for 1 side running faster than the other)
+	double leftpow = m_leftpow / maxpower * m_invertleft * MOTOR_SCALING_LEFT;
 	return leftpow;
 }
 
 
+// return right motor power value
 double DriveTrainFX::RightMotor(double &maxpower)
 {
-	double rightpow = m_rightpow * RIGHT_MOTOR_SCALING / maxpower;
+	// take power value from joystick
+	// maxpower is calculated between 1 and 2 based on joystick position
+	// invert power based on invertleft constant
+	// scale power based on scaling constant (to adjust for 1 side running faster than the other)
+	double rightpow = m_rightpow / maxpower * m_invertright * MOTOR_SCALING_RIGHT;
 	return rightpow;
 }
 

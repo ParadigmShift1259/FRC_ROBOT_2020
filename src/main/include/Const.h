@@ -59,8 +59,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 //   Direction
 #define DT_DEFAULT_DIRECTION -1.0
 //   Inverts
-#define INVERT_LEFT -1.0
-#define INVERT_RIGHT 1.0		// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
+#define INVERT_LEFT 1.0
+#define INVERT_RIGHT -1.0		// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
 //   CAN Ports
 #define CAN_LEFT_PORT_1 1
 #define CAN_LEFT_PORT_2 2
@@ -76,11 +76,12 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 //   Ramping
 #define RAMPING_RATE_PERIOD 0.10
 #define RAMPING_RATE_MIN 0.6
-#define RAMPING_RATE_MAX 4.0
-#define X_SCALING 0.75
-#define Y_SCALING 1.0
-#define LEFT_MOTOR_SCALING 1
-#define RIGHT_MOTOR_SCALING 1
+#define RAMPING_RATE_MAX 2.0
+//   Scaling
+#define JOYSTICK_SCALING_X 0.5
+#define JOYSTICK_SCALING_Y 1.0
+#define MOTOR_SCALING_LEFT 1.0
+#define MOTOR_SCALING_RIGHT 1.0
 #define LOWSPEED_MODIFIER_X 0.50
 #define LOWSPEED_MODIFIER_Y 0.50
 
