@@ -4,7 +4,6 @@
  *  Last Edited By:
  */
 
-
 #ifndef SRC_OPERATORINPUTS_H_
 #define SRC_OPERATORINPUTS_H_
 

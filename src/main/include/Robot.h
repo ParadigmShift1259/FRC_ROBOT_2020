@@ -6,6 +6,8 @@
 #include "Const.h"
 #include "OperatorInputs.h"
 #include "DrivetrainFX.h"
+#include "Turret.h"
+#include "ControlPanel.h"
 
 
 using namespace frc;
@@ -29,6 +31,8 @@ protected:
     Timer m_timer;
     OperatorInputs *m_operatorinputs;
     DriveTrainFX *m_drivetrain;
+    Turret *m_turret;
+    ControlPanel *m_controlpanel;
 };
 
 
