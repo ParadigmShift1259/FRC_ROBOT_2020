@@ -10,12 +10,13 @@
 
 
 #include <frc\WPILib.h>
-#include <ctre\Phoenix.h>
+#include <rev\CANSparkMax.h>
 
 #include "OperatorInputs.h"
 
 
 using namespace frc;
+using namespace rev;
 
 
 class Turret
@@ -59,9 +60,9 @@ private:
     //PigeonIMU *m_pigeon;
     //double m_heading;
 
-    TalonSRX *m_flywheelmotor;
-    //CANPIDController *m_flywheelPID;
-    //CANEncoder *m_flywheelencoder;
+    CANSparkMax *m_flywheelmotor;
+    CANPIDController *m_flywheelPID;
+    CANEncoder *m_flywheelencoder;
     // P, I, D, FF, Iz, nominal, peak
     double m_flywheelPIDvals[7];
     double m_flywheelsetpoint;
