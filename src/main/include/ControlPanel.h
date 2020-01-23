@@ -10,6 +10,7 @@
 
 
 #include "rev/ColorSensorV3.h"
+#include "rev/ColorMatch.h"
 #include <ctre\Phoenix.h>
 #include "frc/smartdashboard/SmartDashboard.h"
 #include "OperatorInputs.h"
@@ -38,6 +39,7 @@ public:
     
 protected:
     int GetColor();
+    bool SensorSanityCheck();
 
 
 private:
@@ -46,16 +48,17 @@ private:
     OperatorInputs *m_inputs;
 
     SpinnerState m_spinnerstate;
+
+    ColorMatch m_colormatcher;
+    double m_confidence;
     
     double m_spinpower;
-    int m_desiredcolor; // 1-4 Yellow, Green, Blue, Red
-    int m_colorcounter;
-    int m_previouscolor;
-    int m_currentcolor;
-    int m_colorcount;
+    double m_currentcolor;
+    double m_previouscolor;
+    double m_registeredcolor;
+    double m_colorbouncecount;
+    double m_colorregisteredcount[4];
     bool m_stop;
-    int m_colorregistertimes;
-    int m_registeredcolor;
     
 };
 
