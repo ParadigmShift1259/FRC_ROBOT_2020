@@ -80,21 +80,21 @@ void Turret::Init()
      */
 
     m_flywheelmotor = new TalonSRX(0);
-    m_flywheelmotor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, TUR_TIMEOUT_MS);
+    m_flywheelmotor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, TIMEOUT_MS);
     m_flywheelmotor->SetSensorPhase(true);
     m_flywheelmotor->SetInverted(true);
 
 
     /* set the peak and nominal outputs */
-    m_flywheelmotor->ConfigNominalOutputForward(m_flywheelPIDvals[5], TUR_TIMEOUT_MS);
-    m_flywheelmotor->ConfigNominalOutputReverse(-1 * m_flywheelPIDvals[5], TUR_TIMEOUT_MS);
-    m_flywheelmotor->ConfigPeakOutputForward(m_flywheelPIDvals[6], TUR_TIMEOUT_MS);
-    m_flywheelmotor->ConfigPeakOutputReverse(-1 * m_flywheelPIDvals[6], TUR_TIMEOUT_MS);
+    m_flywheelmotor->ConfigNominalOutputForward(m_flywheelPIDvals[5], TIMEOUT_MS);
+    m_flywheelmotor->ConfigNominalOutputReverse(-1 * m_flywheelPIDvals[5], TIMEOUT_MS);
+    m_flywheelmotor->ConfigPeakOutputForward(m_flywheelPIDvals[6], TIMEOUT_MS);
+    m_flywheelmotor->ConfigPeakOutputReverse(-1 * m_flywheelPIDvals[6], TIMEOUT_MS);
     /* set closed loop gains in slot0 */
-    m_flywheelmotor->Config_kP(0, m_flywheelPIDvals[0], TUR_TIMEOUT_MS);
-    m_flywheelmotor->Config_kI(0, m_flywheelPIDvals[1], TUR_TIMEOUT_MS);
-    m_flywheelmotor->Config_kD(0, m_flywheelPIDvals[2], TUR_TIMEOUT_MS);
-    m_flywheelmotor->Config_kF(0, m_flywheelPIDvals[3], TUR_TIMEOUT_MS);
+    m_flywheelmotor->Config_kP(0, m_flywheelPIDvals[0], TIMEOUT_MS);
+    m_flywheelmotor->Config_kI(0, m_flywheelPIDvals[1], TIMEOUT_MS);
+    m_flywheelmotor->Config_kD(0, m_flywheelPIDvals[2], TIMEOUT_MS);
+    m_flywheelmotor->Config_kF(0, m_flywheelPIDvals[3], TIMEOUT_MS);
     m_flywheelmotor->SetNeutralMode(NeutralMode::Coast);
 
     //m_pigeon = new PigeonIMU(0);
@@ -132,17 +132,17 @@ void Turret::Loop()
     double RPMScaling = SmartDashboard::GetNumber("TU7_RPMScaling", 100);
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
-    if((p != m_flywheelPIDvals[0])) { m_flywheelmotor->Config_kP(0, p, TUR_TIMEOUT_MS); m_flywheelPIDvals[0] = p; }
-    if((i != m_flywheelPIDvals[1])) { m_flywheelmotor->Config_kI(0, i, TUR_TIMEOUT_MS); m_flywheelPIDvals[1] = i; }
-    if((d != m_flywheelPIDvals[2])) { m_flywheelmotor->Config_kD(0, d, TUR_TIMEOUT_MS); m_flywheelPIDvals[2] = d; }
+    if((p != m_flywheelPIDvals[0])) { m_flywheelmotor->Config_kP(0, p, TIMEOUT_MS); m_flywheelPIDvals[0] = p; }
+    if((i != m_flywheelPIDvals[1])) { m_flywheelmotor->Config_kI(0, i, TIMEOUT_MS); m_flywheelPIDvals[1] = i; }
+    if((d != m_flywheelPIDvals[2])) { m_flywheelmotor->Config_kD(0, d, TIMEOUT_MS); m_flywheelPIDvals[2] = d; }
     //if((iz != m_flywheelPIDvals[3])) { m_flywheelPID->SetIZone(iz); m_flywheelPIDvals[3] = iz; }
-    if((ff != m_flywheelPIDvals[3])) { m_flywheelmotor->Config_kF(0, ff, TUR_TIMEOUT_MS); m_flywheelPIDvals[3] = ff; }
+    if((ff != m_flywheelPIDvals[3])) { m_flywheelmotor->Config_kF(0, ff, TIMEOUT_MS); m_flywheelPIDvals[3] = ff; }
     if((nominal != m_flywheelPIDvals[5]) || (peak != m_flywheelPIDvals[6])) 
     { 
-        m_flywheelmotor->ConfigNominalOutputForward(nominal, TUR_TIMEOUT_MS);
-        m_flywheelmotor->ConfigNominalOutputReverse(-1 * nominal, TUR_TIMEOUT_MS);
-        m_flywheelmotor->ConfigPeakOutputForward(peak, TUR_TIMEOUT_MS);
-        m_flywheelmotor->ConfigPeakOutputReverse(-1 * peak, TUR_TIMEOUT_MS);
+        m_flywheelmotor->ConfigNominalOutputForward(nominal, TIMEOUT_MS);
+        m_flywheelmotor->ConfigNominalOutputReverse(-1 * nominal, TIMEOUT_MS);
+        m_flywheelmotor->ConfigPeakOutputForward(peak, TIMEOUT_MS);
+        m_flywheelmotor->ConfigPeakOutputReverse(-1 * peak, TIMEOUT_MS);
         m_flywheelPIDvals[5] = nominal; m_flywheelPIDvals[6] = peak; 
     }
 

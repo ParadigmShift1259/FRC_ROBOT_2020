@@ -38,6 +38,7 @@ public:
     void Stop();
     
 protected:
+    void ControlPanelStates();
     int GetColor();
     bool SensorSanityCheck();
 
@@ -51,14 +52,18 @@ private:
 
     ColorMatch m_colormatcher;
     double m_confidence;
-    
-    double m_spinpower;
+
     double m_currentcolor;
     double m_previouscolor;
     double m_registeredcolor;
     double m_colorbouncecount;
     double m_colorregisteredcount[4];
     bool m_stop;
+
+    double m_targetcolor;
+
+    double m_spinnerPIDvals[7];
+    double m_spinnersetpoint;
     
 };
 
