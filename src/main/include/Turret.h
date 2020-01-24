@@ -53,6 +53,7 @@ protected:
     void FireModes();
     // Takes the distance from the target and returns the hood angle and flywheel speed
     void CalculateHoodFlywheel(double distance, double &hoodangle, double &flywheelspeed);
+    void RampUpSetpoint();
 
 private:
     OperatorInputs *m_inputs;
@@ -66,6 +67,8 @@ private:
     // P, I, D, FF, Iz, nominal, peak
     double m_flywheelPIDvals[7];
     double m_flywheelsetpoint;
+    double m_flywheelrampedsetpoint;
+    bool m_flywheelsetpointreached;
 
     //TalonSRX *m_hoodmotor;
     //TalonSRX *m_turretmotor;

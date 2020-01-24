@@ -31,6 +31,8 @@ Turret::Turret(OperatorInputs *inputs)
     m_flywheelPIDvals[6] = 0.5;
     
     m_flywheelsetpoint = 0;
+    m_flywheelrampedsetpoint = 0;
+    m_flywheelsetpointreached = false;
 
     //m_pigeon = nullptr;
     //m_heading = 0;
@@ -158,10 +160,12 @@ void Turret::Loop()
     else if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0) && (m_flywheelsetpoint >= 10))
         m_flywheelsetpoint -= 10;
 
+    // Testing function that doesn't have much yet
+    RampUpSetpoint();
 
     m_flywheelPID->SetReference(m_flywheelsetpoint, ControlType::kVelocity); 
 
-    SmartDashboard::PutNumber("SetPoint", m_flywheelsetpoint);
+    SmartDashboard::PutNumber("Setpoint", m_flywheelsetpoint);
     SmartDashboard::PutNumber("Encoder_Position in Native units", m_flywheelencoder->GetPosition());
     SmartDashboard::PutNumber("Encoder_Velocity in Native Speed", m_flywheelencoder->GetVelocity());
 
@@ -209,4 +213,31 @@ void Turret::FireModes()
 void Turret::CalculateHoodFlywheel(double distance, double &hoodangle, double &flywheelspeed)
 {
 
+}
+
+
+void Turret::RampUpSetpoint()
+{
+    m_flywheelrampedsetpoint = m_flywheelsetpoint;
+    SmartDashboard::PutNumber("Error", m_flywheelrampedsetpoint - m_flywheelencoder->GetVelocity());
+    /*
+    Issues with code before implementation:
+    - Only ramps upwards
+    - Does not set m_flywheelsetpointreached to false during correct cases
+
+    if ((m_flywheelsetpoint > m_flywheelrampedsetpoint) && (m_flywheelrampedsetpoint - m_flywheelencoder->GetVelocity() > 25))
+    {
+        m_flywheelrampedsetpoint += TUR_RAMPING_RATE
+
+        if (m_flywheelrampedsetpoint > m_flywheelsetpoint)
+            m_flywheelrampedsetpoint = m_flywheelsetpoint;
+    }
+    else
+    if (m_flywheelsetpoint == m_flywheelrampedsetpoint)
+    {
+        m_flywheelsetpointreached = true;
+    }
+
+    m_flywheelmotor->SetReference(m_flywheelrampedsetpoint, ControlType::kVelocity);
+    */
 }
