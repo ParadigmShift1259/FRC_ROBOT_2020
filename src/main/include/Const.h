@@ -63,7 +63,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 //   Drivetrain
-#define DT_ENABLED 0
+#define DT_ENABLED 0            // set to 1 to enable drivetrain
 //   Direction
 #define DT_DEFAULT_DIRECTION -1.0
 //   Inverts
@@ -94,8 +94,6 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define MOTOR_SCALING_RIGHT 1.0
 #define LOWSPEED_MODIFIER_X 0.50
 #define LOWSPEED_MODIFIER_Y 0.50
-
-
 //   Encoders
 #define ENC_PRESENT_1 true
 #define ENC_TYPE_1 FeedbackDevice::IntegratedSensor
@@ -108,7 +106,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 //   Compressor
-#define PCM_ENABLED 0
+#define PCM_ENABLED 0            // set to 1 to enable compressor
 #define PCM_COMPRESSOR_SOLENOID ENABLED(PCM_ENABLED, 0)
 #define CAN_POWER_DISTRIBUTION_PANEL 0
 #define PNE_CURRENT_DRAW 80
@@ -116,10 +114,23 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define PNE_WAITTIME 1.0
 
 
+// Gyro
+#define GRY_ENABLED 0            // set to 1 to enable gyro
+#define CAN_GYRO1 ENABLED(GRY_ENABLED, 0)
+#define CAN_GYRO2 -1
+
+
 //  TalonSRX Constants
 #define TIMEOUT_MS 30
 #define ENCODER_TICKS_PER_REV 4096.00
 #define MINUTES_TO_HUNDRED_MS 0.00166666
+
+
+// Autonomous
+//   PID Constants
+#define AUT_P 0.05              // 0.1
+#define AUT_I 0.0001            // 0.0003
+#define AUT_D 0.11              // 0.11
 
 
 #endif /* SRC_CONST_H_ */

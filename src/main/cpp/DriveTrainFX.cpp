@@ -182,7 +182,7 @@ void DriveTrainFX::Init(DriveMode mode)
 	supplylimit.triggerThresholdCurrent = MOTOR_SUPPLY_THRESHOLD_CURRENT;
 	supplylimit.triggerThresholdTime = MOTOR_SUPPLY_THRESHOLD_TIME;
 	 
- 	if (m_left1 != nullptr)
+	if (m_left1 != nullptr)
 	{
 		// configure encoder
 		if (ENC_PRESENT_1)

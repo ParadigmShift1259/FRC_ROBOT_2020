@@ -22,8 +22,8 @@ class Pneumatics
 public:
 	enum Stage {kRun, kWait};
 
-    Pneumatics();
-    ~Pneumatics();
+	Pneumatics();
+	~Pneumatics();
 	void Init();
 	void Loop();
 	void Stop();
