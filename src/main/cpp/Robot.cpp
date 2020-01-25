@@ -18,7 +18,8 @@ bool Debug = true;
 void Robot::RobotInit()
 {
     m_operatorinputs = new OperatorInputs();
-    //m_drivetrain = new DriveTrainFX(m_operatorinputs);
+    m_drivetrain = new DriveTrainFX(m_operatorinputs);
+	m_pneumatics = new Pneumatics();
     //m_turret = new Turret(m_operatorinputs);
     m_controlpanel = new ControlPanel(m_operatorinputs);
 }
@@ -51,7 +52,8 @@ void Robot::TestPeriodic()
 
 void Robot::TeleopInit()
 {
-    //m_drivetrain->Init();
+    m_drivetrain->Init();
+    m_pneumatics->Init();
     //m_turret->Init();
     m_controlpanel->Init();
 }
@@ -59,7 +61,8 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
-    //m_drivetrain->Loop();
+    m_drivetrain->Loop();
+    m_pneumatics->Loop();
     //m_turret->Loop();
     m_controlpanel->Loop();
 }
@@ -67,7 +70,8 @@ void Robot::TeleopPeriodic()
 
 void Robot::DisabledInit()
 {
-    //m_drivetrain->Stop();
+    m_drivetrain->Stop();
+    m_pneumatics->Stop();
     //m_turret->Stop();
     m_controlpanel->Stop();
 }

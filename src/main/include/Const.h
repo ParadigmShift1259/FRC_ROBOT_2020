@@ -12,7 +12,6 @@
 extern bool Debug;                  // Set to true to enable additional debugging
 
 
-
 // OperatorInputs
 //   Controllers
 #define INP_DUAL 1
@@ -40,6 +39,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define LEFT_TRIGGER_MAX  1.0
 #define RIGHT_TRIGGER_MIN  0.5
 #define RIGHT_TRIGGER_MAX  1.0
+//   Joystick
 #define JOYSTICK_X_AXIS  0
 #define JOYSTICK_Y_AXIS  1
 #define AXIS0_LEFT_MIN -1.0
@@ -56,18 +56,26 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define DEADZONE_Z  0.18
 
 
+//   Enabled macro
+//   First parameter is an enabled flag 0 or 1
+//   Second parameter is the value to return if enabled
+#define ENABLED(a, b) ((a) == 0 ? (-1) : (b))
+
+
+//   Drivetrain
+#define DT_ENABLED 0
 //   Direction
 #define DT_DEFAULT_DIRECTION -1.0
 //   Inverts
 #define INVERT_LEFT 1.0
 #define INVERT_RIGHT -1.0		// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
 //   CAN Ports
-#define CAN_LEFT_PORT_1 1
-#define CAN_LEFT_PORT_2 2
-#define CAN_LEFT_PORT_3 3
-#define CAN_RIGHT_PORT_1 4
-#define CAN_RIGHT_PORT_2 5
-#define CAN_RIGHT_PORT_3 6
+#define CAN_LEFT_PORT_1 ENABLED(DT_ENABLED, 1)
+#define CAN_LEFT_PORT_2 ENABLED(DT_ENABLED, 2)
+#define CAN_LEFT_PORT_3 ENABLED(DT_ENABLED, 3)
+#define CAN_RIGHT_PORT_1 ENABLED(DT_ENABLED, 4)
+#define CAN_RIGHT_PORT_2 ENABLED(DT_ENABLED, 5)
+#define CAN_RIGHT_PORT_3 ENABLED(DT_ENABLED, 6)
 //   Current limiting
 #define MOTOR_SUPPLY_LIMIT_ENABLE true
 #define MOTOR_SUPPLY_CURRENT_LIMIT 20
@@ -87,6 +95,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define LOWSPEED_MODIFIER_X 0.50
 #define LOWSPEED_MODIFIER_Y 0.50
 
+
 //   Encoders
 #define ENC_PRESENT_1 true
 #define ENC_TYPE_1 FeedbackDevice::IntegratedSensor
@@ -96,6 +105,16 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define CODES_PER_INCH 73.317
 #define WHEEL_DIAMETER 6.0
 #define WHEEL_TRACK 23.50
+
+
+//   Compressor
+#define PCM_ENABLED 0
+#define PCM_COMPRESSOR_SOLENOID ENABLED(PCM_ENABLED, 0)
+#define CAN_POWER_DISTRIBUTION_PANEL 0
+#define PNE_CURRENT_DRAW 80
+#define PNE_VOLTAGE_DROP 10
+#define PNE_WAITTIME 1.0
+
 
 //  TalonSRX Constants
 #define TIMEOUT_MS 30
