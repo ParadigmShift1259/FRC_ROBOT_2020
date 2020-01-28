@@ -84,8 +84,6 @@ DriveTrainFX::~DriveTrainFX()
 	if ((m_right3 != nullptr) && m_right3owner)
 		delete m_right3;
 	delete m_timerramp;
-	if (m_gyro != nullptr)
-		delete m_gyro;
 }
 
 
@@ -282,15 +280,16 @@ void DriveTrainFX::Init(DriveMode mode)
 	m_prevleftdistance = 0;
 	m_prevrightdistance = 0;
 
-	m_gyro = new DualGyro(0);
+	m_gyro = new PigeonIMU(0);
 	m_pose = new Pose2d();
-	m_odometry = new DifferentialDriveOdometry(m_gyro->GetHeading());
-	m_feedforward = new SimpleMotorFeedfoward(0, 0, 0);		// kS, kV, kA
-	m_kinematics = new DifferentialDriveKinematics(10);		// Wheel track (Distance from left wheel to the right)
-	m_wheelspeeds->left = GetLeftVelocity(0);
-	m_wheelspeeds->right = GetRightVelocity(0);
-	m_leftPID = new PIDController(0, 0, 0);
-	m_rightPID = new PIDController(0, 0, 0);				// P, I, D
+	m_odometry = new DifferentialDriveOdometry(GetHeading());
+	
+	m_feedforward = new SimpleMotorFeedforward<units::meters>(0_V, 0 * 1_V * 1_s / 1_m, 0 * 1_V * 1_s * 1_s / 1_m);		// kS, kV, kA
+	m_kinematics = new DifferentialDriveKinematics(10_m);		// Wheel track (Distance from left wheel to the right)
+	m_wheelspeeds->left = GetLeftVelocity(0) * 1_mps;
+	m_wheelspeeds->right = GetRightVelocity(0) * 1_mps;
+	m_leftPID = new frc2::PIDController(0, 0, 0);
+	m_rightPID = new frc2::PIDController(0, 0, 0);				// P, I, D
 }
 
 
@@ -609,44 +608,53 @@ double DriveTrainFX::GetRightVelocity(int encoder)
 }
 
 
-Pose2d GetPose()
+Rotation2d DriveTrainFX::GetHeading()
 {
-	return m_pose;
+	// need to fix the conversions
+	double ypr[3] = {0, 0, 0};
+	m_gyro->GetYawPitchRoll(ypr);
+	return Rotation2d(units::radian_t{ypr[0]});
 }
 
 
-SimpleMotorFeedforward GetFeedfoward()
+Pose2d DriveTrainFX::GetPose()
 {
-	return m_feedforward;
+	return *m_pose;
 }
 
 
-DifferentialDriveKinematics GetKinematics()
+SimpleMotorFeedforward<units::meters> DriveTrainFX::GetFeedforward()
 {
-	return m_kinematics;
+	return *m_feedforward;
 }
 
 
-DifferentialDriveWheelSpeeds GetWheelSpeeds()
+DifferentialDriveKinematics DriveTrainFX::GetKinematics()
 {
-	return m_wheelspeeds;
+	return *m_kinematics;
 }
 
 
-PIDController GetLeftPIDController()
+DifferentialDriveWheelSpeeds DriveTrainFX::GetWheelSpeeds()
 {
-	return m_leftPID;
+	return *m_wheelspeeds;
 }
 
 
-PIDController GetRightPIDController()
+frc2::PIDController DriveTrainFX::GetLeftPIDController()
 {
-	return m_rightPID;
+	return *m_leftPID;
+}
+
+
+frc2::PIDController DriveTrainFX::GetRightPIDController()
+{
+	return *m_rightPID;
 }
 
 
 
-void SetOutputVolts(double leftvolts, double rightvolts)
+void DriveTrainFX::SetOutputVolts(double leftvolts, double rightvolts)
 {
 
 }

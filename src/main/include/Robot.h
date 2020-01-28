@@ -5,9 +5,7 @@
 #include <frc\TimedRobot.h>
 #include "Const.h"
 #include "OperatorInputs.h"
-#include "Pneumatics.h"
-#include "Turret.h"
-#include "ControlPanel.h"
+
 
 
 using namespace frc;
@@ -28,11 +26,7 @@ public:
 	virtual void DisabledPeriodic();
 
 protected:
-	Timer m_timer;
 	OperatorInputs *m_operatorinputs;
-	Pneumatics *m_pneumatics;
-	Turret *m_turret;
-	ControlPanel *m_controlpanel;
 };
 
 

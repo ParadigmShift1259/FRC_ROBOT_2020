@@ -15,7 +15,6 @@
 #include "OperatorInputs.h"
 
 // Ramsete Controller Implementation
-#include "Gyro.h"
 #include <frc\controller\PIDController.h>
 #include <frc\controller\SimpleMotorFeedforward.h>
 #include <frc\geometry\Pose2d.h>
@@ -23,6 +22,7 @@
 #include <frc\kinematics\DifferentialDriveOdometry.h>
 #include <frc\kinematics\DifferentialDriveKinematics.h>
 #include <frc\kinematics\DifferentialDriveWheelSpeeds.h>
+#include <units/units.h>
 
 
 
@@ -60,12 +60,13 @@ public:
 	double GetLeftVelocity(int encoder = 0);
 	double GetRightVelocity(int encoder = 0);
 
+	Rotation2d GetHeading();
 	Pose2d GetPose();
-	SimpleMotorFeedforward GetFeedfoward();
+	SimpleMotorFeedforward<units::meters> GetFeedforward();
 	DifferentialDriveKinematics GetKinematics();
 	DifferentialDriveWheelSpeeds GetWheelSpeeds();
-	PIDController GetLeftPIDController();
-	PIDController GetRightPIDController();
+	frc2::PIDController GetLeftPIDController();
+	frc2::PIDController GetRightPIDController();
 	void SetOutputVolts(double leftvolts, double rightvolts);
 
 
@@ -114,14 +115,14 @@ protected:
 	double m_previousy;
 	bool m_lowspeedmode;
 
-	DualGyro *m_gyro;
+	PigeonIMU *m_gyro;
 	Pose2d *m_pose;
 	DifferentialDriveOdometry *m_odometry;
-	SimpleMotorFeedforward *m_feedforward;
+	SimpleMotorFeedforward<units::meters> *m_feedforward;
 	DifferentialDriveKinematics *m_kinematics;
 	DifferentialDriveWheelSpeeds *m_wheelspeeds;
-	PIDController *m_leftPID;
-	PIDController *m_rightPID;
+	frc2::PIDController *m_leftPID;
+	frc2::PIDController *m_rightPID;
 };
 
 
