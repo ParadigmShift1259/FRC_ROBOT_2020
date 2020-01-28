@@ -5,7 +5,6 @@
 #include <frc\TimedRobot.h>
 #include "Const.h"
 #include "OperatorInputs.h"
-#include "GyroDrive.h"
 #include "Pneumatics.h"
 #include "Turret.h"
 #include "ControlPanel.h"
@@ -31,7 +30,6 @@ public:
 protected:
 	Timer m_timer;
 	OperatorInputs *m_operatorinputs;
-	GyroDrive *m_gyrodrive;
 	Pneumatics *m_pneumatics;
 	Turret *m_turret;
 	ControlPanel *m_controlpanel;

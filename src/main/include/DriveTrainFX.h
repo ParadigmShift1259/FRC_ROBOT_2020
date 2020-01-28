@@ -14,6 +14,17 @@
 #include <ctre\Phoenix.h>
 #include "OperatorInputs.h"
 
+// Ramsete Controller Implementation
+#include "Gyro.h"
+#include <frc\controller\PIDController.h>
+#include <frc\controller\SimpleMotorFeedforward.h>
+#include <frc\geometry\Pose2d.h>
+#include <frc\geometry\Rotation2d.h>
+#include <frc\kinematics\DifferentialDriveOdometry.h>
+#include <frc\kinematics\DifferentialDriveKinematics.h>
+#include <frc\kinematics\DifferentialDriveWheelSpeeds.h>
+
+
 
 using namespace frc;
 
@@ -48,20 +59,15 @@ public:
 	double GetRightPosition(int encoder = 0);
 	double GetLeftVelocity(int encoder = 0);
 	double GetRightVelocity(int encoder = 0);
-	double GetMaxVelocity(int encoder = 0);
-	double GetLeftDistance(int encoder = 0);
-	double GetRightDistance(int encoder = 0);
-	double GetMaxDistance(int encoder = 0);
-	double GetAverageMaxDistance(int encoder = 0);
-	void ResetDeltaDistance(int encoder = 0);
-	double GetMaxDeltaDistance(int encoder = 0);
 
-	WPI_TalonFX *Left1() {return m_left1;}
-	WPI_TalonFX *Right1() {return m_right1;}
-	WPI_TalonFX *Left2() {return m_left2;}
-	WPI_TalonFX *RIght2() {return m_right2;}
-	WPI_TalonFX *Left3() {return m_left3;}
-	WPI_TalonFX *RIght3() {return m_right3;}
+	Pose2d GetPose();
+	SimpleMotorFeedforward GetFeedfoward();
+	DifferentialDriveKinematics GetKinematics();
+	DifferentialDriveWheelSpeeds GetWheelSpeeds();
+	PIDController GetLeftPIDController();
+	PIDController GetRightPIDController();
+	void SetOutputVolts(double leftvolts, double rightvolts);
+
 
 protected:
 	DriveMode m_mode;
@@ -107,6 +113,15 @@ protected:
 	double m_previousx;
 	double m_previousy;
 	bool m_lowspeedmode;
+
+	DualGyro *m_gyro;
+	Pose2d *m_pose;
+	DifferentialDriveOdometry *m_odometry;
+	SimpleMotorFeedforward *m_feedforward;
+	DifferentialDriveKinematics *m_kinematics;
+	DifferentialDriveWheelSpeeds *m_wheelspeeds;
+	PIDController *m_leftPID;
+	PIDController *m_rightPID;
 };
 
 

@@ -126,11 +126,4 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define MINUTES_TO_HUNDRED_MS 0.00166666
 
 
-// Autonomous
-//   PID Constants
-#define AUT_P 0.05              // 0.1
-#define AUT_I 0.0001            // 0.0003
-#define AUT_D 0.11              // 0.11
-
-
 #endif /* SRC_CONST_H_ */

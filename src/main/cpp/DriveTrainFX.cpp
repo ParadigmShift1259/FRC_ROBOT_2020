@@ -64,6 +64,8 @@ DriveTrainFX::DriveTrainFX(OperatorInputs *inputs, WPI_TalonFX *left1, WPI_Talon
 
 	m_prevleftdistance = 0;
 	m_prevrightdistance = 0;
+
+	m_gyro = nullptr;
 }
 
 
@@ -82,6 +84,8 @@ DriveTrainFX::~DriveTrainFX()
 	if ((m_right3 != nullptr) && m_right3owner)
 		delete m_right3;
 	delete m_timerramp;
+	if (m_gyro != nullptr)
+		delete m_gyro;
 }
 
 
@@ -277,6 +281,16 @@ void DriveTrainFX::Init(DriveMode mode)
 
 	m_prevleftdistance = 0;
 	m_prevrightdistance = 0;
+
+	m_gyro = new DualGyro(0);
+	m_pose = new Pose2d();
+	m_odometry = new DifferentialDriveOdometry(m_gyro->GetHeading());
+	m_feedforward = new SimpleMotorFeedfoward(0, 0, 0);		// kS, kV, kA
+	m_kinematics = new DifferentialDriveKinematics(10);		// Wheel track (Distance from left wheel to the right)
+	m_wheelspeeds->left = GetLeftVelocity(0);
+	m_wheelspeeds->right = GetRightVelocity(0);
+	m_leftPID = new PIDController(0, 0, 0);
+	m_rightPID = new PIDController(0, 0, 0);				// P, I, D
 }
 
 
@@ -482,6 +496,7 @@ double DriveTrainFX::Ramp(double previous, double desired)
 			rampmax = RAMPING_RATE_DOWN_MAX / m_battery;
 			rampmin = RAMPING_RATE_DOWN_MIN / m_battery;
 		}
+
 		if (delta < rampmin)
 			newpow = desired;
 		else
@@ -493,35 +508,6 @@ double DriveTrainFX::Ramp(double previous, double desired)
 	}
 	return newpow;
 }
-
-/*
-// ramp the power
-double DriveTrainFX::Ramp(double previous, double desired)
-{
-	// averages battery voltage over time to reduce affects of brownouts
-	double battery = DriverStation::GetInstance().GetBatteryVoltage();
-	m_battery = (m_battery + battery) / 2;
-
-	// return value defaults to previous
-	double newpow = previous;
-
-	bool timepassed = m_timerramp->HasPeriodPassed(RAMPING_RATE_PERIOD);
-	if (timepassed)
-	{
-		double delta = abs(desired - previous);
-
-		if (delta <= (RAMPING_RATE_UP_MIN / m_battery))
-			newpow = desired;
-		else
-		if (previous < desired)
-			newpow += max((delta * (RAMPING_RATE_UP_MAX / m_battery)), (RAMPING_RATE_UP_MIN / m_battery));
-		else
-		if (previous > desired)
-			newpow -= max((delta * (RAMPING_RATE_UP_MAX / m_battery)), (RAMPING_RATE_UP_MIN / m_battery));
-	}
-	return newpow;
-}
-*/
 
 // return left power value
 double DriveTrainFX::LeftMotor(double &maxpower)
@@ -623,56 +609,44 @@ double DriveTrainFX::GetRightVelocity(int encoder)
 }
 
 
-double DriveTrainFX::GetLeftDistance(int encoder)
+Pose2d GetPose()
 {
-	double distance = GetLeftPosition(encoder);
-	distance = (distance / CODES_PER_REV) * WHEEL_DIAMETER * 3.1415926535;
-	return distance;
+	return m_pose;
 }
 
 
-double DriveTrainFX::GetRightDistance(int encoder)
+SimpleMotorFeedforward GetFeedfoward()
 {
-	double distance = GetRightPosition(encoder);
-	distance = (distance / CODES_PER_REV) * WHEEL_DIAMETER * 3.1415926535;
-	return distance;
+	return m_feedforward;
 }
 
 
-double DriveTrainFX::GetMaxDistance(int encoder)
+DifferentialDriveKinematics GetKinematics()
 {
-	double maxleft = GetLeftDistance(encoder);
-	double maxright = GetRightDistance(encoder);
-	return abs(maxleft) > abs(maxright) ? -maxleft : maxright;
+	return m_kinematics;
 }
 
 
-double DriveTrainFX::GetAverageMaxDistance(int encoder)
+DifferentialDriveWheelSpeeds GetWheelSpeeds()
 {
-	double maxleft = GetLeftDistance(encoder);
-	double maxright = GetRightDistance(encoder);
-	return (abs(maxleft) + abs(maxright)) / 2;
+	return m_wheelspeeds;
 }
 
 
-double DriveTrainFX::GetMaxVelocity(int encoder)
+PIDController GetLeftPIDController()
 {
-	double maxleft = GetLeftVelocity(encoder);
-	double maxright = GetRightVelocity(encoder);
-	return abs(abs(maxleft) > abs(maxright) ? -maxleft : maxright);
+	return m_leftPID;
 }
 
 
-void DriveTrainFX::ResetDeltaDistance(int encoder)
+PIDController GetRightPIDController()
 {
-	m_prevleftdistance = GetLeftDistance(encoder);
-	m_prevrightdistance = GetRightDistance(encoder);
+	return m_rightPID;
 }
 
 
-double DriveTrainFX::GetMaxDeltaDistance(int encoder)
+
+void SetOutputVolts(double leftvolts, double rightvolts)
 {
-	double maxleft = GetLeftDistance(encoder) - m_prevleftdistance;
-	double maxright = GetRightDistance(encoder) - m_prevrightdistance;
-	return abs(maxleft) > abs(maxright) ? -maxleft : maxright;
+
 }
