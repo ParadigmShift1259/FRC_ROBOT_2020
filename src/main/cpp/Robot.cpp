@@ -45,7 +45,7 @@ void Robot::TeleopPeriodic()
 
 void Robot::DisabledInit()
 {
-    m_turret->Stop();
+    //m_turret->Stop();
 }
 
 

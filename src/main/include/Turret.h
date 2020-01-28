@@ -41,6 +41,8 @@ public:
      */
     enum FireMode {kHoldFire, kFireWhenReady, kManualFire, kOff};
     
+    enum RampState {kMaintain, kIncrease, kDecrease};
+
     // Will add Drivetrain, Intake, PID, and Vision classes as pass pointers
     Turret(OperatorInputs *inputs);
     ~Turret();
@@ -66,9 +68,11 @@ private:
     CANEncoder *m_flywheelencoder;
     // P, I, D, FF, Iz, nominal, peak
     double m_flywheelPIDvals[7];
+    double m_PIDslot;
     double m_flywheelsetpoint;
     double m_flywheelrampedsetpoint;
     bool m_flywheelsetpointreached;
+    double m_initialfeedforward;
 
     //TalonSRX *m_hoodmotor;
     //TalonSRX *m_turretmotor;
@@ -78,6 +82,7 @@ private:
     //double m_turretPIDvals[3];
     TurretState m_turretstate;
     FireMode m_firemode;
+    RampState m_rampstate;
 };
 
 
