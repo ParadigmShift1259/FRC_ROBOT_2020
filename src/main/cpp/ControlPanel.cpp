@@ -7,6 +7,7 @@
 
 #include "ControlPanel.h"
 #include "Const.h"
+#include <frc/smartdashboard/SmartDashboard.h>
 
 
 using namespace std;
@@ -20,10 +21,15 @@ static constexpr Color kBlueTarget = Color(0.084595, 0.361450, 0.553833);
 
 ControlPanel::ControlPanel(OperatorInputs *inputs)
 {
-	m_inputs = inputs;
 	static constexpr auto i2cPort = I2C::Port::kOnboard;
+
+	m_inputs = inputs;
+
+	m_spinner = nullptr;
+	if (CPL_MOTOR != -1)
+		m_spinner = new TalonSRX(CPL_MOTOR);
+		
 	m_colorsensor = new ColorSensorV3(i2cPort);
-	m_spinner = new TalonSRX(0);
 
 	m_spinnerstate = kOff;
 
@@ -64,6 +70,8 @@ ControlPanel::~ControlPanel()
 
 void ControlPanel::Init()
 {
+	if (m_spinner == nullptr)
+		return;
 
 	m_spinnerstate = kBlindSpin;
 
@@ -120,6 +128,9 @@ void ControlPanel::Init()
 
 void ControlPanel::Loop()
 {
+	if (m_spinner == nullptr)
+		return;
+
 	// read PID coefficients from SmartDashboard
 	double p = SmartDashboard::GetNumber("CPM1_P Gain", 0);
 	double i = SmartDashboard::GetNumber("CPM2_I Gain", 0);
@@ -130,12 +141,12 @@ void ControlPanel::Loop()
 	double nominal = SmartDashboard::GetNumber("CPM6_Min Output", 0);
 
 	// if PID coefficients on SmartDashboard have changed, write new values to controller
-	if((p != m_spinnerPIDvals[0])) { m_spinner->Config_kP(0, p, TIMEOUT_MS); m_spinnerPIDvals[0] = p; }
-	if((i != m_spinnerPIDvals[1])) { m_spinner->Config_kI(0, i, TIMEOUT_MS); m_spinnerPIDvals[1] = i; }
-	if((d != m_spinnerPIDvals[2])) { m_spinner->Config_kD(0, d, TIMEOUT_MS); m_spinnerPIDvals[2] = d; }
-	//if((iz != m_spinnerPIDvals[3])) { m_spinnerPID->SetIZone(iz); m_spinnerPIDvals[3] = iz; }
-	if((ff != m_spinnerPIDvals[3])) { m_spinner->Config_kF(0, ff, TIMEOUT_MS); m_spinnerPIDvals[3] = ff; }
-	if((nominal != m_spinnerPIDvals[5]) || (peak != m_spinnerPIDvals[6])) 
+	if ((p != m_spinnerPIDvals[0])) { m_spinner->Config_kP(0, p, TIMEOUT_MS); m_spinnerPIDvals[0] = p; }
+	if ((i != m_spinnerPIDvals[1])) { m_spinner->Config_kI(0, i, TIMEOUT_MS); m_spinnerPIDvals[1] = i; }
+	if ((d != m_spinnerPIDvals[2])) { m_spinner->Config_kD(0, d, TIMEOUT_MS); m_spinnerPIDvals[2] = d; }
+	//if ((iz != m_spinnerPIDvals[3])) { m_spinnerPID->SetIZone(iz); m_spinnerPIDvals[3] = iz; }
+	if ((ff != m_spinnerPIDvals[3])) { m_spinner->Config_kF(0, ff, TIMEOUT_MS); m_spinnerPIDvals[3] = ff; }
+	if ((nominal != m_spinnerPIDvals[5]) || (peak != m_spinnerPIDvals[6])) 
 	{ 
 		m_spinner->ConfigNominalOutputForward(nominal, TIMEOUT_MS);
 		m_spinner->ConfigNominalOutputReverse(-1 * nominal, TIMEOUT_MS);
@@ -156,6 +167,9 @@ void ControlPanel::Loop()
 
 void ControlPanel::Stop()
 {
+	if (m_spinner == nullptr)
+		return;
+
 	m_spinnerstate = kOff;
 	m_spinnersetpoint = 0;
 }
@@ -215,196 +229,195 @@ void ControlPanel::ControlPanelStates()
 	m_confidence = SmartDashboard::GetNumber("CPIN2_Confidence", 0);
 	m_targetcolor = SmartDashboard::GetNumber("CPIN3_TargetColor", 0);
 
-		switch (m_spinnerstate)
+	switch (m_spinnerstate)
 	{
-		case kOff:
-			m_spinner->Set(ControlMode::Velocity, 0);
-			break;
-		case kBlindSpin:
-			m_currentcolor = GetColor();
-	
-			// Start bounce counting if:
-			// Color is picked up twice
-			// Color is not the same color as the registered one already
-			// 
-			// Color must pass filter that checks for sensor inconsistencies
-			if (m_currentcolor == m_previouscolor && m_registeredcolor != m_currentcolor && SensorSanityCheck())
-			{
-				m_colorbouncecount++;
-			}
-			else if (SensorSanityCheck())
-			{
-				m_previouscolor = m_currentcolor;
-			}
-			// Once picked up twice, set and log the registered color and reset color bounce count
-			if (m_colorbouncecount >= 2)
-			{
-				if (m_currentcolor == 1)
-				{
-					SmartDashboard::PutString("CPVER1_TrueColor", "Yellow");
-					m_registeredcolor = 1;
-					m_colorregisteredcount[0]++;
-				}
-				else if (m_currentcolor == 2)
-				{
-					SmartDashboard::PutString("CPVER1_TrueColor", "Red");
-					m_registeredcolor = 2;
-					m_colorregisteredcount[1]++;
-				}
-				else if (m_currentcolor == 3)
-				{
-					SmartDashboard::PutString("CPVER1_TrueColor", "Green");
-					m_registeredcolor = 3;
-					m_colorregisteredcount[2]++;
-				}
-				else if (m_currentcolor == 4)
-				{
-					SmartDashboard::PutString("CPVER1_TrueColor", "Blue");
-					m_registeredcolor = 4;
-					m_colorregisteredcount[3]++;
-				}
-				m_previouscolor = m_currentcolor;
-				m_colorbouncecount = 0;          
-			}
+	case kOff:
+		m_spinner->Set(ControlMode::Velocity, 0);
+		break;
+	case kBlindSpin:
+		m_currentcolor = GetColor();
 
-			// If one color is registered enough times, stop spinning
-			if (m_colorregisteredcount[3] >= 7)
-				m_stop = true;
-				
-			// Once stopped, use A button to restart. If not, set the speed to spinpower
-			if (m_stop)
+		// Start bounce counting if:
+		// Color is picked up twice
+		// Color is not the same color as the registered one already
+		// 
+		// Color must pass filter that checks for sensor inconsistencies
+		if (m_currentcolor == m_previouscolor && m_registeredcolor != m_currentcolor && SensorSanityCheck())
+		{
+			m_colorbouncecount++;
+		}
+		else if (SensorSanityCheck())
+		{
+			m_previouscolor = m_currentcolor;
+		}
+		// Once picked up twice, set and log the registered color and reset color bounce count
+		if (m_colorbouncecount >= 2)
+		{
+			if (m_currentcolor == 1)
 			{
-				if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
-				{
-					m_stop = false;
-					m_colorregisteredcount[0] = 0;
-					m_colorregisteredcount[1] = 0;
-					m_colorregisteredcount[2] = 0;
-					m_colorregisteredcount[3] = 0;
-				}
-				m_spinner->Set(ControlMode::Velocity, 0);
+				SmartDashboard::PutString("CPVER1_TrueColor", "Yellow");
+				m_registeredcolor = 1;
+				m_colorregisteredcount[0]++;
 			}
-			else
+			else if (m_currentcolor == 2)
 			{
-				double targetVelocity_UnitsPer100ms = m_spinnersetpoint * ENCODER_TICKS_PER_REV * MINUTES_TO_HUNDRED_MS;
-				/* 500 RPM in either direction */
-				m_spinner->Set(ControlMode::Velocity, targetVelocity_UnitsPer100ms); 
+				SmartDashboard::PutString("CPVER1_TrueColor", "Red");
+				m_registeredcolor = 2;
+				m_colorregisteredcount[1]++;
 			}
+			else if (m_currentcolor == 3)
+			{
+				SmartDashboard::PutString("CPVER1_TrueColor", "Green");
+				m_registeredcolor = 3;
+				m_colorregisteredcount[2]++;
+			}
+			else if (m_currentcolor == 4)
+			{
+				SmartDashboard::PutString("CPVER1_TrueColor", "Blue");
+				m_registeredcolor = 4;
+				m_colorregisteredcount[3]++;
+			}
+			m_previouscolor = m_currentcolor;
+			m_colorbouncecount = 0;          
+		}
 
-			if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
-			{
-				m_colorregisteredcount[0] = 0;
-				m_colorregisteredcount[1] = 0;
-				m_colorregisteredcount[2] = 0;
-				m_colorregisteredcount[3] = 0;
-			}
-			break;
-	
-		case kColorSpin:
-			if (m_targetcolor == 0)
-				break;
+		// If one color is registered enough times, stop spinning
+		if (m_colorregisteredcount[3] >= 7)
+			m_stop = true;
 			
-			m_currentcolor = GetColor();
-
-			// Start bounce counting if:
-			// Color is picked up twice
-			// Color is not the same color as the registered one already
-			// 
-			// Color must pass filter that checks for sensor inconsistencies
-			if (m_currentcolor == m_previouscolor && m_registeredcolor != m_currentcolor && SensorSanityCheck())
+		// Once stopped, use A button to restart. If not, set the speed to spinpower
+		if (m_stop)
+		{
+			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
 			{
-				m_colorbouncecount++;
-			}
-			else if (SensorSanityCheck())
-			{
-				m_previouscolor = m_currentcolor;
-			}
-
-			// Once picked up twice, set and log the registered color and reset color bounce count
-			if (m_colorbouncecount >= 2)
-			{
-				if (m_currentcolor == 1)
-				{
-					SmartDashboard::PutString("CPVER1_TrueColor", "Yellow");
-					m_registeredcolor = 1;
-					m_colorregisteredcount[0]++;
-				}
-				else if (m_currentcolor == 2)
-				{
-					SmartDashboard::PutString("CPVER1_TrueColor", "Red");
-					m_registeredcolor = 2;
-					m_colorregisteredcount[1]++;
-				}
-				else if (m_currentcolor == 3)
-				{
-					SmartDashboard::PutString("CPVER1_TrueColor", "Green");
-					m_registeredcolor = 3;
-					m_colorregisteredcount[2]++;
-				}
-				else if (m_currentcolor == 4)
-				{
-					SmartDashboard::PutString("CPVER1_TrueColor", "Blue");
-					m_registeredcolor = 4;
-					m_colorregisteredcount[3]++;
-				}
-				m_previouscolor = m_currentcolor;
-				m_colorbouncecount = 0;          
-			}
-
-			double targetVelocity_UnitsPer100ms = m_spinnersetpoint * ENCODER_TICKS_PER_REV * MINUTES_TO_HUNDRED_MS;
-
-			// Once stopped, use A button to restart. If not, set the speed to spinpower
-			if (m_stop)
-			{
-				if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
-				{
-					m_stop = false;
-					m_colorregisteredcount[0] = 0;
-					m_colorregisteredcount[1] = 0;
-					m_colorregisteredcount[2] = 0;
-					m_colorregisteredcount[3] = 0;
-				}
-				m_spinner->Set(ControlMode::Velocity, 0);
-			}
-			else
-			{
-				m_spinner->Set(ControlMode::Velocity, targetVelocity_UnitsPer100ms); 
-		
-				// Check for current color compared to target color, slow down over time
-				double onebeforetarget = m_targetcolor - 1;
-				if (onebeforetarget == 0)
-					onebeforetarget = 4;
-				
-				double twobeforetarget = m_targetcolor - 2;
-				if (twobeforetarget == 0)
-					twobeforetarget = 4;
-				else
-				if (twobeforetarget == -1)
-					twobeforetarget = 3;
-				
-				if (m_registeredcolor == twobeforetarget)
-					m_spinner->Set(ControlMode::Velocity, targetVelocity_UnitsPer100ms * 2 / 3); 
-				else
-				if (m_registeredcolor == onebeforetarget)
-					m_spinner->Set(ControlMode::Velocity, targetVelocity_UnitsPer100ms * 1 / 3);
-				else
-				if (m_registeredcolor == m_targetcolor)
-				{
-					m_stop = true;
-					m_spinner->Set(ControlMode::Velocity, 0);
-				}
-			}
-	
-			// Reset capability for debug
-			if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
-			{
+				m_stop = false;
 				m_colorregisteredcount[0] = 0;
 				m_colorregisteredcount[1] = 0;
 				m_colorregisteredcount[2] = 0;
 				m_colorregisteredcount[3] = 0;
 			}
-			break;
+			m_spinner->Set(ControlMode::Velocity, 0);
+		}
+		else
+		{
+			double targetVelocity_UnitsPer100ms = m_spinnersetpoint * ENCODER_TICKS_PER_REV * MINUTES_TO_HUNDRED_MS;
+			/* 500 RPM in either direction */
+			m_spinner->Set(ControlMode::Velocity, targetVelocity_UnitsPer100ms); 
+		}
 
+		if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
+		{
+			m_colorregisteredcount[0] = 0;
+			m_colorregisteredcount[1] = 0;
+			m_colorregisteredcount[2] = 0;
+			m_colorregisteredcount[3] = 0;
+		}
+		break;
+	
+	case kColorSpin:
+		if (m_targetcolor == 0)
+			break;
+		
+		m_currentcolor = GetColor();
+
+		// Start bounce counting if:
+		// Color is picked up twice
+		// Color is not the same color as the registered one already
+		// 
+		// Color must pass filter that checks for sensor inconsistencies
+		if (m_currentcolor == m_previouscolor && m_registeredcolor != m_currentcolor && SensorSanityCheck())
+		{
+			m_colorbouncecount++;
+		}
+		else if (SensorSanityCheck())
+		{
+			m_previouscolor = m_currentcolor;
+		}
+
+		// Once picked up twice, set and log the registered color and reset color bounce count
+		if (m_colorbouncecount >= 2)
+		{
+			if (m_currentcolor == 1)
+			{
+				SmartDashboard::PutString("CPVER1_TrueColor", "Yellow");
+				m_registeredcolor = 1;
+				m_colorregisteredcount[0]++;
+			}
+			else if (m_currentcolor == 2)
+			{
+				SmartDashboard::PutString("CPVER1_TrueColor", "Red");
+				m_registeredcolor = 2;
+				m_colorregisteredcount[1]++;
+			}
+			else if (m_currentcolor == 3)
+			{
+				SmartDashboard::PutString("CPVER1_TrueColor", "Green");
+				m_registeredcolor = 3;
+				m_colorregisteredcount[2]++;
+			}
+			else if (m_currentcolor == 4)
+			{
+				SmartDashboard::PutString("CPVER1_TrueColor", "Blue");
+				m_registeredcolor = 4;
+				m_colorregisteredcount[3]++;
+			}
+			m_previouscolor = m_currentcolor;
+			m_colorbouncecount = 0;          
+		}
+
+		double targetVelocity_UnitsPer100ms = m_spinnersetpoint * ENCODER_TICKS_PER_REV * MINUTES_TO_HUNDRED_MS;
+
+		// Once stopped, use A button to restart. If not, set the speed to spinpower
+		if (m_stop)
+		{
+			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
+			{
+				m_stop = false;
+				m_colorregisteredcount[0] = 0;
+				m_colorregisteredcount[1] = 0;
+				m_colorregisteredcount[2] = 0;
+				m_colorregisteredcount[3] = 0;
+			}
+			m_spinner->Set(ControlMode::Velocity, 0);
+		}
+		else
+		{
+			m_spinner->Set(ControlMode::Velocity, targetVelocity_UnitsPer100ms); 
+	
+			// Check for current color compared to target color, slow down over time
+			double onebeforetarget = m_targetcolor - 1;
+			if (onebeforetarget == 0)
+				onebeforetarget = 4;
+			
+			double twobeforetarget = m_targetcolor - 2;
+			if (twobeforetarget == 0)
+				twobeforetarget = 4;
+			else
+			if (twobeforetarget == -1)
+				twobeforetarget = 3;
+			
+			if (m_registeredcolor == twobeforetarget)
+				m_spinner->Set(ControlMode::Velocity, targetVelocity_UnitsPer100ms * 2 / 3); 
+			else
+			if (m_registeredcolor == onebeforetarget)
+				m_spinner->Set(ControlMode::Velocity, targetVelocity_UnitsPer100ms * 1 / 3);
+			else
+			if (m_registeredcolor == m_targetcolor)
+			{
+				m_stop = true;
+				m_spinner->Set(ControlMode::Velocity, 0);
+			}
+		}
+
+		// Reset capability for debug
+		if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
+		{
+			m_colorregisteredcount[0] = 0;
+			m_colorregisteredcount[1] = 0;
+			m_colorregisteredcount[2] = 0;
+			m_colorregisteredcount[3] = 0;
+		}
+		break;
 	}
 
 	// Displays the total registered color count of each color
@@ -441,6 +454,7 @@ int ControlPanel::GetColor()
 
 	return color;
 }
+
 
 bool ControlPanel::SensorSanityCheck()
 // Checks if it has gathered enough data

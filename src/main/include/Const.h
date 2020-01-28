@@ -133,4 +133,9 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define AUT_D 0.11              // 0.11
 
 
+// ControlPanel
+#define CPL_ENABLED 0           // set to 1 to enable control panel motor
+#define CPL_MOTOR ENABLED(CPL_ENABLED, 0)
+
+
 #endif /* SRC_CONST_H_ */

@@ -9,11 +9,10 @@
 #define SRC_ControlPanel_H_
 
 
-#include "rev/ColorSensorV3.h"
-#include "rev/ColorMatch.h"
-#include <ctre\Phoenix.h>
-#include "frc/smartdashboard/SmartDashboard.h"
 #include "OperatorInputs.h"
+#include <rev/ColorSensorV3.h>
+#include <rev/ColorMatch.h>
+#include <ctre/Phoenix.h>
 
 
 using namespace frc;
@@ -44,9 +43,9 @@ protected:
 
 
 private:
-	ColorSensorV3 *m_colorsensor;
-	TalonSRX *m_spinner;
 	OperatorInputs *m_inputs;
+	TalonSRX *m_spinner;
+	ColorSensorV3 *m_colorsensor;
 
 	SpinnerState m_spinnerstate;
 
@@ -64,7 +63,6 @@ private:
 
 	double m_spinnerPIDvals[7];
 	double m_spinnersetpoint;
-	
 };
 
 
