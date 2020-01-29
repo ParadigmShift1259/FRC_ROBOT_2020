@@ -9,8 +9,9 @@
 #define SRC_Intake_H_
 
 
-#include "OperatorInputs.h" 
-#include <ctre\Phoenix.h>
+#include "OperatorInputs.h"
+#include <frc\Solenoid.h>
+#include <frc\Spark.h>
 
 
 using namespace frc;
@@ -28,6 +29,10 @@ public:
 
 protected:
     OperatorInputs *m_inputs;
+    Solenoid *m_solenoid1;
+    Solenoid *m_solenoid2;
+    Spark *m_motor1;
+    Spark *m_motor2;
 };
 
 
