@@ -1,7 +1,8 @@
 #ifndef SRC_ROBOT_H_
 #define SRC_ROBOT_H_
 
-
+#include <frc/TimedRobot.h>
+#include "frc/smartdashboard/SmartDashboard.h"
 #include <frc\WPILib.h>
 #include "Const.h"
 #include "OperatorInputs.h"
@@ -26,7 +27,6 @@ public:
     virtual void DisabledPeriodic();
 
 protected:
-    Timer m_timer;
     OperatorInputs *m_operatorinputs;
     Turret *m_turret;
 

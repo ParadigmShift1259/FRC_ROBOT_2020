@@ -54,5 +54,5 @@ void Robot::DisabledPeriodic(){}
 
 int main()
 {
-    return frc::StartRobot<Robot>();
+    return StartRobot<Robot>();
 }

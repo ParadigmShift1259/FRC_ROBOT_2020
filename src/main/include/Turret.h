@@ -9,8 +9,13 @@
 #define SRC_Turret_H_
 
 
-#include <frc\WPILib.h>
+#include "frc/smartdashboard/SmartDashboard.h"
 #include <rev\CANSparkMax.h>
+#include <rev\CANEncoder.h>
+#include <rev\CANPIDController.h>
+#include <frc\controller\SimpleMotorFeedforward.h>
+#include <units/units.h>
+#include <frc\WPILib.h>
 
 #include "OperatorInputs.h"
 
@@ -83,6 +88,7 @@ private:
     TurretState m_turretstate;
     FireMode m_firemode;
     RampState m_rampstate;
+    SimpleMotorFeedforward<units::meters> *m_simplemotorfeedforward;
 };
 
 

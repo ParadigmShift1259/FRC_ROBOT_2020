@@ -93,5 +93,10 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_RAMPING_RATE 100
 
 
+#define TUR_KS 0.428
+#define TUR_KV 0.132
+#define TUR_KA 0   // 0.0152, but probably 0
+
+
 
 #endif /* SRC_CONST_H_ */
