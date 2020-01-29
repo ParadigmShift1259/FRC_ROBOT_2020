@@ -15,7 +15,6 @@
 #include <rev\CANPIDController.h>
 #include <frc\controller\SimpleMotorFeedforward.h>
 #include <units/units.h>
-#include <frc\WPILib.h>
 
 #include "OperatorInputs.h"
 
