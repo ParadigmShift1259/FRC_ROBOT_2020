@@ -139,11 +139,19 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 // Intake
-#define INT_ENABLED 0           // set to 1 to enable intake motor
+#define INT_ENABLED 0           // set to 1 to enable intake motors
 #define INT_SOLENOID1 ENABLED(INT_ENABLED, 0)
 #define INT_SOLENOID2 ENABLED(INT_ENABLED, 1)
 #define INT_MOTOR1 ENABLED(INT_ENABLED, 7)
 #define INT_MOTOR2 ENABLED(INT_ENABLED, 8)
+#define INT_SENSOR1 ENABLED(INT_ENABLED, 1)
+#define INT_SENSOR2 ENABLED(INT_ENABLED, 2)
+#define INT_SENSOR3 ENABLED(INT_ENABLED, 3)
+
+
+// Feeder
+#define FDR_ENABLED 0           // set to 1 to enable feeder motor
+#define FDR_MOTOR ENABLED(FDR_ENABLED, 9)
 
 
 #endif /* SRC_CONST_H_ */

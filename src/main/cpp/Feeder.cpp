@@ -1,5 +1,5 @@
 /**
- *  Gryo.cpp
+ *  Feeder.cpp
  *  Date:
  *  Last Edited By:
  */
@@ -17,6 +17,8 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake)
     m_inputs = inputs;
     m_intake = intake;
     m_motor = nullptr;
+    if (FDR_MOTOR != -1)
+        m_motor = new Spark(FDR_MOTOR);
 }
 
 
@@ -36,14 +38,20 @@ void Feeder::Init()
 
 void Feeder::Loop()
 {
+    if (m_motor == nullptr)
+        return;
 }
 
 
 void Feeder::Stop()
 {
+    if (m_motor == nullptr)
+        return;
 }
 
 
 void Feeder::Dashboard()
 {
+    if (m_motor == nullptr)
+        return;
 }
