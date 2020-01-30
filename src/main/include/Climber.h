@@ -1,7 +1,8 @@
 /**
- *  Intake.h
+ *  Climber.h
  *  Date:
  *  Last Edited By:
+ * Jival.C
  */
 
 
@@ -11,6 +12,7 @@
 
 #include "OperatorInputs.h" 
 #include <ctre\Phoenix.h>
+#include <frc/Spark.h>
 
 
 using namespace frc;
@@ -28,6 +30,7 @@ public:
 
 protected:
     OperatorInputs *m_inputs;
+    Spark *m_motor;
 };
 
 

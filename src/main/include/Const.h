@@ -146,4 +146,15 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define INT_MOTOR2 ENABLED(INT_ENABLED, 8)
 
 
+// Feeder
+#define FDR_ENABLED 0           // set to 1 to enable intake motor
+#define FDR_MOTOR ENABLED(FDR_ENABLED, 9)
+#define FDR_SENSOR ENABLED(FDR_ENABLED, 0)
+
+
+// Climber
+#define CLM_ENABLED 0           // set to 1 to enable intake motor
+#define CLM_MOTOR ENABLED(CLM_ENABLED, 10)
+
+
 #endif /* SRC_CONST_H_ */
