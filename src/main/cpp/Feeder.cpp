@@ -72,7 +72,6 @@ void Feeder::Dashboard()
 {
     if (m_motor == nullptr)
         return;
-<<<<<<< HEAD
     frc::SmartDashboard::PutNumber("FDR SNSR Distance(in)", m_sensor->GetRange());
     frc::SmartDashboard::PutNumber("FDR SNSR Time", m_sensor->GetTimestamp());
 }
@@ -87,6 +86,4 @@ bool Feeder::BallCheck()
     {
         return false;
     }
-=======
->>>>>>> a0b30cf6d0d0bc65cda305292f323c4e70eaf18a
 }
