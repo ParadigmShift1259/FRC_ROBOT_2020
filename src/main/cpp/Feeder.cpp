@@ -25,10 +25,13 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake)
     m_motor = nullptr;
     if (FDR_MOTOR != -1)
         m_motor = new Spark(FDR_MOTOR);
+<<<<<<< HEAD
     
     m_sensor = nullptr;
     if (FDR_SENSOR != -1)
         m_sensor = new Rev2mDistanceSensor(Rev2mDistanceSensor::Port::kOnboard, Rev2mDistanceSensor::DistanceUnit::kInches);
+=======
+>>>>>>> a0b30cf6d0d0bc65cda305292f323c4e70eaf18a
 }
 
 
@@ -50,8 +53,11 @@ void Feeder::Loop()
 {
     if (m_motor == nullptr)
         return;
+<<<<<<< HEAD
     BallCheck();
     Dashboard(); 
+=======
+>>>>>>> a0b30cf6d0d0bc65cda305292f323c4e70eaf18a
 }
 
 
@@ -66,6 +72,7 @@ void Feeder::Dashboard()
 {
     if (m_motor == nullptr)
         return;
+<<<<<<< HEAD
     frc::SmartDashboard::PutNumber("FDR SNSR Distance(in)", m_sensor->GetRange());
     frc::SmartDashboard::PutNumber("FDR SNSR Time", m_sensor->GetTimestamp());
 }
@@ -80,4 +87,6 @@ bool Feeder::BallCheck()
     {
         return false;
     }
+=======
+>>>>>>> a0b30cf6d0d0bc65cda305292f323c4e70eaf18a
 }
