@@ -72,6 +72,7 @@ private:
     CANEncoder *m_flywheelencoder;
     // P, I, D, FF, Iz, nominal, peak
     double m_flywheelPIDvals[7];
+    double m_flywheelmaintainPIDvals[3];
     double m_PIDslot;
     double m_flywheelsetpoint;
     double m_flywheelrampedsetpoint;

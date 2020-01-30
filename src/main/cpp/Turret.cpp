@@ -30,6 +30,14 @@ Turret::Turret(OperatorInputs *inputs)
     m_flywheelPIDvals[5] = 0;
     m_flywheelPIDvals[6] = 1;
     m_PIDslot = 0;
+    // PID values for maintaining, guessed values 1/29/20
+    m_flywheelmaintainPIDvals[0] = 0.00068;
+    m_flywheelmaintainPIDvals[1] = 0;
+    m_flywheelmaintainPIDvals[2] = 0.008110;
+    // PID Values for Janky Metal NEO Shooter from Characterization
+    // Going Forward -> P = 0.77 for Rotation of +- .02
+    // Going Backward -> P = 0.818
+    // More realistic value given -> P = 0.0161
     
     m_flywheelsetpoint = 0;
     m_flywheelrampedsetpoint = 0;
@@ -96,11 +104,16 @@ void Turret::Init()
     m_PIDslot = 0;
     /* set the peak and nominal outputs */
     m_flywheelPID->SetOutputRange(m_flywheelPIDvals[5], m_flywheelPIDvals[6]);
-    /* set closed loop gains in slot0 */
+    /* set increase and decrease PID gains on 0 */
     m_flywheelPID->SetP(m_flywheelPIDvals[0], 0);
     m_flywheelPID->SetI(m_flywheelPIDvals[1], 0);
     m_flywheelPID->SetD(m_flywheelPIDvals[2], 0);
     m_flywheelPID->SetFF(m_flywheelPIDvals[3], 0);
+    /* set maintain PID gains on 1 */
+    m_flywheelPID->SetP(m_flywheelmaintainPIDvals[0], 1);
+    m_flywheelPID->SetI(m_flywheelmaintainPIDvals[1], 1);
+    m_flywheelPID->SetD(m_flywheelmaintainPIDvals[2], 1);
+    
 
     m_flywheelmotor->SetIdleMode(CANSparkMax::IdleMode::kCoast);
 
@@ -130,6 +143,10 @@ void Turret::Init()
     SmartDashboard::PutNumber("Max Output",    m_flywheelPIDvals[6]);
     SmartDashboard::PutNumber("RPMScaling", 100);
 
+    SmartDashboard::PutNumber("Maint P Gain",   m_flywheelmaintainPIDvals[0]);
+    SmartDashboard::PutNumber("Maint I Gain",   m_flywheelmaintainPIDvals[1]);
+    SmartDashboard::PutNumber("Maint D Gain",   m_flywheelmaintainPIDvals[2]);
+
     SmartDashboard::PutNumber("PIDSlot", m_PIDslot);
     SmartDashboard::PutNumber("SimpleMotorFeedforward", m_initialfeedforward);
 
@@ -137,6 +154,8 @@ void Turret::Init()
                             units::volt_t{TUR_KS}, 
                             TUR_KV * 1_V * 1_s / 1_m, 
                             TUR_KA * 1_V * 1_s * 1_s / 1_m);
+
+    //SmartDashboard::PutBoolean("EnableMotor", false);
 }
 
 
@@ -153,48 +172,62 @@ void Turret::Loop()
     double RPMScaling = SmartDashboard::GetNumber("RPMScaling", 100);
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
-    if((p != m_flywheelPIDvals[0])) { m_flywheelPID->SetP(p, m_PIDslot); m_flywheelPIDvals[0] = p; }
-    if((i != m_flywheelPIDvals[1])) { m_flywheelPID->SetI(i, m_PIDslot); m_flywheelPIDvals[1] = i; }
-    if((d != m_flywheelPIDvals[2])) { m_flywheelPID->SetD(d, m_PIDslot); m_flywheelPIDvals[2] = d; }
-    //if((iz != m_flywheelPIDvals[3])) { m_flywheelPID->SetIZone(iz); m_flywheelPIDvals[3] = iz; }
-    //if((ff != m_flywheelPIDvals[3])) { m_flywheelPID->SetFF(ff, m_PIDslot); m_flywheelPIDvals[3] = ff; }
+    // Increasing and Decreasing PID values
+    if((p != m_flywheelPIDvals[0])) { m_flywheelPID->SetP(p, 0); m_flywheelPIDvals[0] = p; }
+    if((i != m_flywheelPIDvals[1])) { m_flywheelPID->SetI(i, 0); m_flywheelPIDvals[1] = i; }
+    if((d != m_flywheelPIDvals[2])) { m_flywheelPID->SetD(d, 0); m_flywheelPIDvals[2] = d; }
+    //if((iz != m_flywheelPIDvals[3])) { m_flywheelPID->SetIZone(iz, 0); m_flywheelPIDvals[3] = iz; }
+    //if((ff != m_flywheelPIDvals[3])) { m_flywheelPID->SetFF(ff, 0); m_flywheelPIDvals[3] = ff; }
     if((nominal != m_flywheelPIDvals[5]) || (peak != m_flywheelPIDvals[6])) 
     { 
-        m_flywheelPID->SetOutputRange(m_flywheelPIDvals[5], m_flywheelPIDvals[6], m_PIDslot);
+        m_flywheelPID->SetOutputRange(m_flywheelPIDvals[5], m_flywheelPIDvals[6], 0);
+        m_flywheelPID->SetOutputRange(m_flywheelPIDvals[5], m_flywheelPIDvals[6], 1);
         m_flywheelPIDvals[5] = nominal; m_flywheelPIDvals[6] = peak; 
     }
 
-    double PIDslot = SmartDashboard::GetNumber("PIDSlot", 0);
+    // Maintained PID values
+    double pmaint = SmartDashboard::GetNumber("Maint P Gain", 0);
+    double imaint = SmartDashboard::GetNumber("Maint I Gain", 0);
+    double dmaint = SmartDashboard::GetNumber("Maint D Gain", 0);
 
-    if (PIDslot != m_PIDslot) { m_PIDslot = PIDslot;    }
+    // if PID coefficients on SmartDashboard have changed, write new values to controller
+    if((pmaint != m_flywheelmaintainPIDvals[0])) { m_flywheelPID->SetP(pmaint, 1); m_flywheelPIDvals[0] = pmaint; }
+    if((imaint != m_flywheelmaintainPIDvals[1])) { m_flywheelPID->SetI(imaint, 1); m_flywheelPIDvals[1] = imaint; }
+    if((dmaint != m_flywheelmaintainPIDvals[2])) { m_flywheelPID->SetD(dmaint, 1); m_flywheelPIDvals[2] = dmaint; }
+
+    //double PIDslot = SmartDashboard::GetNumber("PIDSlot", 0);
+    //if (PIDslot != m_PIDslot) { m_PIDslot = PIDslot;    }
 
     // Testing sample speeds
 
     if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
-        m_flywheelsetpoint = 200;
-    else if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
         m_flywheelsetpoint = 500;
+    else if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
+        m_flywheelsetpoint = 1000;
     else if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0))
-        m_flywheelsetpoint = 1300;
-    else if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0))
         m_flywheelsetpoint = 2000;
+    else if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0))
+        m_flywheelsetpoint = 3000;
     
     if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 0))
-        m_flywheelsetpoint += 50;
+        m_flywheelsetpoint += 100;
     else if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0) && (m_flywheelsetpoint >= 50))
-        m_flywheelsetpoint -= 50;
+        m_flywheelsetpoint -= 100;
 
  
-    // Testing ramping function
-    //RampUpSetpoint();
-
     // Ignore PIDF feedforward and substitute WPILib's SimpleMotorFeedforward class
     m_flywheelPID->SetFF(0);
-    // Converting setpoint to meters per second, plugging into simplemotorfeedforward calculate and converting to a double 
-    m_initialfeedforward = m_simplemotorfeedforward->Calculate(m_flywheelsetpoint * TUR_ROTATIONS_TO_METERS * TUR_MINUTES_TO_SECONDS * 1_mps).to<double>();
-    // Uncomment below line to enable motor
-    //m_flywheelPID->SetReference(m_flywheelsetpoint, ControlType::kVelocity, 0, m_initialfeedforward);     // plug in feedforward here
+    // Testing ramping function
+    m_initialfeedforward = m_simplemotorfeedforward->Calculate(m_flywheelsetpoint * TUR_MINUTES_TO_SECONDS * 1_mps).to<double>();
+    RampUpSetpoint();
 
+    // Converting setpoint to rotations per second, plugging into simplemotorfeedforward calculate and converting to a double 
+    
+    /* Uncomment below line to enable motor
+    bool enable = SmartDashboard::GetBoolean("EnableMotor", false);
+    if (enable)
+        m_flywheelPID->SetReference(m_flywheelsetpoint, ControlType::kVelocity, 0, m_initialfeedforward);     // plug in feedforward here
+    */
     SmartDashboard::PutNumber("Setpoint", m_flywheelsetpoint);
     SmartDashboard::PutNumber("Encoder_Position in Native units", m_flywheelencoder->GetPosition());
     SmartDashboard::PutNumber("Encoder_Velocity in Native Speed", m_flywheelencoder->GetVelocity());
@@ -253,16 +286,22 @@ void Turret::RampUpSetpoint()
     switch (m_rampstate)
     {
         case kMaintain:
+            m_PIDslot = 1;
             if (m_flywheelsetpoint > m_flywheelrampedsetpoint)
+            {
                 m_rampstate = kIncrease;
+            }
             else
             if (m_flywheelsetpoint < m_flywheelrampedsetpoint)
+            {
                 m_rampstate = kDecrease;
+            }
             
             break;
         case kIncrease:
+            m_PIDslot = 0;
             // Provided that the setpoint hasn't been reached and the ramping has already reached halfway
-            if ((m_flywheelsetpoint > m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() - m_flywheelrampedsetpoint > -1.0 * TUR_RAMPING_RATE / 1.5))
+            if ((m_flywheelsetpoint > m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() - m_flywheelrampedsetpoint > -1.0 * TUR_RAMPING_RATE / 2))
             {
                 m_flywheelrampedsetpoint += TUR_RAMPING_RATE;
 
@@ -275,9 +314,11 @@ void Turret::RampUpSetpoint()
             {
                 m_flywheelrampedsetpoint = m_flywheelsetpoint;
                 m_rampstate = kMaintain;
+                m_PIDslot = 1;
             }
             break;
         case kDecrease:
+            m_PIDslot = 0;
             // Provided that the setpoint hasn't been reached and the ramping has already reached halfway
             if ((m_flywheelsetpoint < m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() - m_flywheelrampedsetpoint < TUR_RAMPING_RATE / 1.5))
             {
@@ -292,6 +333,7 @@ void Turret::RampUpSetpoint()
             {
                 m_flywheelrampedsetpoint = m_flywheelsetpoint;
                 m_rampstate = kMaintain;
+                m_PIDslot = 1;
             }
             break;
     };
@@ -301,4 +343,5 @@ void Turret::RampUpSetpoint()
     SmartDashboard::PutNumber("Error", m_flywheelrampedsetpoint - m_flywheelencoder->GetVelocity());
     SmartDashboard::PutNumber("RampedSetpoint", m_flywheelrampedsetpoint);
     SmartDashboard::PutNumber("RampState", m_rampstate);
+    SmartDashboard::PutNumber("PIDslot", m_PIDslot);
 }

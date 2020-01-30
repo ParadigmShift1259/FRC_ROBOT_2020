@@ -92,9 +92,17 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define MINUTES_TO_HUNDRED_MS 0.00166666
 #define TUR_RAMPING_RATE 100
 // kS, kV, kA values tuned using frc-characterization 1/28/20 for the V1 Shooter Flywheel by Geoffrey
-#define TUR_KS 0.428
-#define TUR_KV 0.132
+// These values are only for going forwards
+#define TUR_KS 0.3745
+#define TUR_KV 0.126
 #define TUR_KA 0   // 0.0152, but probably 0
+/**
+ * Values going backwards:
+ * kS = 0.321
+ * kV = 0.131
+ * kA = 0.0176
+ */
+
 #define TUR_WHEEL_DIAMETER 0.1524    // in meters
 #define TUR_ROTATIONS_TO_METERS 3.1415926535 * TUR_WHEEL_DIAMETER
 #define TUR_MINUTES_TO_SECONDS 1/60
