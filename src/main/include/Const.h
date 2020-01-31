@@ -91,17 +91,23 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define ENCODER_TICKS_PER_REV 4096.00
 #define MINUTES_TO_HUNDRED_MS 0.00166666
 #define TUR_RAMPING_RATE 100
+#define TUR_IDLE_STATE_RPM 2000
+#define TUR_PREMOVE_STATE_RPM 2500
 // kS, kV, kA values tuned using frc-characterization 1/28/20 for the V1 Shooter Flywheel by Geoffrey
-// These values are only for going forwards
 #define TUR_KS 0.3745
 #define TUR_KV 0.126
-#define TUR_KA 0   // 0.0152, but probably 0
-/**
- * Values going backwards:
- * kS = 0.321
- * kV = 0.131
- * kA = 0.0176
- */
+#define TUR_KA 0.0
+// Increasing/Decreasing PID values tuned manually 1/27/20 for the V1 Shooter Flywheel by Geoffrey
+#define TUR_P 0.000632
+#define TUR_I 0.0
+#define TUR_D 0.0002231
+// Ball Recovery PID values tuned manually 1/29/20 for the V1 Shooter Flywheel by Geoffrey
+#define TUR_MP 0.00068
+#define TUR_MI 0.0
+#define TUR_MD 0.008110
+
+#define TUR_MINOUT 0.0
+#define TUR_MAXOUT 1.0
 
 #define TUR_WHEEL_DIAMETER 0.1524    // in meters
 #define TUR_ROTATIONS_TO_METERS 3.1415926535 * TUR_WHEEL_DIAMETER

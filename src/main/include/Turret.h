@@ -32,16 +32,17 @@ public:
      * PreMove -> Manual rotation of turret to lock the camera on target
      * Homing -> Continuous tracking and movement, flywheel accelerates to needed speed
      * Ready -> Turret and Hood positioned correctly, flywheel maintained at speed
-     * Fire -> Maintains Turret Hood, and Flywheel and requests ball from intake
      * Return -> rotates back to Idle position
+     * This state machine will adjust the speed and angle of the shooter
      */
-    enum TurretState {kIdle, kHoming, kPreMove, kReady, kFire, kReturn};
+    enum TurretState {kIdle, kHoming, kPreMove, kReady, kReturn};
     /**
      * Modes
      * FireWhenReady -> When turret achieves ready state, fire immediately
      * HoldFire -> Holds fire until both ready and human interaction
      * ManualFire -> fires with only human interaction, no matter ready or not
      * Off -> Nothing will activate shooter
+     * This state machine will call for balls from the intake system
      */
     enum FireMode {kHoldFire, kFireWhenReady, kManualFire, kOff};
     
@@ -63,32 +64,21 @@ protected:
 
 private:
     OperatorInputs *m_inputs;
-    
-    //PigeonIMU *m_pigeon;
-    //double m_heading;
 
     CANSparkMax *m_flywheelmotor;
     CANPIDController *m_flywheelPID;
     CANEncoder *m_flywheelencoder;
-    // P, I, D, FF, Iz, nominal, peak
-    double m_flywheelPIDvals[7];
-    double m_flywheelmaintainPIDvals[3];
+
     double m_PIDslot;
     double m_flywheelsetpoint;
     double m_flywheelrampedsetpoint;
-    bool m_flywheelsetpointreached;
+
+    SimpleMotorFeedforward<units::meters> *m_simplemotorfeedforward;
     double m_initialfeedforward;
 
-    //TalonSRX *m_hoodmotor;
-    //TalonSRX *m_turretmotor;
-    //PIDController *m_hoodPID;
-    //PIDController *m_turretPID;
-    //double m_hoodPIDvals[3];
-    //double m_turretPIDvals[3];
     TurretState m_turretstate;
     FireMode m_firemode;
     RampState m_rampstate;
-    SimpleMotorFeedforward<units::meters> *m_simplemotorfeedforward;
 };
 
 
