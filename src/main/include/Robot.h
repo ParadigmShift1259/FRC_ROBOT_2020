@@ -5,6 +5,8 @@
 #include <frc\TimedRobot.h>
 #include "Const.h"
 #include "OperatorInputs.h"
+#include "Drivetrain.h"
+#include "DriveStraight.h"
 
 
 
@@ -27,6 +29,8 @@ public:
 
 protected:
 	OperatorInputs *m_operatorinputs;
+	Drivetrain *m_drivetrain;
+	DriveStraight *m_drivestraight;
 };
 
 

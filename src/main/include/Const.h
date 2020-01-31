@@ -67,8 +67,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 //   Direction
 #define DT_DEFAULT_DIRECTION -1.0
 //   Inverts
-#define INVERT_LEFT 1.0
-#define INVERT_RIGHT -1.0		// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
+#define INVERT_LEFT true
+#define INVERT_RIGHT false
 //   CAN Ports
 #define CAN_LEFT_PORT_1 ENABLED(DT_ENABLED, 1)
 #define CAN_LEFT_PORT_2 ENABLED(DT_ENABLED, 2)
@@ -81,49 +81,22 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define MOTOR_SUPPLY_CURRENT_LIMIT 20
 #define MOTOR_SUPPLY_THRESHOLD_CURRENT 0
 #define MOTOR_SUPPLY_THRESHOLD_TIME 0.1
-//   Ramping
-#define RAMPING_RATE_PERIOD 0.10
-#define RAMPING_RATE_UP_MIN 0.6
-#define RAMPING_RATE_UP_MAX 3.0
-#define RAMPING_RATE_DOWN_MIN 3.0
-#define RAMPING_RATE_DOWN_MAX 3.0
-//   Scaling
-#define JOYSTICK_SCALING_X 0.5
-#define JOYSTICK_SCALING_Y 1.0
-#define MOTOR_SCALING_LEFT 1.0
-#define MOTOR_SCALING_RIGHT 1.0
-#define LOWSPEED_MODIFIER_X 0.50
-#define LOWSPEED_MODIFIER_Y 0.50
+
+
 //   Encoders
 #define ENC_PRESENT_1 true
 #define ENC_TYPE_1 FeedbackDevice::IntegratedSensor
 #define ENC_PRESENT_2 false
 #define ENC_TYPE_2 FeedbackDevice::IntegratedSensor
-#define CODES_PER_REV 1382.0
-#define CODES_PER_INCH 73.317
-#define WHEEL_DIAMETER 6.0
-#define WHEEL_TRACK 23.50
-
-
-//   Compressor
-#define PCM_ENABLED 0            // set to 1 to enable compressor
-#define PCM_COMPRESSOR_SOLENOID ENABLED(PCM_ENABLED, 0)
-#define CAN_POWER_DISTRIBUTION_PANEL 0
-#define PNE_CURRENT_DRAW 80
-#define PNE_VOLTAGE_DROP 10
-#define PNE_WAITTIME 1.0
-
+// All units will be in meters and seconds unless otherwise specified
+#define WHEEL_DIAMETER 0.1524
+#define TICKS_PER_METER 2048 * WHEEL_DIAMETER * 3.1415926535
 
 // Gyro
 #define GRY_ENABLED 0            // set to 1 to enable gyro
 #define CAN_GYRO1 ENABLED(GRY_ENABLED, 0)
 #define CAN_GYRO2 -1
 
-
-//  TalonSRX Constants
-#define TIMEOUT_MS 30
-#define ENCODER_TICKS_PER_REV 4096.00
-#define MINUTES_TO_HUNDRED_MS 0.00166666
-
+#define HIGH_NUMBER 1000000
 
 #endif /* SRC_CONST_H_ */

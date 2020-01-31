@@ -18,6 +18,8 @@ bool Debug = true;
 void Robot::RobotInit()
 {
 	m_operatorinputs = new OperatorInputs();
+    m_drivetrain = new Drivetrain(m_operatorinputs);
+    m_drivestraight = new DriveStraight(m_operatorinputs, m_drivetrain);
 }
 
 
@@ -36,23 +38,27 @@ void Robot::AutonomousPeriodic()
 }
 
 
-void Robot::TestInit()
-{    
-}
-
-
-void Robot::TestPeriodic()
-{
-}
+void Robot::TestInit(){}
+void Robot::TestPeriodic(){}
 
 
 void Robot::TeleopInit()
 {
+    m_drivestraight->Init();
 }
 
 
 void Robot::TeleopPeriodic()
 {
+    m_drivetrain->ReportData();
+    m_drivestraight->ConfigureProfile();
+    m_drivestraight->ConfigureGyroPID();
+    m_drivestraight->ConfigureEncoderPID();
+    
+
+    // choosing between the two determines teleop or auto at the moment
+    //m_drivetrain->Loop();
+    m_drivestraight->Loop();
 }
 
 
