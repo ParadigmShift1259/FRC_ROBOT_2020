@@ -46,26 +46,29 @@ void Robot::TestPeriodic(){}
 
 void Robot::TeleopInit()
 {
-    m_drivestraight->Init();
-    m_turnangledegrees->Init();
-    m_turnangleprofiled->Init();
+    switch (m_selector)
+    {
+        case kDrivetrain:
+            m_drivetrain->Init();
+            break;
+        case kDriveStraight:
+            m_drivestraight->Init();
+            break;
+        case kTurnAngleDegrees:
+            m_turnangledegrees->Init();
+            break;
+        case kTurnAngleProfiled:
+            m_turnangleprofiled->Init();
+            break;
+        case kRamseteController:
+            break;
+    }
 }
 
 
 void Robot::TeleopPeriodic()
 {
     m_drivetrain->ReportData();    
-
-    /**
-     * Selector
-     * Drivetrain - Runs Arcade Drive with Left joystick, essentially teleop
-     * DriveStraight - Runs Profiled Encoder PID and Gyro PID, 2 sets of PID vals + Profile setup
-     * TurnAngleDegrees - Runs Gyro PID, 1 set of PID vals
-     * TurnAngleProfiled - Runs Profiled Gyro PID, 1 set of PID vals + Profile setup
-     * RamseteController - Runs Ramsete Controller, 2 sets of PID vals + Profile setup
-     */
-
-    m_selector = kDrivetrain;
 
     switch (m_selector)
     {
@@ -106,6 +109,16 @@ void Robot::DisabledInit()
 
 void Robot::DisabledPeriodic()
 {
+    /**
+     * Selector
+     * Drivetrain - Runs Arcade Drive with Left joystick, essentially teleop
+     * DriveStraight - Runs Profiled Encoder PID and Gyro PID, 2 sets of PID vals + Profile setup
+     * TurnAngleDegrees - Runs Gyro PID, 1 set of PID vals
+     * TurnAngleProfiled - Runs Profiled Gyro PID, 1 set of PID vals + Profile setup
+     * RamseteController - Runs Ramsete Controller, 2 sets of PID vals + Profile setup
+     */
+
+    m_selector = kDrivetrain;
 }
 
 
