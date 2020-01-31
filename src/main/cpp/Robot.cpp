@@ -20,6 +20,8 @@ void Robot::RobotInit()
 	m_operatorinputs = new OperatorInputs();
     m_drivetrain = new Drivetrain(m_operatorinputs);
     m_drivestraight = new DriveStraight(m_operatorinputs, m_drivetrain);
+    m_turnangledegrees = new TurnAngleDegrees(m_operatorinputs, m_drivetrain);
+    m_turnangleprofiled = new TurnAngleProfiled(m_operatorinputs, m_drivetrain);
 }
 
 
@@ -45,20 +47,55 @@ void Robot::TestPeriodic(){}
 void Robot::TeleopInit()
 {
     m_drivestraight->Init();
+    m_turnangledegrees->Init();
+    m_turnangleprofiled->Init();
 }
 
 
 void Robot::TeleopPeriodic()
 {
-    m_drivetrain->ReportData();
-    m_drivestraight->ConfigureProfile();
-    m_drivestraight->ConfigureGyroPID();
-    m_drivestraight->ConfigureEncoderPID();
-    
+    m_drivetrain->ReportData();    
 
-    // choosing between the two determines teleop or auto at the moment
-    //m_drivetrain->Loop();
-    m_drivestraight->Loop();
+    /**
+     * Selector
+     * Drivetrain - Runs Arcade Drive with Left joystick, essentially teleop
+     * DriveStraight - Runs Profiled Encoder PID and Gyro PID, 2 sets of PID vals + Profile setup
+     * TurnAngleDegrees - Runs Gyro PID, 1 set of PID vals
+     * TurnAngleProfiled - Runs Profiled Gyro PID, 1 set of PID vals + Profile setup
+     * RamseteController - Runs Ramsete Controller, 2 sets of PID vals + Profile setup
+     */
+
+    m_selector = kDrivetrain;
+
+    switch (m_selector)
+    {
+        case kDrivetrain:
+            m_drivetrain->Loop();
+            break;
+        case kDriveStraight:
+            // everything in meters
+            m_drivestraight->ConfigureGyroPID();
+            m_drivestraight->ConfigureEncoderPID();
+            m_drivestraight->ConfigureProfile();
+            m_drivestraight->Loop();
+            SmartDashboard::PutBoolean("Finished", m_drivestraight->IsFinished());
+            break;
+        case kTurnAngleDegrees:
+            // setpoint and tolerance are in degrees
+            m_turnangledegrees->ConfigureGyroPID();
+            m_turnangledegrees->Loop();
+            SmartDashboard::PutBoolean("Finished", m_turnangledegrees->IsFinished());
+            break;
+        case kTurnAngleProfiled:
+            // setpoint and tolerance are in degrees, while maxVel and maxAcc are in meters
+            m_turnangleprofiled->ConfigureGyroPID();
+            m_turnangleprofiled->ConfigureProfile();
+            m_turnangleprofiled->Loop();
+            SmartDashboard::PutBoolean("Finished", m_turnangleprofiled->IsFinished());
+            break;
+        case kRamseteController:
+            break;
+    }
 }
 
 

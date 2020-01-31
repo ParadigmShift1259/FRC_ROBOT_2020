@@ -25,16 +25,16 @@ DriveStraight::DriveStraight(OperatorInputs *inputs, Drivetrain *drivetrain)
 
     m_encoderPIDController = nullptr;
     // Configure these after testing to lock them into place
-    m_constraints.maxVelocity = 0_mps;
-    m_constraints.maxAcceleration = 0_mps / 1_s;
     m_encoderPIDvals[0] = 0;
     m_encoderPIDvals[1] = 0;
     m_encoderPIDvals[2] = 0;
-
-    m_setpoint = 0_m;
+    m_constraints.maxVelocity = 0_mps;
+    m_constraints.maxAcceleration = 0_mps / 1_s;
     m_tolerance = 0.1_m;
 
-    m_finished = true;
+    m_setpoint = 0_m;
+    m_finished = false;
+
     m_autostate = kIdle;
 }
 
@@ -67,9 +67,10 @@ void DriveStraight::Init()
 
     m_encoderPIDController->SetConstraints(m_constraints);
     m_encoderPIDController->SetPID(m_encoderPIDvals[0], m_encoderPIDvals[1], m_encoderPIDvals[2]);
-
-    m_setpoint = 0_m;
     m_tolerance = 0.1_m;
+    
+    m_setpoint = 0_m;
+    m_finished = false;
 
     m_autostate = kIdle;
 
@@ -98,18 +99,23 @@ void DriveStraight::Loop()
             if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
             {
                 m_setpoint = setpoint;
-                m_encoderPIDController->SetGoal(m_setpoint);
                 // resets both encoders and gyro before attempting drivestraight
                 m_drivetrain->ResetEncoders();
                 m_drivetrain->ResetGyro();
+                // Sets the goal of the motion profiled run
+                m_encoderPIDController->SetGoal(m_setpoint);
                 m_autostate = kDrive;
+                m_finished = false;
             }
             break;
         case kDrive:
-            // Z deviance of drive
+            // Z deviance of drive, with error being degrees
+            // (TAG) Make sure to check this is in the right direction, else flip gyro in Drivetrain or flip here
             double heading = m_drivetrain->GetGyro()->GetCompassHeading();
             double z = m_gyroPIDController->Calculate(heading);
-            // X deviance of drive
+            // X deviance of drive, with error being 
+            // (TAG) Make sure a positive motor ouput results in a positive encoder velocity, else flip encoder
+            // (TAG) Make sure the robot drives in the right direction, else flip motor
             double encoder1 = m_drivetrain->GetLeftSensor()->GetIntegratedSensorPosition() / TICKS_PER_METER;
             double encoder2 = m_drivetrain->GetRightSensor()->GetIntegratedSensorPosition() / TICKS_PER_METER;
             // averaging two encoders to obtain final value
@@ -123,6 +129,7 @@ void DriveStraight::Loop()
                 m_setpoint = 0_m;
                 SmartDashboard::PutNumber("Setpoint", m_setpoint.to<double>());
                 m_autostate = kIdle;
+                m_finished = true;
             }
             break;
     }
@@ -140,7 +147,6 @@ void DriveStraight::ConfigureProfile()
 {
     units::meters_per_second_t v = units::meters_per_second_t{ SmartDashboard::GetNumber("Encoder Max Velocity", 0)};
     units::meters_per_second_squared_t a = units::meters_per_second_squared_t{ SmartDashboard::GetNumber("Encoder Max Acceleration", 0)};
-    units::meter_t t = units::meter_t{ SmartDashboard::GetNumber("Encoder Goal Tolerance", 0)};
 
     if (v != m_constraints.maxVelocity) 
     {
@@ -152,12 +158,6 @@ void DriveStraight::ConfigureProfile()
         m_constraints.maxAcceleration = a;
         m_encoderPIDController->SetConstraints(m_constraints);
     }
-    if (t != m_tolerance)
-    {
-        m_tolerance = t;
-        m_encoderPIDController->SetTolerance(m_tolerance, units::meters_per_second_t{HIGH_NUMBER});
-    }
-
 }
 
 
@@ -178,8 +178,14 @@ void DriveStraight::ConfigureEncoderPID()
     double p = SmartDashboard::GetNumber("Encoder P", 0);
     double i = SmartDashboard::GetNumber("Encoder I", 0);
     double d = SmartDashboard::GetNumber("Encoder D", 0);
+    units::meter_t t = units::meter_t{ SmartDashboard::GetNumber("Encoder Goal Tolerance", 0)};
 
     if((p != m_encoderPIDvals[0])) { m_encoderPIDController->SetP(p); m_encoderPIDvals[0] = p; }
     if((i != m_encoderPIDvals[1])) { m_encoderPIDController->SetI(i); m_encoderPIDvals[1] = i; }
     if((d != m_encoderPIDvals[2])) { m_encoderPIDController->SetD(d); m_encoderPIDvals[2] = d; }
+    if (t != m_tolerance)
+    {
+        m_tolerance = t;
+        m_encoderPIDController->SetTolerance(m_tolerance, units::meters_per_second_t{HIGH_NUMBER});
+    }
 }

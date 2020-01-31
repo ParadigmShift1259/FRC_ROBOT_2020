@@ -1,12 +1,12 @@
 /**
- *  DriveStraight.h
+ *  TurnAngleProfiled.h
  *  Date: 1/30/20
  *  Last Edited By: Geoffrey Xue
  */
 
 
-#ifndef SRC_DriveStraight_H_
-#define SRC_DriveStraight_H_
+#ifndef SRC_TurnAngleProfiled_H_
+#define SRC_TurnAngleProfiled_H_
 
 #include "OperatorInputs.h"
 #include "Drivetrain.h"
@@ -15,47 +15,41 @@
 
 #include <frc/controller/ProfiledPIDController.h>
 #include <frc/trajectory/TrapezoidProfile.h>
-#include <frc/controller/PIDController.h>
-
 
 
 using namespace std;
 using namespace frc;
 
 
-class DriveStraight
+class TurnAngleProfiled
 {
 public:
 
     enum AutoState {kIdle, kDrive};
 
-	DriveStraight(OperatorInputs *inputs, Drivetrain *drivetrain);
-	~DriveStraight();
+	TurnAngleProfiled(OperatorInputs *inputs, Drivetrain *drivetrain);
+	~TurnAngleProfiled();
 	void Init();
 	void Loop();
 	void Stop();
     void ConfigureProfile();
     void ConfigureGyroPID();
-    void ConfigureEncoderPID();
     bool IsFinished() { return m_finished; }
 
 protected:
 	OperatorInputs *m_inputs;
     Drivetrain *m_drivetrain;
 
-    ProfiledPIDController<units::meters> *m_encoderPIDController;
+    ProfiledPIDController<units::meters> *m_gyroPIDController;
     TrapezoidProfile<units::meters>::Constraints m_constraints;
-    units::meter_t m_tolerance;
-    double m_encoderPIDvals[3];
-
-	frc2::PIDController *m_gyroPIDController;
+    units::degree_t m_tolerance;
     double m_gyroPIDvals[3];
 
-    units::meter_t m_setpoint;
+    units::degree_t m_setpoint;
     bool m_finished;
 
     AutoState m_autostate;
 };
 
 
-#endif /* SRC_DriveStraight_H_ */
+#endif /* SRC_TurnAngleProfiled_H_ */

@@ -4,7 +4,6 @@
  *  Last Edited By: Geoffrey Xue
  */
 
-
 #ifndef SRC_CONST_H_
 #define SRC_CONST_H_
 
@@ -89,8 +88,13 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define ENC_PRESENT_2 false
 #define ENC_TYPE_2 FeedbackDevice::IntegratedSensor
 // All units will be in meters and seconds unless otherwise specified
+#define DEG_TO_ROT 1/360
 #define WHEEL_DIAMETER 0.1524
-#define TICKS_PER_METER 2048 * WHEEL_DIAMETER * 3.1415926535
+#define WHEEL_CIRCUMFERENCE WHEEL_DIAMETER * 3.1415926535
+#define TICKS_PER_METER 2048 * WHEEL_CIRCUMFERENCE
+#define WHEEL_BASE 0.1
+#define WHEEL_TRACK 0.1
+#define ROBOT_CIRCUMFERENCE sqrt(WHEEL_BASE * WHEEL_BASE + WHEEL_TRACK * WHEEL_TRACK) * 3.1415926535
 
 // Gyro
 #define GRY_ENABLED 0            // set to 1 to enable gyro
