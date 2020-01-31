@@ -76,6 +76,8 @@ private:
     SimpleMotorFeedforward<units::meters> *m_simplemotorfeedforward;
     double m_initialfeedforward;
 
+    bool m_readytofire;
+
     TurretState m_turretstate;
     FireMode m_firemode;
     RampState m_rampstate;
