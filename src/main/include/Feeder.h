@@ -13,7 +13,7 @@
 #include "OperatorInputs.h" 
 #include "Intake.h"
 #include <frc/Spark.h>
-#include "rev/Rev2mDistanceSensor.h"
+#include <rev/Rev2mDistanceSensor.h>
 
 
 using namespace frc;
@@ -29,7 +29,7 @@ public:
 	void Loop();
 	void Stop();
 	void Dashboard();
-	bool BallCheck();
+	bool FDRBallCheck();
 
 protected:
     OperatorInputs *m_inputs;

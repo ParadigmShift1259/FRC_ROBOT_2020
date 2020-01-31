@@ -8,9 +8,11 @@
 #include "Intake.h"
 #include "Const.h"
 #include <frc/SmartDashboard/SmartDashboard.h>
-
+#include <rev/Rev2mDistanceSensor.h>
+#include <frc/I2C.h>
 
 using namespace std;
+using namespace rev;
 
 
 Intake::Intake(OperatorInputs *inputs)
@@ -36,14 +38,18 @@ Intake::Intake(OperatorInputs *inputs)
     m_sensor1 = nullptr;
     if (INT_SENSOR1 != -1)
         m_sensor1 = new Rev2mDistanceSensor(Rev2mDistanceSensor::Port::kOnboard, Rev2mDistanceSensor::DistanceUnit::kInches);
+        DstncSnsrModeSet(m_sensor1);
 
     m_sensor2 = nullptr;
     if (INT_SENSOR2 != -1)
         m_sensor2 = new Rev2mDistanceSensor(Rev2mDistanceSensor::Port::kOnboard, Rev2mDistanceSensor::DistanceUnit::kInches);
+        DstncSnsrModeSet(m_sensor2);
 
     m_sensor3 = nullptr;
     if (INT_SENSOR3 != -1)
         m_sensor3 = new Rev2mDistanceSensor(Rev2mDistanceSensor::Port::kOnboard, Rev2mDistanceSensor::DistanceUnit::kInches);
+        DstncSnsrModeSet(m_sensor3);
+    
 }
 
 
@@ -124,3 +130,71 @@ void Intake::Dashboard()
     if (!NullCheck())
         return;
 }
+
+
+bool Intake::Sensor1Chk()
+{ 
+  if (m_sensor1-> GetRange() <= snsrDst)  
+  {
+      timerSnsr1 = frc::Timer::GetFPGATimestamp	();	
+      if(frc::Timer::GetFPGATimestamp() - timerSnsr1 > 0.20 && m_sensor1-> GetRange() <= snsrDst)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+  }
+  else 
+  {
+    return false;
+  }
+}
+
+bool Intake::Sensor2Chk()
+{ 
+  if (m_sensor2-> GetRange() <= snsrDst)  
+  {
+      timerSnsr2 = frc::Timer::GetFPGATimestamp	();	
+      if(frc::Timer::GetFPGATimestamp() - timerSnsr2 > 0.20 && m_sensor1-> GetRange() <= snsrDst)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+  }
+  else 
+  {
+    return false;
+  }  
+}
+
+bool Intake::Sensor3Chk()
+{ 
+   if (m_sensor3-> GetRange() <= snsrDst)  
+  {
+      timerSnsr3 = frc::Timer::GetFPGATimestamp	();	
+      if(frc::Timer::GetFPGATimestamp() - timerSnsr3 > 0.20 && m_sensor1-> GetRange() <= snsrDst)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+  }
+  else 
+  {
+    return false;
+  } 
+}
+
+void Intake::DstncSnsrModeSet(Rev2mDistanceSensor *temp)
+{
+    m_sensormode = temp;
+    m_sensormode->SetRangeProfile(Rev2mDistanceSensor::RangeProfile::kHighSpeed);
+}
+//->SetRangeProfile(rev::Rev2mDistanceSensor::RangeProfile::kHighAccuracy);

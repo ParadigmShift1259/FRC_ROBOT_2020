@@ -70,7 +70,7 @@ void Feeder::Dashboard()
     frc::SmartDashboard::PutNumber("FDR SNSR Time", m_sensor->GetTimestamp());
 }
 
-bool Feeder::BallCheck()
+bool Feeder::FDRBallCheck()
 {
     if (m_sensor -> GetRange() <= 3)
     {

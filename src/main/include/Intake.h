@@ -28,9 +28,19 @@ public:
 	void Loop();
 	void Stop();
 	void Dashboard();
+	bool Sensor1Chk();
+	bool Sensor2Chk();
+	bool Sensor3Chk();
+	void DstncSnsrModeSet(Rev2mDistanceSensor *temp);
+	Rev2mDistanceSensor *m_sensormode;
+	double timerSnsr1;
+	double timerSnsr2;
+	double timerSnsr3;
+	const double snsrDst = 1;
 
 private:
 	bool NullCheck();
+	
 
 protected:
     OperatorInputs *m_inputs;
@@ -41,6 +51,7 @@ protected:
 	Rev2mDistanceSensor *m_sensor1;
 	Rev2mDistanceSensor *m_sensor2;
 	Rev2mDistanceSensor *m_sensor3;
+	
 };
 
 
