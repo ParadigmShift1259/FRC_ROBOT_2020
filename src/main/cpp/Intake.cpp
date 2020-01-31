@@ -2,6 +2,7 @@
  *  Intake.cpp
  *  Date:
  *  Last Edited By:
+ * Jival.C
  */
 
 
@@ -115,6 +116,9 @@ void Intake::Loop()
     if (!NullCheck())
         return;
 	Dashboard();
+    Sensor1Chk();
+    Sensor2Chk();
+    Sensor3Chk();
 }
 
 

@@ -50,7 +50,7 @@ void Feeder::Loop()
 {
     if (m_motor == nullptr)
         return;
-    BallCheck();
+    FDRBallCheck();
     Dashboard(); 
 }
 
@@ -77,6 +77,10 @@ bool Feeder::FDRBallCheck()
         return true;
     }
     else if(m_sensor -> GetRange() > 3)
+    {
+        return false;
+    }
+    else 
     {
         return false;
     }
