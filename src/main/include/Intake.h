@@ -11,6 +11,8 @@
 
 
 #include "OperatorInputs.h"
+#include "Const.h"
+#include "Feeder.h"
 #include <frc\Solenoid.h>
 #include <frc\Spark.h>
 #include <rev\Rev2mDistanceSensor.h>
@@ -23,7 +25,7 @@ using namespace rev;
 class Intake
 {
 public:
-	Intake(OperatorInputs *inputs);
+	Intake(OperatorInputs *inputs, Feeder *feeder);
 	~Intake();
 	void Init();
 	void Loop();
@@ -35,14 +37,15 @@ public:
 	void DstncSnsrModeSet(Rev2mDistanceSensor *temp);
 	Rev2mDistanceSensor *m_sensormode;
 	const double snsrDst = 2.5;
-	enum intakeState {idle, gathering, chambering, lckdNloded, emptying}; // LckdNloded = Full
-	intakeState intkSt;
+	enum intkSt {idle, gathering, chambering, lckdNloded,Emptying}; // LckdNloded = Full
+	intkSt intkSt;
 private:
 	bool NullCheck();
 	
 
 protected:
     OperatorInputs *m_inputs;
+	Feeder *m_feeder;
     Solenoid *m_solenoid1;
     Solenoid *m_solenoid2;
     Spark *m_motor1;

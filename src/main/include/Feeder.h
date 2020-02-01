@@ -30,6 +30,11 @@ public:
 	void Stop();
 	void Dashboard();
 	bool FDRBallCheck();
+	void BlStMchne();
+	const double snsrDstFdr = 3;
+	enum fdrSt {Idle, Feeding, Loaded, Firing, Empty};
+	int rnLp;
+	fdrSt fdrSt; 
 
 protected:
     OperatorInputs *m_inputs;

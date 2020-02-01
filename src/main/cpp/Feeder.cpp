@@ -43,14 +43,21 @@ void Feeder::Init()
 {
     if (m_motor == nullptr)
         return;
+    fdrSt = Empty;
 }
 
-
+// /FDRBallCheck();
 void Feeder::Loop()
 {
     if (m_motor == nullptr)
         return;
-    FDRBallCheck();
+    fdrSt = m_intake-> intkSt == m_intake -> chambering ||((m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)) && (m_inputs-> xBoxDPadUp(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) )) 
+    ? Feeding : fdrSt;
+    fdrSt = FDRBallCheck () 
+    ? Loaded : fdrSt;
+    fdrSt = (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)) 
+    ? Firing : fdrSt;
+  
     Dashboard(); 
 }
 
@@ -70,13 +77,37 @@ void Feeder::Dashboard()
     frc::SmartDashboard::PutNumber("FDR SNSR Time", m_sensor->GetTimestamp());
 }
 
+
+void Feeder:: BlStMchne()
+{
+    switch (fdrSt)
+    {
+    case Idle:
+        m_motor -> Set(0);
+        break;
+    case Feeding:
+        break;
+    case Loaded:
+        break;
+    case Firing:
+        rnLp++;
+        fdrSt = rnLp == 10 ? fdrSt::Empty: fdrSt;
+        break;
+    case Empty:
+        break;
+    default:
+        break;
+    } 
+}
+
+
 bool Feeder::FDRBallCheck()
 {
-    if (m_sensor -> GetRange() <= 3)
+    if (m_sensor -> GetRange() <= snsrDstFdr)
     {
         return true;
     }
-    else if(m_sensor -> GetRange() > 3)
+    else if(m_sensor -> GetRange() > snsrDstFdr)
     {
         return false;
     }

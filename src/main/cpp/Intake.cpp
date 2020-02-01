@@ -16,10 +16,10 @@ using namespace std;
 using namespace rev;
 
 
-Intake::Intake(OperatorInputs *inputs)
+Intake::Intake(OperatorInputs *inputs, Feeder *feeder)
 {
 	m_inputs = inputs;
-
+    m_feeder = feeder; 
     m_solenoid1 = nullptr;
     if (INT_SOLENOID1 != -1)
         m_solenoid1 = new Solenoid(INT_SOLENOID1);
@@ -111,16 +111,17 @@ void Intake::Init()
     intkSt = idle;
 }
 
-
+// !!!!!!!!!!!!! Make sure the previous stage is acomplished to move on.
 void Intake::Loop()
 {
     
     intkSt = (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)) 
-    ? intkSt = gathering : intkSt = intkSt;
-    intkSt = (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)) 
-    ? intkSt = chambering : intkSt = intkSt;
-    intkSt = ChamberingCs() ? intkSt = chambering : intkSt = intkSt;
-    intkSt = LckdNloded() ? intkSt = lckdNloded : intkSt = intkSt;
+    ? intkSt = gathering :  intkSt;
+    intkSt = (ChamberingCs()||m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)) 
+    ? intkSt = chambering :  intkSt;
+    intkSt = LckdNloded() ||  (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+     ? lckdNloded : intkSt;
+    
     
     BalStateMachine();
 
@@ -142,19 +143,22 @@ void Intake::Dashboard()
     if (!NullCheck())
         return;
 }
-void Intake:: BalStateMachine()
+void Intake::BalStateMachine()
 {
     switch (intkSt){
         
         case idle: 
             break;
         case gathering: 
+            m_motor1 -> Set(1.0);
+            m_motor2 -> Set(1.0);
             break;
-        case chambering: 
+        case chambering:
             break;
         case lckdNloded: 
+            //intkSt = m_feeder -> fdrSt == m_feeder -> Firing ? Emptying : intkSt; Feels wrong Check later
             break;
-        case emptying: 
+        case Emptying:
             break;
         default: 
             break;
