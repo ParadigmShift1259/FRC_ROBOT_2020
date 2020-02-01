@@ -31,9 +31,15 @@ public:
 	void Dashboard();
 	bool FDRBallCheck();
 	void BlStMchne();
+	
+	void startFire();
+	void stopFire();
+	int getBallCnt();
+	int ballCnt;
+	
+
 	const double snsrDstFdr = 3;
-	enum fdrSt {Idle, Feeding, Loaded, Firing, Empty};
-	int rnLp;
+	enum fdrSt {kIdle, kLoad, kFire};
 	fdrSt fdrSt; 
 
 protected:

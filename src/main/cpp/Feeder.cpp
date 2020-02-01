@@ -43,7 +43,8 @@ void Feeder::Init()
 {
     if (m_motor == nullptr)
         return;
-    fdrSt = Empty;
+    fdrSt = kIdle;
+    ballCnt = 0;
 }
 
 // /FDRBallCheck();
@@ -51,13 +52,15 @@ void Feeder::Loop()
 {
     if (m_motor == nullptr)
         return;
-    fdrSt = m_intake-> intkSt == m_intake -> chambering ||((m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)) && (m_inputs-> xBoxDPadUp(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) )) 
-    ? Feeding : fdrSt;
-    fdrSt = FDRBallCheck () 
-    ? Loaded : fdrSt;
-    fdrSt = (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)) 
-    ? Firing : fdrSt;
-  
+
+    if  (m_intake -> BallCount() >= 2 ||((m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)) && (m_inputs-> xBoxDPadUp(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) )) )
+        {
+            ballCnt += m_intake -> BallCount();
+            fdrSt = kLoad;
+        }
+
+    BlStMchne();
+
     Dashboard(); 
 }
 
@@ -82,22 +85,49 @@ void Feeder:: BlStMchne()
 {
     switch (fdrSt)
     {
-    case Idle:
+    case kIdle:
+        ballCnt = 0; 
         m_motor -> Set(0);
         break;
-    case Feeding:
+    case kLoad:
+        if (FDRBallCheck() == false)
+        {
+            m_motor -> Set(0.5);
+        }
+        else 
+        {
+            m_motor -> Set(0);
+        }
         break;
-    case Loaded:
-        break;
-    case Firing:
-        rnLp++;
-        fdrSt = rnLp == 10 ? fdrSt::Empty: fdrSt;
-        break;
-    case Empty:
+    case kFire:
+
+        if (FDRBallCheck() == true)
+        {
+            m_motor -> Set(0.5);
+        }
+        else 
+        {
+            m_motor -> Set(0);
+        }
+
         break;
     default:
         break;
     } 
+}
+
+void Feeder::startFire()
+{
+    fdrSt = kFire;
+}
+
+void Feeder::stopFire()
+{
+    fdrSt = kIdle;
+}
+int  Feeder::getBallCnt()
+{
+    return ballCnt;    
 }
 
 
@@ -106,10 +136,6 @@ bool Feeder::FDRBallCheck()
     if (m_sensor -> GetRange() <= snsrDstFdr)
     {
         return true;
-    }
-    else if(m_sensor -> GetRange() > snsrDstFdr)
-    {
-        return false;
     }
     else 
     {

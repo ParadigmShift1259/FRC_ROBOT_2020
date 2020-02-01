@@ -116,12 +116,8 @@ void Intake::Loop()
 {
     
     intkSt = (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)) 
-    ? intkSt = gathering :  intkSt;
-    intkSt = (ChamberingCs()||m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)) 
-    ? intkSt = chambering :  intkSt;
-    intkSt = LckdNloded() ||  (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
-     ? lckdNloded : intkSt;
-    
+    ? intkSt = kGather :  intkSt;
+
     
     BalStateMachine();
 
@@ -143,50 +139,41 @@ void Intake::Dashboard()
     if (!NullCheck())
         return;
 }
+
+
 void Intake::BalStateMachine()
 {
     switch (intkSt){
-        
-        case idle: 
+        case kIdle: 
+            m_motor1 -> Set(0.0);
+            m_motor2 -> Set(0.0);
             break;
-        case gathering: 
+        case kGather: 
             m_motor1 -> Set(1.0);
             m_motor2 -> Set(1.0);
-            break;
-        case chambering:
-            break;
-        case lckdNloded: 
-            //intkSt = m_feeder -> fdrSt == m_feeder -> Firing ? Emptying : intkSt; Feels wrong Check later
-            break;
-        case Emptying:
+            intkSt = m_feeder -> fdrSt == m_feeder -> kFire || m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)
+            ? kIdle : intkSt; 
             break;
         default: 
             break;
     }
 }
+int Intake:: BallCount(){
+    if (m_sensor1->GetRange() <= snsrDst && m_sensor2->GetRange() > snsrDst && m_sensor3->GetRange() > snsrDst)
+    {
+        return 1;
+    }
 
-bool Intake:: ChamberingCs()
-{
-  if (m_sensor1->GetRange() <= snsrDst && m_sensor2->GetRange() <= snsrDst && m_sensor3->GetRange() > snsrDst)
-  {
-      return true;
-  } 
-  else 
-  {
-      return false;
-  } 
-}
+    if (m_sensor1->GetRange() <= snsrDst && m_sensor2->GetRange() <= snsrDst && m_sensor3->GetRange() > snsrDst)
+    {
+        return 2;
+    }
 
-bool Intake:: LckdNloded() //FUll Magazine
-{
-  if (m_sensor1->GetRange() <= snsrDst && m_sensor2->GetRange() <= snsrDst && m_sensor3->GetRange() <= snsrDst)
-  {
-      return true;
-  } 
-  else 
-  {
-      return false;
-  } 
+    if (m_sensor1->GetRange() <= snsrDst && m_sensor2->GetRange() <= snsrDst && m_sensor3->GetRange() <= snsrDst)
+    {
+        return 3;
+    }
+
 }
 
 

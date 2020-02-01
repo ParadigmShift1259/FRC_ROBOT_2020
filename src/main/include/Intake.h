@@ -32,12 +32,11 @@ public:
 	void Stop();
 	void Dashboard();
 	void BalStateMachine();
-	bool ChamberingCs();
-	bool LckdNloded();
+	int  BallCount(); 
 	void DstncSnsrModeSet(Rev2mDistanceSensor *temp);
 	Rev2mDistanceSensor *m_sensormode;
 	const double snsrDst = 2.5;
-	enum intkSt {idle, gathering, chambering, lckdNloded,Emptying}; // LckdNloded = Full
+	enum intkSt {kIdle, kGather}; 
 	intkSt intkSt;
 private:
 	bool NullCheck();
