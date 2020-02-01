@@ -9,6 +9,8 @@
 #include "Pneumatics.h"
 #include "Turret.h"
 #include "ControlPanel.h"
+#include "Intake.h"
+#include "Feeder.h"
 
 
 using namespace frc;
@@ -35,6 +37,8 @@ protected:
 	Pneumatics *m_pneumatics;
 	Turret *m_turret;
 	ControlPanel *m_controlpanel;
+	Intake *m_intake;
+	Feeder *m_feeder;
 };
 
 

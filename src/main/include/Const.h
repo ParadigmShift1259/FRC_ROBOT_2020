@@ -155,9 +155,12 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 // Feeder
-#define FDR_ENABLED 0           // set to 1 to enable intake motor
+#define FDR_ENABLED 0           // set to 1 to enable feeder motor
 #define FDR_MOTOR ENABLED(FDR_ENABLED, 9)
 #define FDR_SENSOR ENABLED(FDR_ENABLED, 0)
+#define BALL_REGISTER_DISTANCE 3
+#define REFRESH_SPEED_LOAD 0.
+#define REFRESH_SPEED_FIRE 0.7
 
 
 // Climber

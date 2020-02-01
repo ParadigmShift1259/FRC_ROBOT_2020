@@ -2,7 +2,7 @@
  *  Intake.h
  *  Date:
  *  Last Edited By:
- * Jival.C
+ *   Jival.C
  */
 
 
@@ -25,19 +25,32 @@ using namespace rev;
 class Intake
 {
 public:
-	Intake(OperatorInputs *inputs, Feeder *feeder);
+
+	/**
+	 * kIdle ->
+	 * kGather ->
+	 */
+	enum IntakeState {kIdle, kGather};
+
+	Intake(OperatorInputs *inputs);
 	~Intake();
 	void Init();
 	void Loop();
 	void Stop();
+
+	void SetState(intkSt state);
+	// Called by Feeder when Shooter requests shooting
+	// If there are no balls left, shooting will be set to false
+	void SetDrivingBecauseShooting() { m_drivingbecauseshooting = true;}
+	bool GetDrivingBecauseShooting() { return m_drivingbecauseshooting; }
+
+	int GetBallCount() { return m_ballcount;}
+
 	void Dashboard();
-	void BalStateMachine();
-	int  BallCount(); 
-	void DstncSnsrModeSet(Rev2mDistanceSensor *temp);
-	Rev2mDistanceSensor *m_sensormode;
-	const double snsrDst = 2.5;
-	enum intkSt {kIdle, kGather}; 
-	intkSt intkSt;
+	//int  BallCount();
+	//void DstncSnsrModeSet(Rev2mDistanceSensor *temp);
+	//Rev2mDistanceSensor *m_sensormode;
+	//const double snsrDst = 2.5;
 private:
 	bool NullCheck();
 	
@@ -49,9 +62,12 @@ protected:
     Solenoid *m_solenoid2;
     Spark *m_motor1;
     Spark *m_motor2;
-	Rev2mDistanceSensor *m_sensor1;
-	Rev2mDistanceSensor *m_sensor2;
-	Rev2mDistanceSensor *m_sensor3;
+	//Rev2mDistanceSensor *m_sensor1;
+	//Rev2mDistanceSensor *m_sensor2;
+	//Rev2mDistanceSensor *m_sensor3;
+	IntakeState m_intakestate;
+	int m_ballcount;
+	bool m_drivingbecauseshooting;
 	
 };
 

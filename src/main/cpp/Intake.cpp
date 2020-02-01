@@ -51,6 +51,8 @@ Intake::Intake(OperatorInputs *inputs, Feeder *feeder)
         m_sensor3 = new Rev2mDistanceSensor(Rev2mDistanceSensor::Port::kOnboard, Rev2mDistanceSensor::DistanceUnit::kInches);
         DstncSnsrModeSet(m_sensor3);
     
+    m_ballcount = 0;
+    m_drivingbecauseshooting = false;
 }
 
 
@@ -108,21 +110,52 @@ void Intake::Init()
 {
     if (!NullCheck())
         return;
-    intkSt = idle;
+
+    m_intakestate = kIdle;
+    m_solenoid1->Set(false);
+    m_solenoid2->Set(false);
+    m_ballcount = 0;
+    m_drivingbecauseshooting = false;
 }
 
 // !!!!!!!!!!!!! Make sure the previous stage is acomplished to move on.
 void Intake::Loop()
 {
-    
-    intkSt = (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)) 
-    ? intkSt = kGather :  intkSt;
-
-    
-    BalStateMachine();
-
     if (!NullCheck())
         return;
+
+    if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        m_intakestate = kGather;
+    if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        m_intakestate = kIdle;
+
+    switch (m_intakestate)
+    {
+    case kIdle: 
+        if (m_drivingbecauseshooting)
+            m_intakestate = kGather;
+
+        m_motor1->Set(0.0);
+        m_motor2->Set(0.0);
+        break;
+
+    case kGather: 
+        if ((m_ballcount == 0) && m_drivingbecauseshooting)
+        {
+            m_drivingbecauseshooting = false;
+            m_intakestate = kIdle;
+        }
+        if ((m_ballcount >= 3) && !m_drivingbecauseshooting)
+            m_intakestate = kIdle;
+
+        m_motor1->Set(0.5);
+        m_motor2->Set(0.5);
+        break;
+
+    default: 
+        break;
+    }
+
 	Dashboard();
 }
 
@@ -131,6 +164,10 @@ void Intake::Stop()
 {
     if (!NullCheck())
         return;
+    
+    m_intakestate = kIdle;
+    m_solenoid1->Set(false);
+    m_solenoid2->Set(false);
 }
 
 
@@ -141,24 +178,8 @@ void Intake::Dashboard()
 }
 
 
-void Intake::BalStateMachine()
+int Intake:: BallCount()
 {
-    switch (intkSt){
-        case kIdle: 
-            m_motor1 -> Set(0.0);
-            m_motor2 -> Set(0.0);
-            break;
-        case kGather: 
-            m_motor1 -> Set(1.0);
-            m_motor2 -> Set(1.0);
-            intkSt = m_feeder -> fdrSt == m_feeder -> kFire || m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)
-            ? kIdle : intkSt; 
-            break;
-        default: 
-            break;
-    }
-}
-int Intake:: BallCount(){
     if (m_sensor1->GetRange() <= snsrDst && m_sensor2->GetRange() > snsrDst && m_sensor3->GetRange() > snsrDst)
     {
         return 1;
@@ -173,7 +194,6 @@ int Intake:: BallCount(){
     {
         return 3;
     }
-
 }
 
 

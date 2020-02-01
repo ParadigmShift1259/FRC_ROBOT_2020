@@ -23,30 +23,30 @@ using namespace rev;
 class Feeder
 {
 public:
+	
+	enum FeederState {kIdle, kFire, kRefresh};
+	
 	Feeder(OperatorInputs *inputs, Intake *intake);
 	~Feeder();
 	void Init();
 	void Loop();
 	void Stop();
 	void Dashboard();
-	bool FDRBallCheck();
-	void BlStMchne();
-	
-	void startFire();
-	void stopFire();
-	int getBallCnt();
-	int ballCnt;
-	
+	bool FeederBallCheck();
+	void FeederStateMachine();
 
-	const double snsrDstFdr = 3;
-	enum fdrSt {kIdle, kLoad, kFire};
-	fdrSt fdrSt; 
+	void StartFire();
+	bool GetFire() {return m_shoot};
 
 protected:
     OperatorInputs *m_inputs;
     Intake *m_intake;
     Spark *m_motor;
-	Rev2mDistanceSensor *m_sensor;
+	//Rev2mDistanceSensor *m_sensor;
+
+	bool m_hasball;
+	bool m_shoot;
+	FeederState m_feederstate;
 };
 
 

@@ -43,23 +43,16 @@ void Feeder::Init()
 {
     if (m_motor == nullptr)
         return;
-    fdrSt = kIdle;
-    ballCnt = 0;
+    m_feederstate = kIdle;
 }
 
-// /FDRBallCheck();
+// /FeederBallCheck();
 void Feeder::Loop()
 {
     if (m_motor == nullptr)
         return;
 
-    if  (m_intake -> BallCount() >= 2 ||((m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)) && (m_inputs-> xBoxDPadUp(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) )) )
-        {
-            ballCnt += m_intake -> BallCount();
-            fdrSt = kLoad;
-        }
-
-    BlStMchne();
+    FeederStateMachine();
 
     Dashboard(); 
 }
@@ -81,59 +74,74 @@ void Feeder::Dashboard()
 }
 
 
-void Feeder:: BlStMchne()
+void Feeder::FeederStateMachine()
 {
-    switch (fdrSt)
+    switch (m_feederstate)
     {
     case kIdle:
-        ballCnt = 0; 
-        m_motor -> Set(0);
-        break;
-    case kLoad:
-        if (FDRBallCheck() == false)
+        if (m_shoot)
         {
-            m_motor -> Set(0.5);
+            m_intake->SetDrivingBecauseShooting();
+            m_feederstate = kFire;
         }
-        else 
+        else
+        if (!m_hasball && m_intake->GetBallCount() >= 2)
         {
-            m_motor -> Set(0);
+            m_feederstate = kRefresh;
         }
+        m_motor->Set(0);
         break;
     case kFire:
-
-        if (FDRBallCheck() == true)
+        if (FeederBallCheck() || m_intake->GetDrivingBecauseShooting())
         {
-            m_motor -> Set(0.5);
+            m_feederstate = kRefresh;
         }
         else 
         {
-            m_motor -> Set(0);
+            m_shoot = false;
+            m_feederstate = kIdle;
         }
-
+        m_motor->Set(0);
         break;
+    case kRefresh:
+        // Run motor for specified encoder runs
+        // Or Run motor until distance sensor says there is ball
+        double power;
+        if (m_shoot)
+            power = REFRESH_SPEED_FIRE;
+        else
+            power = REFRESH_SPEED_LOAD;
+        
+        if (false /* done with running*/ && m_shoot)
+            m_hasball = false;
+            m_feederstate = kFire;
+        else
+        if (true /* done with running*/ && !m_shoot)
+        {
+            m_hasball = true;
+            m_feederstate = kIdle;
+        }
+        break;
+        m_motor->Set(power);
     default:
         break;
     } 
 }
 
-void Feeder::startFire()
+void Feeder::StartFire()
 {
-    fdrSt = kFire;
+    m_feederstate = kFire;
 }
 
-void Feeder::stopFire()
+bool Feeder:GetFire()
 {
-    fdrSt = kIdle;
-}
-int  Feeder::getBallCnt()
-{
-    return ballCnt;    
+    m_feederstate = kIdle;
 }
 
 
-bool Feeder::FDRBallCheck()
+bool Feeder::FeederBallCheck()
 {
-    if (m_sensor -> GetRange() <= snsrDstFdr)
+    if (m_sensor -> GetRange() <= BALL_REGISTER_DISTANCE)
     {
         return true;
     }
