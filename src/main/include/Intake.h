@@ -29,16 +29,14 @@ public:
 	void Loop();
 	void Stop();
 	void Dashboard();
-	bool Sensor1Chk();
-	bool Sensor2Chk();
-	bool Sensor3Chk();
+	void BalStateMachine();
+	bool ChamberingCs();
+	bool LckdNloded();
 	void DstncSnsrModeSet(Rev2mDistanceSensor *temp);
 	Rev2mDistanceSensor *m_sensormode;
-	double timerSnsr1;
-	double timerSnsr2;
-	double timerSnsr3;
-	const double snsrDst = 1;
-
+	const double snsrDst = 2.5;
+	enum intakeState {idle, gathering, chambering, lckdNloded, emptying}; // LckdNloded = Full
+	intakeState intkSt;
 private:
 	bool NullCheck();
 	

@@ -108,17 +108,25 @@ void Intake::Init()
 {
     if (!NullCheck())
         return;
+    intkSt = idle;
 }
 
 
 void Intake::Loop()
 {
+    
+    intkSt = (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)) 
+    ? intkSt = gathering : intkSt = intkSt;
+    intkSt = (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL)) 
+    ? intkSt = chambering : intkSt = intkSt;
+    intkSt = ChamberingCs() ? intkSt = chambering : intkSt = intkSt;
+    intkSt = LckdNloded() ? intkSt = lckdNloded : intkSt = intkSt;
+    
+    BalStateMachine();
+
     if (!NullCheck())
         return;
 	Dashboard();
-    Sensor1Chk();
-    Sensor2Chk();
-    Sensor3Chk();
 }
 
 
@@ -134,67 +142,49 @@ void Intake::Dashboard()
     if (!NullCheck())
         return;
 }
-
-
-bool Intake::Sensor1Chk()
-{ 
-  if (m_sensor1-> GetRange() <= snsrDst)  
-  {
-      timerSnsr1 = frc::Timer::GetFPGATimestamp	();	
-      if(frc::Timer::GetFPGATimestamp() - timerSnsr1 > 0.20 && m_sensor1-> GetRange() <= snsrDst)
-      {
-        return true;
-      }
-      else
-      {
-        return false;
-      }
-  }
-  else 
-  {
-    return false;
-  }
+void Intake:: BalStateMachine()
+{
+    switch (intkSt){
+        
+        case idle: 
+            break;
+        case gathering: 
+            break;
+        case chambering: 
+            break;
+        case lckdNloded: 
+            break;
+        case emptying: 
+            break;
+        default: 
+            break;
+    }
 }
 
-bool Intake::Sensor2Chk()
-{ 
-  if (m_sensor2-> GetRange() <= snsrDst)  
+bool Intake:: ChamberingCs()
+{
+  if (m_sensor1->GetRange() <= snsrDst && m_sensor2->GetRange() <= snsrDst && m_sensor3->GetRange() > snsrDst)
   {
-      timerSnsr2 = frc::Timer::GetFPGATimestamp	();	
-      if(frc::Timer::GetFPGATimestamp() - timerSnsr2 > 0.20 && m_sensor1-> GetRange() <= snsrDst)
-      {
-        return true;
-      }
-      else
-      {
-        return false;
-      }
-  }
+      return true;
+  } 
   else 
   {
-    return false;
-  }  
-}
-
-bool Intake::Sensor3Chk()
-{ 
-   if (m_sensor3-> GetRange() <= snsrDst)  
-  {
-      timerSnsr3 = frc::Timer::GetFPGATimestamp	();	
-      if(frc::Timer::GetFPGATimestamp() - timerSnsr3 > 0.20 && m_sensor1-> GetRange() <= snsrDst)
-      {
-        return true;
-      }
-      else
-      {
-        return false;
-      }
-  }
-  else 
-  {
-    return false;
+      return false;
   } 
 }
+
+bool Intake:: LckdNloded() //FUll Magazine
+{
+  if (m_sensor1->GetRange() <= snsrDst && m_sensor2->GetRange() <= snsrDst && m_sensor3->GetRange() <= snsrDst)
+  {
+      return true;
+  } 
+  else 
+  {
+      return false;
+  } 
+}
+
 
 void Intake::DstncSnsrModeSet(Rev2mDistanceSensor *temp)
 {
