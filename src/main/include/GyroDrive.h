@@ -11,7 +11,7 @@
 
 #include <ctre\Phoenix.h>
 #include "OperatorInputs.h"
-#include "DriveTrainFX.h"
+#include "DriveTrain.h"
 #include "DrivePID.h"
 #include "Gyro.h"
 
@@ -40,7 +40,7 @@ public:
 
 protected:
 	OperatorInputs *m_inputs;
-	DriveTrainFX *m_drivetrain;
+	DriveTrain *m_drivetrain;
 	DualGyro *m_gyro;
 	DrivePID *m_drivepid;
 

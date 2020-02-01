@@ -17,7 +17,7 @@ using namespace std;
 GyroDrive::GyroDrive(OperatorInputs *inputs)
 {
 	m_inputs = inputs;
-	m_drivetrain = new DriveTrainFX(inputs);
+	m_drivetrain = new DriveTrain(inputs);
 	m_gyro = new DualGyro(CAN_GYRO1, CAN_GYRO2);
 	m_drivepid = new DrivePID(m_drivetrain, m_gyro, m_inputs);
 
@@ -47,7 +47,7 @@ GyroDrive::~GyroDrive()
 
 void GyroDrive::Init()
 {
-	m_drivetrain->Init(DriveTrainFX::DriveMode::kFollower);
+	m_drivetrain->Init(DriveTrain::DriveMode::kFollower);
 	// disable change direction in drivetrain
 	m_drivetrain->SetChangeDirButton(-1);		
 

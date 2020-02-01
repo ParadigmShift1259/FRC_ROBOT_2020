@@ -1,16 +1,15 @@
 /**
- *  DriveTrainFX.h
+ *  DriveTrain.h
  *  Date:
  *  Last Edited By:
  */
 
 
-#ifndef SRC_DriveTrainFX_H_
-#define SRC_DriveTrainFX_H_
+#ifndef SRC_DriveTrain_H_
+#define SRC_DriveTrain_H_
 
 
-#include <frc\SpeedControllerGroup.h>
-#include <frc\drive\DifferentialDrive.h>
+#include <frc\WPILib.h>
 #include <ctre\Phoenix.h>
 #include "OperatorInputs.h"
 
@@ -18,31 +17,35 @@
 using namespace frc;
 
 
-class DriveTrainFX
+class DriveTrain
 {
 public:
 	// Drivetrain modes
 	enum DriveMode { kNone, kFollower, kDiscrete, kTank, kArcade, kCurvature };
 
-	DriveTrainFX(OperatorInputs *inputs, WPI_TalonFX *left1 = nullptr, WPI_TalonFX *left2 = nullptr, WPI_TalonFX *left3 = nullptr, WPI_TalonFX *right1 = nullptr, WPI_TalonFX *right2 = nullptr, WPI_TalonFX *right3 = nullptr);
-	~DriveTrainFX();
+	DriveTrain(OperatorInputs *inputs, WPI_TalonSRX *left1 = nullptr, WPI_TalonSRX *left2 = nullptr, WPI_TalonSRX *left3 = nullptr, WPI_TalonSRX *right1 = nullptr, WPI_TalonSRX *right2 = nullptr, WPI_TalonSRX *right3 = nullptr);
+	~DriveTrain();
 	void Init(DriveMode mode = kFollower);
 	void Loop();
 	void Stop();
-	void Drive(double x, double y, bool ramp = false);
+	void Drive(double x, double y, bool ramp = false, bool tank = false);
+	void Shift();
 		// change DriveTrain direction and return true if going forward
 	bool ChangeDirection();
 	bool ChangeLowSpeedMode();
-	double Ramp(double previousPow, double desiredPow);
+	double Ramp(double previousPow, double desiredPow, double rampSpeedMin, double rampSpeedMax);
 	double LeftMotor(double &invMaxValueXPlusY);
 	double RightMotor(double &invMaxValueXPlusY);
 
+	void SetShifterButton(int low, int high) {m_shifterbuttonlow = low; m_shifterbuttonhigh = high;}
 	void SetChangeDirButton(int button) {m_changedirbutton = button;}
 	void SetLowSpeedButton(int on, int off) {m_lowspeedbuttonon = on; m_lowspeedbuttonoff = off;}
 	void SetLowSpeedMode(bool mode) {m_lowspeedmode = mode;}
 	bool GetLowSpeedMode() {return m_lowspeedmode;}
 
-	void enableRamp(bool newRamp) {m_ramp = newRamp;}
+	void setCoasting(double newCoasting) {m_coasting = newCoasting;}
+	void setRamp(double newValue) {m_rampmax = newValue;}
+	bool getIsHighGear() {return m_ishighgear;}
 
 	double GetLeftPosition(int encoder = 0);
 	double GetRightPosition(int encoder = 0);
@@ -56,46 +59,48 @@ public:
 	void ResetDeltaDistance(int encoder = 0);
 	double GetMaxDeltaDistance(int encoder = 0);
 
-	WPI_TalonFX *Left1() {return m_left1;}
-	WPI_TalonFX *Right1() {return m_right1;}
-	WPI_TalonFX *Left2() {return m_left2;}
-	WPI_TalonFX *RIght2() {return m_right2;}
-	WPI_TalonFX *Left3() {return m_left3;}
-	WPI_TalonFX *RIght3() {return m_right3;}
+	WPI_TalonSRX *LeftTalon1() {return m_lefttalon1;}
+	WPI_TalonSRX *RightTalon1() {return m_righttalon1;}
+	WPI_TalonSRX *LeftTalon2() {return m_lefttalon2;}
+	WPI_TalonSRX *RIghtTalon2() {return m_righttalon2;}
+	WPI_TalonSRX *LeftTalon3() {return m_lefttalon3;}
+	WPI_TalonSRX *RIghtTalon3() {return m_righttalon3;}
 
 protected:
 	DriveMode m_mode;
 	OperatorInputs *m_inputs;
-	WPI_TalonFX *m_left1;
-	WPI_TalonFX *m_left2;
-	WPI_TalonFX *m_left3;
-	WPI_TalonFX *m_right1;
-	WPI_TalonFX *m_right2;
-	WPI_TalonFX *m_right3;
-	bool m_left1owner;
-	bool m_left2owner;
-	bool m_left3owner;
-	bool m_right1owner;
-	bool m_right2owner;
-	bool m_right3owner;
+	WPI_TalonSRX *m_lefttalon1;
+	WPI_TalonSRX *m_lefttalon2;
+	WPI_TalonSRX *m_lefttalon3;
+	WPI_TalonSRX *m_righttalon1;
+	WPI_TalonSRX *m_righttalon2;
+	WPI_TalonSRX *m_righttalon3;
+	bool m_lefttalon1owner;
+	bool m_lefttalon2owner;
+	bool m_lefttalon3owner;
+	bool m_righttalon1owner;
+	bool m_righttalon2owner;
+	bool m_righttalon3owner;
 	SpeedControllerGroup *m_leftscgroup;
 	SpeedControllerGroup *m_rightscgroup;
 	DifferentialDrive *m_differentialdrive;
+	Solenoid *m_shifter;
 	Timer *m_timerramp;
 
+	int m_shifterbuttonlow;
+	int m_shifterbuttonhigh;
 	int m_changedirbutton;
 	int m_lowspeedbuttonon;
 	int m_lowspeedbuttonoff;
 
-	double m_battery;
 	double m_leftpow;
 	double m_rightpow;
 	double m_leftspeed;
 	double m_rightspeed;
 	double m_leftposition;
 	double m_rightposition;
-	
-	bool m_ramp;
+	double m_coasting;
+	double m_rampmax;
 
 	double m_prevleftdistance;
 	double m_prevrightdistance;
@@ -104,10 +109,13 @@ protected:
 	double m_invertright;
 	double m_direction;
 
+	bool m_ishighgear;
 	double m_previousx;
 	double m_previousy;
+	bool m_isdownshifting;
 	bool m_lowspeedmode;
+	bool m_shift;
 };
 
 
-#endif /* SRC_DriveTrainFX_H_ */
+#endif /* SRC_DriveTrain_H_ */

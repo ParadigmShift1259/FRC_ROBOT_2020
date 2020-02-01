@@ -11,7 +11,7 @@
 #include <frc/SmartDashboard/SmartDashboard.h>
 
 
-DrivePID::DrivePID(DriveTrainFX *drivetrain, DualGyro *gyro, OperatorInputs *inputs): PIDSubsystem(0.0, 0.0, 0.0)
+DrivePID::DrivePID(DriveTrain *drivetrain, DualGyro *gyro, OperatorInputs *inputs): PIDSubsystem(0.0, 0.0, 0.0)
 {
 	m_drivetrain = drivetrain;
 	m_gyro = gyro;

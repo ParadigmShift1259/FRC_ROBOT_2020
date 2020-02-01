@@ -12,7 +12,7 @@
 
 #include <frc/commands/PIDSubsystem.h>
 #include "OperatorInputs.h"
-#include "DriveTrainFX.h"
+#include "DriveTrain.h"
 #include "Gyro.h"
 
 
@@ -24,7 +24,7 @@ class DrivePID: public PIDSubsystem
 public:
 	enum Feedback { kDisabled, kEncoder, kGyro };
 
-	DrivePID(DriveTrainFX *drivetrain, DualGyro *gyro, OperatorInputs *inputs);
+	DrivePID(DriveTrain *drivetrain, DualGyro *gyro, OperatorInputs *inputs);
 	~DrivePID();
 	void Init(double p = 0, double i = 0, double d = 0, Feedback feedback = kDisabled, bool reset = true);
 	void Loop();
@@ -48,7 +48,7 @@ public:
 	void UsePIDOutput(double output);
 
 protected:
-	DriveTrainFX *m_drivetrain;
+	DriveTrain *m_drivetrain;
 	DualGyro *m_gyro;
 	OperatorInputs *m_inputs;
 	Feedback m_feedback;

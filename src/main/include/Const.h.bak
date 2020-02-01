@@ -78,7 +78,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define CAN_RIGHT_PORT_3 ENABLED(DT_ENABLED, 6)
 //   Current limiting
 #define MOTOR_SUPPLY_LIMIT_ENABLE true
-#define MOTOR_CURRENT_LIMIT 20
+#define MOTOR_SUPPLY_CURRENT_LIMIT 20
 #define MOTOR_SUPPLY_THRESHOLD_CURRENT 0
 #define MOTOR_SUPPLY_THRESHOLD_TIME 0.1
 #define CHILD_PROOF_SPEED 0.75
