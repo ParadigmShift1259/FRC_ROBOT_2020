@@ -63,7 +63,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 //   Drivetrain
-#define DT_ENABLED 0            // set to 1 to enable drivetrain
+#define DT_ENABLED 1            // set to 1 to enable drivetrain
 //   Direction
 #define DT_DEFAULT_DIRECTION -1.0
 //   Inverts
@@ -71,11 +71,11 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define INVERT_RIGHT -1.0		// 2017 code is 1, WPILlib DifferentialDrive is -1 (adjusted in DriveTrain::Drive())
 //   CAN Ports
 #define CAN_LEFT_PORT_1 ENABLED(DT_ENABLED, 1)
-#define CAN_LEFT_PORT_2 ENABLED(DT_ENABLED, 2)
-#define CAN_LEFT_PORT_3 ENABLED(DT_ENABLED, 3)
-#define CAN_RIGHT_PORT_1 ENABLED(DT_ENABLED, 4)
-#define CAN_RIGHT_PORT_2 ENABLED(DT_ENABLED, 5)
-#define CAN_RIGHT_PORT_3 ENABLED(DT_ENABLED, 6)
+#define CAN_LEFT_PORT_2 ENABLED(DT_ENABLED, 3)
+#define CAN_LEFT_PORT_3 ENABLED(0, 5)
+#define CAN_RIGHT_PORT_1 ENABLED(DT_ENABLED, 2)
+#define CAN_RIGHT_PORT_2 ENABLED(DT_ENABLED, 4)
+#define CAN_RIGHT_PORT_3 ENABLED(0, 6)
 //   Current limiting
 #define MOTOR_SUPPLY_LIMIT_ENABLE true
 #define MOTOR_CURRENT_LIMIT 20

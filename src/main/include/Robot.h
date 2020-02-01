@@ -8,8 +8,6 @@
 #include "GyroDrive.h"
 #include "Pneumatics.h"
 #include "Turret.h"
-#include "ControlPanel.h"
-
 
 using namespace frc;
 
@@ -34,7 +32,6 @@ protected:
 	GyroDrive *m_gyrodrive;
 	Pneumatics *m_pneumatics;
 	Turret *m_turret;
-	ControlPanel *m_controlpanel;
 };
 
 

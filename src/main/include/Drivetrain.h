@@ -37,11 +37,7 @@ public:
 	double LeftMotor(double &invMaxValueXPlusY);
 	double RightMotor(double &invMaxValueXPlusY);
 
-	void SetShifterButton(int low, int high) {m_shifterbuttonlow = low; m_shifterbuttonhigh = high;}
 	void SetChangeDirButton(int button) {m_changedirbutton = button;}
-	void SetLowSpeedButton(int on, int off) {m_lowspeedbuttonon = on; m_lowspeedbuttonoff = off;}
-	void SetLowSpeedMode(bool mode) {m_lowspeedmode = mode;}
-	bool GetLowSpeedMode() {return m_lowspeedmode;}
 
 	void setCoasting(double newCoasting) {m_coasting = newCoasting;}
 	void setRamp(double newValue) {m_rampmax = newValue;}
@@ -59,39 +55,34 @@ public:
 	void ResetDeltaDistance(int encoder = 0);
 	double GetMaxDeltaDistance(int encoder = 0);
 
-	WPI_TalonSRX *LeftTalon1() {return m_lefttalon1;}
-	WPI_TalonSRX *RightTalon1() {return m_righttalon1;}
-	WPI_TalonSRX *LeftTalon2() {return m_lefttalon2;}
-	WPI_TalonSRX *RIghtTalon2() {return m_righttalon2;}
-	WPI_TalonSRX *LeftTalon3() {return m_lefttalon3;}
-	WPI_TalonSRX *RIghtTalon3() {return m_righttalon3;}
+	WPI_TalonSRX *Left1() {return m_left1;}
+	WPI_TalonSRX *Right1() {return m_right1;}
+	WPI_TalonSRX *Left2() {return m_left2;}
+	WPI_TalonSRX *Right2() {return m_right2;}
+	WPI_TalonSRX *Left3() {return m_left3;}
+	WPI_TalonSRX *Right3() {return m_right3;}
 
 protected:
 	DriveMode m_mode;
 	OperatorInputs *m_inputs;
-	WPI_TalonSRX *m_lefttalon1;
-	WPI_TalonSRX *m_lefttalon2;
-	WPI_TalonSRX *m_lefttalon3;
-	WPI_TalonSRX *m_righttalon1;
-	WPI_TalonSRX *m_righttalon2;
-	WPI_TalonSRX *m_righttalon3;
-	bool m_lefttalon1owner;
-	bool m_lefttalon2owner;
-	bool m_lefttalon3owner;
-	bool m_righttalon1owner;
-	bool m_righttalon2owner;
-	bool m_righttalon3owner;
+	WPI_TalonSRX *m_left1;
+	WPI_TalonSRX *m_left2;
+	WPI_TalonSRX *m_left3;
+	WPI_TalonSRX *m_right1;
+	WPI_TalonSRX *m_right2;
+	WPI_TalonSRX *m_right3;
+	bool m_left1owner;
+	bool m_left2owner;
+	bool m_left3owner;
+	bool m_right1owner;
+	bool m_right2owner;
+	bool m_right3owner;
 	SpeedControllerGroup *m_leftscgroup;
 	SpeedControllerGroup *m_rightscgroup;
 	DifferentialDrive *m_differentialdrive;
-	Solenoid *m_shifter;
 	Timer *m_timerramp;
 
-	int m_shifterbuttonlow;
-	int m_shifterbuttonhigh;
 	int m_changedirbutton;
-	int m_lowspeedbuttonon;
-	int m_lowspeedbuttonoff;
 
 	double m_leftpow;
 	double m_rightpow;
