@@ -20,8 +20,17 @@ void Robot::RobotInit()
 	m_operatorinputs = new OperatorInputs();
     m_drivetrain = new Drivetrain(m_operatorinputs);
     m_drivestraight = new DriveStraight(m_operatorinputs, m_drivetrain);
+    m_drivestraightdouble = new DriveStraightDouble(m_operatorinputs, m_drivetrain);
     m_turnangledegrees = new TurnAngleDegrees(m_operatorinputs, m_drivetrain);
     m_turnangleprofiled = new TurnAngleProfiled(m_operatorinputs, m_drivetrain);
+
+    m_chooser.SetDefaultOption(scDrivetrain, scDrivetrain);
+    m_chooser.AddOption(scDriveStraight, scDriveStraight);
+    m_chooser.AddOption(scDriveStraightDouble, scDriveStraightDouble);
+    m_chooser.AddOption(scTurnAngleDegrees, scTurnAngleDegrees);
+    m_chooser.AddOption(scTurnAngleProfiled, scTurnAngleProfiled);
+    m_chooser.AddOption(scRamseteController, scRamseteController);
+    SmartDashboard::PutData("Drive Modes", &m_chooser);
 }
 
 
@@ -54,6 +63,9 @@ void Robot::TeleopInit()
         case kDriveStraight:
             m_drivestraight->Init();
             break;
+        case kDriveStraightDouble:
+            m_drivestraightdouble->Init();
+            break;
         case kTurnAngleDegrees:
             m_turnangledegrees->Init();
             break;
@@ -83,6 +95,13 @@ void Robot::TeleopPeriodic()
             m_drivestraight->Loop();
             SmartDashboard::PutBoolean("Finished", m_drivestraight->IsFinished());
             break;
+        case kDriveStraightDouble:
+            m_drivestraightdouble->ConfigureLeftPID();
+            m_drivestraightdouble->ConfigureRightPID();
+            m_drivestraightdouble->ConfigureProfile();
+            m_drivestraightdouble->Loop();
+            SmartDashboard::PutBoolean("Finished", m_drivestraightdouble->IsFinished());
+            break;
         case kTurnAngleDegrees:
             // setpoint and tolerance are in degrees
             m_turnangledegrees->ConfigureGyroPID();
@@ -109,16 +128,37 @@ void Robot::DisabledInit()
 
 void Robot::DisabledPeriodic()
 {
+    ReadChooser();
+}
+
+
+void Robot::ReadChooser()
+{
+    string driveselected = m_chooser.GetSelected();
     /**
      * Selector
      * Drivetrain - Runs Arcade Drive with Left joystick, essentially teleop
      * DriveStraight - Runs Profiled Encoder PID and Gyro PID, 2 sets of PID vals + Profile setup
+     * DriveStraightDouble - Runs 2 Profiled Encoder PIDs, 2 sets of encoder PID vals + Profile setup
      * TurnAngleDegrees - Runs Gyro PID, 1 set of PID vals
      * TurnAngleProfiled - Runs Profiled Gyro PID, 1 set of PID vals + Profile setup
      * RamseteController - Runs Ramsete Controller, 2 sets of PID vals + Profile setup
      */
-
     m_selector = kDrivetrain;
+    if (driveselected == scDrivetrain)
+        m_selector = kDrivetrain;
+    else
+    if (driveselected == scDriveStraight)
+        m_selector = kDriveStraight;
+    else
+    if (driveselected == scTurnAngleDegrees)
+        m_selector = kTurnAngleDegrees;
+    else
+    if (driveselected == scTurnAngleProfiled)
+        m_selector = kTurnAngleProfiled;
+    else
+    if (driveselected == scRamseteController)
+        m_selector = kRamseteController;
 }
 
 

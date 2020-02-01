@@ -59,6 +59,9 @@ void TurnAngleProfiled::Init()
     m_gyroPIDController->SetConstraints(m_constraints);
     m_gyroPIDController->SetPID(m_gyroPIDvals[0], m_gyroPIDvals[1], m_gyroPIDvals[2]);
     m_tolerance = 2_deg;
+    m_gyroPIDController->SetTolerance(
+        units::meter_t{m_tolerance.to<double>() * DEG_TO_ROT * ROBOT_CIRCUMFERENCE}, 
+        units::meters_per_second_t{HIGH_NUMBER});
     
     m_setpoint = 0_deg;
     m_finished = false;
@@ -66,7 +69,7 @@ void TurnAngleProfiled::Init()
     m_autostate = kIdle;
 
 	SmartDashboard::PutNumber("Gyro P",         m_gyroPIDvals[0]);
-    SmartDashboard::PutNumber("Gyro I",          m_gyroPIDvals[1]);
+    SmartDashboard::PutNumber("Gyro I",         m_gyroPIDvals[1]);
     SmartDashboard::PutNumber("Gyro D",         m_gyroPIDvals[2]);
 
     SmartDashboard::PutNumber("Gyro Max Velocity",       m_constraints.maxVelocity.to<double>());

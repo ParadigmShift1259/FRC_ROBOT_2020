@@ -65,9 +65,12 @@ void DriveStraight::Init()
 
     m_gyroPIDController->SetPID(m_gyroPIDvals[0], m_gyroPIDvals[1], m_gyroPIDvals[2]);
 
-    m_encoderPIDController->SetConstraints(m_constraints);
-    m_encoderPIDController->SetPID(m_encoderPIDvals[0], m_encoderPIDvals[1], m_encoderPIDvals[2]);
     m_tolerance = 0.1_m;
+
+    m_encoderPIDController->SetConstraints(m_constraints);
+    m_encoderPIDController->SetTolerance(m_tolerance, units::meters_per_second_t{HIGH_NUMBER});
+    m_encoderPIDController->SetPID(m_encoderPIDvals[0], m_encoderPIDvals[1], m_encoderPIDvals[2]);
+
     
     m_setpoint = 0_m;
     m_finished = false;
@@ -75,7 +78,7 @@ void DriveStraight::Init()
     m_autostate = kIdle;
 
 	SmartDashboard::PutNumber("Gyro P",         m_gyroPIDvals[0]);
-    SmartDashboard::PutNumber("Gyro I",          m_gyroPIDvals[1]);
+    SmartDashboard::PutNumber("Gyro I",         m_gyroPIDvals[1]);
     SmartDashboard::PutNumber("Gyro D",         m_gyroPIDvals[2]);
 
 	SmartDashboard::PutNumber("Encoder P",             m_encoderPIDvals[0]);
@@ -113,7 +116,7 @@ void DriveStraight::Loop()
             // (TAG) Make sure to check this is in the right direction, else flip gyro in Drivetrain or flip here
             double heading = m_drivetrain->GetGyro()->GetCompassHeading();
             double z = m_gyroPIDController->Calculate(heading);
-            // X deviance of drive, with error being 
+            // X deviance of drive, with error being meters
             // (TAG) Make sure a positive motor ouput results in a positive encoder velocity, else flip encoder
             // (TAG) Make sure the robot drives in the right direction, else flip motor
             double encoder1 = m_drivetrain->GetLeftSensor()->GetIntegratedSensorPosition() / TICKS_PER_METER;
