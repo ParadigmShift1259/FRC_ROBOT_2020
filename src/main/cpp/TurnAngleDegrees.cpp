@@ -19,7 +19,7 @@ TurnAngleDegrees::TurnAngleDegrees(OperatorInputs *inputs, Drivetrain *drivetrai
 
     m_gyroPIDController = nullptr;
     // Configure these after testing to lock them into place
-    m_gyroPIDvals[0] = 0;
+    m_gyroPIDvals[0] = 0.0125;
     m_gyroPIDvals[1] = 0;
     m_gyroPIDvals[2] = 0;
     m_tolerance = 2_deg;
@@ -61,6 +61,7 @@ void TurnAngleDegrees::Init()
     SmartDashboard::PutNumber("Gyro I",          m_gyroPIDvals[1]);
     SmartDashboard::PutNumber("Gyro D",         m_gyroPIDvals[2]);
 
+    SmartDashboard::PutNumber("Gyro Goal Tolerance", m_tolerance.to<double>());
     SmartDashboard::PutNumber("Setpoint", m_setpoint.to<double>());
 }
 
@@ -84,10 +85,12 @@ void TurnAngleDegrees::Loop()
         case kDrive:
             // Z deviance of drive, with error being degrees
             // (TAG) Make sure to check this is in the right direction, else flip gyro in Drivetrain or flip here
-            units::degree_t heading = units::degree_t{ m_drivetrain->GetGyro()->GetCompassHeading()};
+            units::degree_t heading = units::degree_t{ m_drivetrain->GetGyro()->GetFusedHeading() * GYRO_INVERTED};
             double z = m_gyroPIDController->Calculate(heading.to<double>(), m_setpoint.to<double>());
 
-            m_drivetrain->GetDrive()->ArcadeDrive(0, z, false);
+            SmartDashboard::PutNumber("Z", z);
+            double sign = z / abs(z);
+            m_drivetrain->GetDrive()->ArcadeDrive(0, z + sign * INITIAL_FEEDFORWARD_TURN, false);
 
             if (m_gyroPIDController->AtSetpoint())
             {

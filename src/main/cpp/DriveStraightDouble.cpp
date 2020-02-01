@@ -17,19 +17,19 @@ DriveStraightDouble::DriveStraightDouble(OperatorInputs *inputs, Drivetrain *dri
 	m_inputs = inputs;
     m_drivetrain = drivetrain;
 
-    m_constraints.maxVelocity = 0_mps;
-    m_constraints.maxAcceleration = 0_mps / 1_s;
+    m_constraints.maxVelocity = 1_mps;
+    m_constraints.maxAcceleration = 1_mps / 1_s;
     m_tolerance = 0.1_m;
 
     m_leftPIDController = nullptr;
     // Configure these after testing to lock them into place
-    m_leftPIDvals[0] = 0;
+    m_leftPIDvals[0] = 0.005;
     m_leftPIDvals[1] = 0;
     m_leftPIDvals[2] = 0;
 
     m_rightPIDController = nullptr;
     // Configure these after testing to lock them into place
-    m_rightPIDvals[0] = 0;
+    m_rightPIDvals[0] = 0.005;
     m_rightPIDvals[1] = 0;
     m_rightPIDvals[2] = 0;
 
@@ -109,7 +109,7 @@ void DriveStraightDouble::Loop()
             {
                 m_setpoint = setpoint;
                 // resets encoders and gyro before attempting drivestraightdouble
-                m_drivetrain->ResetEncoders();
+                //m_drivetrain->ResetEncoders();
                 // Sets the goal of the motion profiled run
                 m_leftPIDController->SetGoal(m_setpoint);
                 m_rightPIDController->SetGoal(m_setpoint);
@@ -122,14 +122,18 @@ void DriveStraightDouble::Loop()
             // (TAG) Make sure a positive motor ouput results in a positive encoder velocity, else flip encoder
             // (TAG) Make sure the robot drives in the right direction, else flip motor
             double leftencoder = m_drivetrain->GetLeftSensor()->GetIntegratedSensorPosition() / TICKS_PER_METER;
-            double rightencoder = m_drivetrain->GetRightSensor()->GetIntegratedSensorPosition() / TICKS_PER_METER;
+            double rightencoder = m_drivetrain->GetRightSensor()->GetIntegratedSensorPosition() / TICKS_PER_METER * ENCODER_INVERTED;
             // Calculate errors and Motion Profiled PID outputs separately
             double left = m_leftPIDController->Calculate(units::meter_t{ leftencoder});
             double right = m_rightPIDController->Calculate(units::meter_t{ rightencoder});
 
+            SmartDashboard::PutNumber("Left", left);
+            SmartDashboard::PutNumber("Right", right);
+            SmartDashboard::PutNumber("Left Dist", leftencoder);
+            SmartDashboard::PutNumber("Right Dist", rightencoder);
             m_drivetrain->GetDrive()->TankDrive(left, right, false);
 
-            if (m_leftPIDController->AtSetpoint() || m_rightPIDController->AtSetpoint())
+            if (m_leftPIDController->AtGoal() || m_rightPIDController->AtGoal())
             {
                 m_setpoint = 0_m;
                 SmartDashboard::PutNumber("Setpoint", m_setpoint.to<double>());
@@ -138,6 +142,7 @@ void DriveStraightDouble::Loop()
             }
             break;
     }
+    SmartDashboard::PutNumber("Autostate", m_autostate);
 }
 
 

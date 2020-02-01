@@ -41,6 +41,7 @@ protected:
     Drivetrain *m_drivetrain;
 
     ProfiledPIDController<units::meters> *m_gyroPIDController;
+    // Actually degrees, but needs to be a measure of distance
     TrapezoidProfile<units::meters>::Constraints m_constraints;
     units::degree_t m_tolerance;
     double m_gyroPIDvals[3];

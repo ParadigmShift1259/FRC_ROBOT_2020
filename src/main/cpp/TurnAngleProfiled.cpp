@@ -19,11 +19,11 @@ TurnAngleProfiled::TurnAngleProfiled(OperatorInputs *inputs, Drivetrain *drivetr
 
     m_gyroPIDController = nullptr;
     // Configure these after testing to lock them into place
-    m_constraints.maxVelocity = 0_mps;
-    m_constraints.maxAcceleration = 0_mps / 1_s;
+    m_constraints.maxVelocity = 25_mps;
+    m_constraints.maxAcceleration = 12.5_mps / 1_s;
     m_tolerance = 2_deg;
-    m_gyroPIDvals[0] = 0;
-    m_gyroPIDvals[1] = 0;
+    m_gyroPIDvals[0] = 0.00346;
+    m_gyroPIDvals[1] = 0.00075;
     m_gyroPIDvals[2] = 0;
 
     m_setpoint = 0_deg;
@@ -60,7 +60,7 @@ void TurnAngleProfiled::Init()
     m_gyroPIDController->SetPID(m_gyroPIDvals[0], m_gyroPIDvals[1], m_gyroPIDvals[2]);
     m_tolerance = 2_deg;
     m_gyroPIDController->SetTolerance(
-        units::meter_t{m_tolerance.to<double>() * DEG_TO_ROT * ROBOT_CIRCUMFERENCE}, 
+        units::meter_t{m_tolerance.to<double>()}, 
         units::meters_per_second_t{HIGH_NUMBER});
     
     m_setpoint = 0_deg;
@@ -91,9 +91,9 @@ void TurnAngleProfiled::Loop()
             {
                 m_setpoint = setpoint;
                 // resets gyro before attempting TurnAngleProfiled
-                m_drivetrain->ResetGyro();
+                //m_drivetrain->ResetGyro();
                 // Sets the goal of the motion profiled run
-                m_gyroPIDController->SetGoal(units::meter_t{ m_setpoint.to<double>() * DEG_TO_ROT * ROBOT_CIRCUMFERENCE});
+                m_gyroPIDController->SetGoal(units::meter_t{ m_setpoint.to<double>()});
                 m_autostate = kDrive;
                 m_finished = false;
             }
@@ -101,13 +101,14 @@ void TurnAngleProfiled::Loop()
         case kDrive:
             // Z deviance of drive, with error being degrees
             // (TAG) Make sure to check this is in the right direction, else flip gyro in Drivetrain or flip here
-            units::degree_t heading = units::degree_t{m_drivetrain->GetGyro()->GetCompassHeading()};
+            units::degree_t heading = units::degree_t{m_drivetrain->GetGyro()->GetFusedHeading() * GYRO_INVERTED};
 
-            double z = m_gyroPIDController->Calculate(units::meter_t{ heading.to<double>() * DEG_TO_ROT * ROBOT_CIRCUMFERENCE});
+            double z = m_gyroPIDController->Calculate(units::meter_t{ heading.to<double>()});
+            double sign = z / abs(z);
+            SmartDashboard::PutNumber("Z", z);
+            m_drivetrain->GetDrive()->ArcadeDrive(0, z + sign * INITIAL_FEEDFORWARD_TURN, false);
 
-            m_drivetrain->GetDrive()->ArcadeDrive(0, z, false);
-
-            if (m_gyroPIDController->AtSetpoint())
+            if (m_gyroPIDController->AtGoal())
             {
                 m_setpoint = 0_deg;
                 SmartDashboard::PutNumber("Setpoint", m_setpoint.to<double>());
@@ -158,7 +159,7 @@ void TurnAngleProfiled::ConfigureGyroPID()
     {
         m_tolerance = t;
         m_gyroPIDController->SetTolerance(
-            units::meter_t{ m_tolerance.to<double>() * DEG_TO_ROT * ROBOT_CIRCUMFERENCE}, 
+            units::meter_t{ m_tolerance.to<double>()}, 
             units::meters_per_second_t{HIGH_NUMBER}
         );
     }

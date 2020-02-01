@@ -85,6 +85,7 @@ void Robot::TeleopPeriodic()
     switch (m_selector)
     {
         case kDrivetrain:
+            m_drivetrain->ConfigureInverts();
             m_drivetrain->Loop();
             break;
         case kDriveStraight:
@@ -151,6 +152,8 @@ void Robot::ReadChooser()
     if (driveselected == scDriveStraight)
         m_selector = kDriveStraight;
     else
+    if (driveselected == scDriveStraightDouble)
+        m_selector = kDriveStraightDouble;
     if (driveselected == scTurnAngleDegrees)
         m_selector = kTurnAngleDegrees;
     else

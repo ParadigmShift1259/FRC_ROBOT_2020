@@ -31,6 +31,7 @@ public:
 	void ReportData();
 	void ResetEncoders();
 	void ResetGyro();
+	void ConfigureInverts();
 
 	TalonFXSensorCollection *GetLeftSensor() {return m_leftsensor; }
 	TalonFXSensorCollection *GetRightSensor() {return m_rightsensor; }
@@ -52,6 +53,9 @@ protected:
 	TalonFXSensorCollection *m_leftsensor;
 	TalonFXSensorCollection *m_rightsensor;
 	PigeonIMU *m_gyro;
+
+	bool m_leftinvert;
+	bool m_rightinvert;
 
 };
 
