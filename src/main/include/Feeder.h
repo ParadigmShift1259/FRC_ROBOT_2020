@@ -32,17 +32,16 @@ public:
 	void Loop();
 	void Stop();
 	void Dashboard();
-	bool FeederBallCheck();
-	void FeederStateMachine();
 
+	void FeederStateMachine();
+	// Called by shooter to start one cycle
 	void StartFire();
-	bool GetFire() {return m_shoot};
+	bool GetFire();
 
 protected:
     OperatorInputs *m_inputs;
     Intake *m_intake;
     Spark *m_motor;
-	//Rev2mDistanceSensor *m_sensor;
 
 	bool m_hasball;
 	bool m_shoot;

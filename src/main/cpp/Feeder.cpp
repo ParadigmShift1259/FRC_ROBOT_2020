@@ -25,10 +25,6 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake)
     m_motor = nullptr;
     if (FDR_MOTOR != -1)
         m_motor = new Spark(FDR_MOTOR);
-    
-    m_sensor = nullptr;
-    if (FDR_SENSOR != -1)
-        m_sensor = new Rev2mDistanceSensor(Rev2mDistanceSensor::Port::kOnboard, Rev2mDistanceSensor::DistanceUnit::kInches);
 }
 
 
@@ -69,8 +65,6 @@ void Feeder::Dashboard()
 {
     if (m_motor == nullptr)
         return;
-    frc::SmartDashboard::PutNumber("FDR SNSR Distance(in)", m_sensor->GetRange());
-    frc::SmartDashboard::PutNumber("FDR SNSR Time", m_sensor->GetTimestamp());
 }
 
 
@@ -85,14 +79,15 @@ void Feeder::FeederStateMachine()
             m_feederstate = kFire;
         }
         else
-        if (!m_hasball && m_intake->GetBallCount() >= 2)
+        if (!m_hasball && m_intake->LoadRefresh())
         {
             m_feederstate = kRefresh;
         }
         m_motor->Set(0);
         break;
+
     case kFire:
-        if (FeederBallCheck() || m_intake->GetDrivingBecauseShooting())
+        if (m_hasball || m_intake->GetDrivingBecauseShooting())
         {
             m_feederstate = kRefresh;
         }
@@ -103,6 +98,7 @@ void Feeder::FeederStateMachine()
         }
         m_motor->Set(0);
         break;
+    
     case kRefresh:
         // Run motor for specified encoder runs
         // Or Run motor until distance sensor says there is ball
@@ -111,18 +107,23 @@ void Feeder::FeederStateMachine()
             power = REFRESH_SPEED_FIRE;
         else
             power = REFRESH_SPEED_LOAD;
+
+        m_motor->Set(power);
         
-        if (false /* done with running*/ && m_shoot)
+        if (false && m_shoot)   // replace with encoder / distance checking
+        {
             m_hasball = false;
+            m_shoot = false;
             m_feederstate = kFire;
+        }
         else
-        if (true /* done with running*/ && !m_shoot)
+        if (true && !m_shoot)   // replace with encoder / distance checking
         {
             m_hasball = true;
             m_feederstate = kIdle;
         }
         break;
-        m_motor->Set(power);
+
     default:
         break;
     } 
@@ -130,23 +131,10 @@ void Feeder::FeederStateMachine()
 
 void Feeder::StartFire()
 {
-    m_feederstate = kFire;
+    m_shoot = true;
 }
 
-bool Feeder:GetFire()
+bool Feeder::GetFire()
 {
-    m_feederstate = kIdle;
-}
-
-
-bool Feeder::FeederBallCheck()
-{
-    if (m_sensor -> GetRange() <= BALL_REGISTER_DISTANCE)
-    {
-        return true;
-    }
-    else 
-    {
-        return false;
-    }
+    return m_shoot;
 }

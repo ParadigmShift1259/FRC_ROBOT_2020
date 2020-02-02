@@ -22,7 +22,7 @@ void Robot::RobotInit()
 	m_pneumatics = new Pneumatics();
 	m_turret = new Turret(m_operatorinputs);
 	m_controlpanel = new ControlPanel(m_operatorinputs);
-	m_intake = new Intake(m_operatorinputs)
+	m_intake = new Intake(m_operatorinputs);
 	m_feeder = new Feeder(m_operatorinputs, m_intake);
 }
 
