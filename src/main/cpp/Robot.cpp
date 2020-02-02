@@ -23,6 +23,8 @@ void Robot::RobotInit()
     m_drivestraightdouble = new DriveStraightDouble(m_operatorinputs, m_drivetrain);
     m_turnangledegrees = new TurnAngleDegrees(m_operatorinputs, m_drivetrain);
     m_turnangleprofiled = new TurnAngleProfiled(m_operatorinputs, m_drivetrain);
+    m_drivesubsystem = new DriveSubsystem(m_drivetrain);
+    m_ramsetecontrol = new RamseteControl(m_operatorinputs, m_drivetrain, m_drivesubsystem);
 
     m_chooser.SetDefaultOption(scDrivetrain, scDrivetrain);
     m_chooser.AddOption(scDriveStraight, scDriveStraight);
@@ -73,6 +75,7 @@ void Robot::TeleopInit()
             m_turnangleprofiled->Init();
             break;
         case kRamseteController:
+            m_ramsetecontrol->Init();
             break;
     }
 }
@@ -117,6 +120,8 @@ void Robot::TeleopPeriodic()
             SmartDashboard::PutBoolean("Finished", m_turnangleprofiled->IsFinished());
             break;
         case kRamseteController:
+            m_ramsetecontrol->Loop();
+            SmartDashboard::PutBoolean("Finished", m_ramsetecontrol->IsFinished());
             break;
     }
 }

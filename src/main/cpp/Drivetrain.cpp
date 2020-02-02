@@ -168,6 +168,19 @@ void Drivetrain::ResetGyro()
 }
 
 
+void Drivetrain::SetEncoders(double meters)
+{
+	double distance = meters * TICKS_PER_METER;
+	m_leftsensor->SetIntegratedSensorPosition(distance);
+	m_rightsensor->SetIntegratedSensorPosition(distance);
+}
+
+void Drivetrain::SetGyro(double degrees)
+{
+	m_gyro->SetFusedHeading(degrees);
+}
+
+
 void Drivetrain::ConfigureInverts()
 {
 	bool left = SmartDashboard::GetBoolean("Invert Left", 0);

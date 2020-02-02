@@ -52,6 +52,7 @@ protected:
     double m_gyroPIDvals[3];
 
     units::meter_t m_setpoint;
+    units::meter_t m_prevgoal;
     bool m_finished;
 
     AutoState m_autostate;

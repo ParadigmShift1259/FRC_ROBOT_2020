@@ -10,6 +10,8 @@
 #include "DriveStraightDouble.h"
 #include "TurnAngleDegrees.h"
 #include "TurnAngleProfiled.h"
+#include "DriveSubsystem.h"
+#include "RamseteControl.h"
 
 #include <frc\smartdashboard\SendableChooser.h>
 
@@ -49,6 +51,8 @@ protected:
 	DriveStraightDouble *m_drivestraightdouble;
 	TurnAngleDegrees *m_turnangledegrees;
 	TurnAngleProfiled *m_turnangleprofiled;
+	DriveSubsystem *m_drivesubsystem;
+	RamseteControl *m_ramsetecontrol;
 
 	TestTypes m_selector;
 	const string scDrivetrain = "Drivetrain";

@@ -34,6 +34,7 @@ DriveStraight::DriveStraight(OperatorInputs *inputs, Drivetrain *drivetrain)
 
     m_setpoint = 0_m;
     m_finished = false;
+    m_prevgoal = 0_m;
 
     m_autostate = kIdle;
 }
@@ -70,6 +71,7 @@ void DriveStraight::Init()
 
     
     m_setpoint = 0_m;
+    m_prevgoal = 0_m;
     m_finished = false;
 
     m_autostate = kIdle;
@@ -99,11 +101,13 @@ void DriveStraight::Loop()
             if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
             {
                 m_setpoint = setpoint;
-                // resets both encoders and gyro before attempting drivestraight
-                //m_drivetrain->ResetEncoders();
+                // resets gyro before attempting drivestraight
                 m_drivetrain->ResetGyro();
+                // Sets encoders to previous goal to match motion profile
+                m_drivetrain->SetEncoders(m_prevgoal.to<double>());
                 // Sets the goal of the motion profiled run
-                m_encoderPIDController->SetGoal(m_setpoint);
+                // Adds the previous goal so the motion profile is effectively "reset"
+                m_encoderPIDController->SetGoal(m_setpoint + m_prevgoal);
                 m_autostate = kDrive;
                 m_finished = false;
             }
@@ -120,7 +124,8 @@ void DriveStraight::Loop()
             double encoder2 = m_drivetrain->GetRightSensor()->GetIntegratedSensorPosition() / TICKS_PER_METER * ENCODER_INVERTED;
             // averaging two encoders to obtain final value
             units::meter_t currdist = units::meter_t{ (encoder1 + encoder2) / 2};
-            SmartDashboard::PutNumber("Currdist", currdist.to<double>());
+            // Currdist is techincally currdist + prevgoal, but to make things relative to 0, prevgoal must be subtracted
+            SmartDashboard::PutNumber("Currdist", currdist.to<double>() - m_prevgoal.to<double>());
             double x = m_encoderPIDController->Calculate(currdist);
 
             SmartDashboard::PutNumber("Z", z);
@@ -130,6 +135,7 @@ void DriveStraight::Loop()
 
             if (m_encoderPIDController->AtGoal())
             {
+                m_prevgoal = m_setpoint;
                 m_setpoint = 0_m;
                 m_encoderPIDController->SetGoal(m_setpoint);
                 SmartDashboard::PutNumber("Setpoint", m_setpoint.to<double>());

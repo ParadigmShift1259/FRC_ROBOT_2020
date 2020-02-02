@@ -117,7 +117,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TICKS_PER_REV 2048
 #define TICKS_PER_METER (TICKS_PER_REV * FX_GEAR_RATIO / WHEEL_CIRCUMFERENCE)
 #define WHEEL_BASE 0.1
-#define WHEEL_TRACK 0.1
+#define WHEEL_TRACK 0.665721682
 #define ROBOT_CIRCUMFERENCE (sqrt(WHEEL_BASE * WHEEL_BASE + WHEEL_TRACK * WHEEL_TRACK) * 3.1415926535)
 
 // Gyro

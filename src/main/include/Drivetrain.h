@@ -31,6 +31,8 @@ public:
 	void ReportData();
 	void ResetEncoders();
 	void ResetGyro();
+	void SetEncoders(double meters);
+	void SetGyro(double degrees);
 	void ConfigureInverts();
 
 	TalonFXSensorCollection *GetLeftSensor() {return m_leftsensor; }
