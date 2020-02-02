@@ -18,6 +18,29 @@
 DriveSubsystem::DriveSubsystem(Drivetrain *drivetrain)
 {
     m_drivetrain = drivetrain;
+}
+
+
+DriveSubsystem::~DriveSubsystem()
+{
+    if (m_drivetrain != nullptr)
+        delete m_drivetrain;
+}
+
+
+void DriveSubsystem::Periodic() 
+{
+  // Implementation of subsystem periodic method goes here.
+    m_odometry->Update(Rotation2d(units::degree_t(GetHeading())),
+                    units::meter_t(m_drivetrain->GetLeftSensor()->GetIntegratedSensorPosition() / TICKS_PER_METER),
+                    units::meter_t(m_drivetrain->GetRightSensor()->GetIntegratedSensorPosition() / TICKS_PER_METER * ENCODER_INVERTED));
+}
+
+
+void DriveSubsystem::Init()
+{
+    m_drivetrain->Init();
+    
     m_gyro = m_drivetrain->GetGyro();
 
 	m_feedforward = new SimpleMotorFeedforward<units::meters>(
@@ -58,22 +81,6 @@ DriveSubsystem::DriveSubsystem(Drivetrain *drivetrain)
 	m_rightPID = new frc2::PIDController(0, 0, 0);				// P, I, D
     m_ramsetecontroller = new RamseteController(0.7, 2.0);      // B, Z
 
-}
-
-
-DriveSubsystem::~DriveSubsystem()
-{
-    if (m_drivetrain != nullptr)
-        delete m_drivetrain;
-}
-
-
-void DriveSubsystem::Periodic() 
-{
-  // Implementation of subsystem periodic method goes here.
-    m_odometry->Update(Rotation2d(units::degree_t(GetHeading())),
-                    units::meter_t(m_drivetrain->GetLeftSensor()->GetIntegratedSensorPosition() / TICKS_PER_METER),
-                    units::meter_t(m_drivetrain->GetRightSensor()->GetIntegratedSensorPosition() / TICKS_PER_METER * ENCODER_INVERTED));
 }
 
 

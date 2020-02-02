@@ -45,6 +45,7 @@ class DriveSubsystem : public frc2::SubsystemBase
      * Will be called periodically whenever the CommandScheduler runs.
      */
     void Periodic() override;
+    void Init();
 
     void ResetEncoders();
     double GetAverageEncoderDistance();

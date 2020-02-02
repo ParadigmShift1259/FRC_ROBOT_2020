@@ -75,6 +75,7 @@ void Robot::TeleopInit()
             m_turnangleprofiled->Init();
             break;
         case kRamseteController:
+            m_drivesubsystem->Init();
             m_ramsetecontrol->Init();
             break;
     }
