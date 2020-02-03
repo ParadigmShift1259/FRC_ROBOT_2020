@@ -1,12 +1,12 @@
 /**
- *  DriveStraight.h
- *  Date: 1/30/20
+ *  CurveAuto.h
+ *  Date: 2/3/20
  *  Last Edited By: Geoffrey Xue
  */
 
 
-#ifndef SRC_DriveStraight_H_
-#define SRC_DriveStraight_H_
+#ifndef SRC_CurveAuto_H_
+#define SRC_CurveAuto_H_
 
 #include "OperatorInputs.h"
 #include "Drivetrain.h"
@@ -15,31 +15,24 @@
 
 #include <frc/controller/ProfiledPIDController.h>
 #include <frc/trajectory/TrapezoidProfile.h>
-#include <frc/controller/PIDController.h>
-
 
 
 using namespace std;
 using namespace frc;
 
-/**
- * FIXABLE ERRORS 2/3/20
- * Reset can be done without prevvalue, just call the reset on the PIDController
- * (whoops)
- */
 
-class DriveStraight
+class CurveAuto
 {
 public:
 
     enum AutoState {kIdle, kDrive};
 
-	DriveStraight(OperatorInputs *inputs, Drivetrain *drivetrain);
-	~DriveStraight();
+	CurveAuto(OperatorInputs *inputs, Drivetrain *drivetrain);
+	~CurveAuto();
 	void Init();
 	void Loop();
 	void Stop();
-    void ConfigureProfile();
+    void ConfigureProfiles();
     void ConfigureGyroPID();
     void ConfigureEncoderPID();
     bool IsFinished() { return m_finished; }
@@ -49,19 +42,25 @@ protected:
     Drivetrain *m_drivetrain;
 
     ProfiledPIDController<units::meters> *m_encoderPIDController;
-    TrapezoidProfile<units::meters>::Constraints m_constraints;
-    units::meter_t m_tolerance;
+    TrapezoidProfile<units::meters>::Constraints m_encoderconstraints;
+    units::meter_t m_encodertolerance;
     double m_encoderPIDvals[3];
 
-	frc2::PIDController *m_gyroPIDController;
+    ProfiledPIDController<units::meters> *m_gyroPIDController;
+    TrapezoidProfile<units::meters>::Constraints m_gyroconstraints;
+    units::degree_t m_gyrotolerance;
     double m_gyroPIDvals[3];
 
     units::meter_t m_setpoint;
-    units::meter_t m_prevgoal;
+    units::degree_t m_setpointangle;
+    units::meter_t m_encoderprevgoal;
+    units::degree_t m_gyroprevgoal;
+    int m_turns;
+
     bool m_finished;
 
     AutoState m_autostate;
 };
 
 
-#endif /* SRC_DriveStraight_H_ */
+#endif /* SRC_CurveAuto_H_ */

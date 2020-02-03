@@ -12,6 +12,7 @@
 #include "TurnAngleProfiled.h"
 #include "DriveSubsystem.h"
 #include "RamseteControl.h"
+#include "CurveAuto.h"
 
 #include <frc\smartdashboard\SendableChooser.h>
 
@@ -30,8 +31,9 @@ public:
      * TurnAngleDegrees - Runs Gyro PID, 1 set of PID vals
      * TurnAngleProfiled - Runs Profiled Gyro PID, 1 set of PID vals + Profile setup
      * RamseteController - Runs Ramsete Controller, 2 sets of PID vals + Profile setup
+	 * CurveAuto - Runs a Profiled encoder PID and a Profiled Gyro PID with 2 turns
      */
-	enum TestTypes {kDrivetrain, kDriveStraight, kDriveStraightDouble, kTurnAngleDegrees, kTurnAngleProfiled, kRamseteController};
+	enum TestTypes {kDrivetrain, kDriveStraight, kDriveStraightDouble, kTurnAngleDegrees, kTurnAngleProfiled, kRamseteController, kCurveAuto};
 
 	virtual void RobotInit();
 	virtual void RobotPeriodic();
@@ -53,6 +55,7 @@ protected:
 	TurnAngleProfiled *m_turnangleprofiled;
 	DriveSubsystem *m_drivesubsystem;
 	RamseteControl *m_ramsetecontrol;
+	CurveAuto *m_curveauto;
 
 	TestTypes m_selector;
 	const string scDrivetrain = "Drivetrain";
@@ -61,6 +64,7 @@ protected:
 	const string scTurnAngleDegrees = "TurnAngleDegrees";
 	const string scTurnAngleProfiled = "TurnAngleProfiled";
 	const string scRamseteController = "RamseteController";
+	const string scCurveAuto = "CurveAuto";
 	SendableChooser<string> m_chooser;
 	void ReadChooser();
 };

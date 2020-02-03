@@ -25,6 +25,7 @@ void Robot::RobotInit()
     m_turnangleprofiled = new TurnAngleProfiled(m_operatorinputs, m_drivetrain);
     m_drivesubsystem = new DriveSubsystem(m_drivetrain);
     m_ramsetecontrol = new RamseteControl(m_operatorinputs, m_drivetrain, m_drivesubsystem);
+    m_curveauto = new CurveAuto(m_operatorinputs, m_drivetrain);
 
     m_chooser.SetDefaultOption(scDrivetrain, scDrivetrain);
     m_chooser.AddOption(scDriveStraight, scDriveStraight);
@@ -32,6 +33,7 @@ void Robot::RobotInit()
     m_chooser.AddOption(scTurnAngleDegrees, scTurnAngleDegrees);
     m_chooser.AddOption(scTurnAngleProfiled, scTurnAngleProfiled);
     m_chooser.AddOption(scRamseteController, scRamseteController);
+    m_chooser.AddOption(scCurveAuto, scCurveAuto);
     SmartDashboard::PutData("Drive Modes", &m_chooser);
 }
 
@@ -77,6 +79,9 @@ void Robot::TeleopInit()
         case kRamseteController:
             m_drivesubsystem->Init();
             m_ramsetecontrol->Init();
+            break;
+        case kCurveAuto:
+            m_curveauto->Init();
             break;
     }
 }
@@ -124,6 +129,12 @@ void Robot::TeleopPeriodic()
             m_ramsetecontrol->Loop();
             SmartDashboard::PutBoolean("Finished", m_ramsetecontrol->IsFinished());
             break;
+        case kCurveAuto:
+            m_curveauto->ConfigureGyroPID();
+            m_curveauto->ConfigureEncoderPID();
+            m_curveauto->ConfigureProfiles();
+            m_curveauto->Loop();
+            SmartDashboard::PutBoolean("Finished", m_curveauto->IsFinished());
     }
 }
 
@@ -135,6 +146,7 @@ void Robot::DisabledInit()
 
 void Robot::DisabledPeriodic()
 {
+    SmartDashboard::PutData("Drive Modes", &m_chooser);
     ReadChooser();
 }
 
@@ -150,6 +162,7 @@ void Robot::ReadChooser()
      * TurnAngleDegrees - Runs Gyro PID, 1 set of PID vals
      * TurnAngleProfiled - Runs Profiled Gyro PID, 1 set of PID vals + Profile setup
      * RamseteController - Runs Ramsete Controller, 2 sets of PID vals + Profile setup
+     * CurveAuto - Runs a Profiled encoder PID and a Profiled Gyro PID with 2 turns
      */
     m_selector = kDrivetrain;
     if (driveselected == scDrivetrain)
@@ -168,6 +181,9 @@ void Robot::ReadChooser()
     else
     if (driveselected == scRamseteController)
         m_selector = kRamseteController;
+    else
+    if (driveselected == scCurveAuto)
+        m_selector = kCurveAuto;
 }
 
 
