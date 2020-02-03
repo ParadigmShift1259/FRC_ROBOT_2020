@@ -41,8 +41,7 @@ Turret::~Turret()
 
 void Turret::Init()
 {
-
-    m_flywheelmotor = new CANSparkMax(1, CANSparkMax::MotorType::kBrushless);
+    m_flywheelmotor = new CANSparkMax(TUR_SHOOTER_ID, CANSparkMax::MotorType::kBrushless);
     m_flywheelPID = new CANPIDController(*m_flywheelmotor);
     m_flywheelencoder = new CANEncoder(*m_flywheelmotor);
 
@@ -76,8 +75,6 @@ void Turret::Init()
     m_turretstate = kIdle;
     m_firemode = kHoldFire;
     m_rampstate = kMaintain;
-
-
 }
 
 
@@ -148,10 +145,13 @@ void Turret::TurretStates()
             if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))       // needs to be changed so automatic
                 m_turretstate = kReady;
             break;
+    
         case kReady:
+            // if turret angle is off by tolerance, set readytofire to false and go back to kHoming
             m_readytofire = true;
             // wait until FireModes turns turretstate back to kReturn
             break;
+
         case kReturn:
             m_readytofire = false;
             m_flywheelsetpoint = TUR_IDLE_STATE_RPM;
@@ -168,10 +168,13 @@ void Turret::FireModes()
     {
         case kFireWhenReady:
             // if (m_readytofire) - Call intake to retrieve balls
+            break;
         case kHoldFire:
             // if (m_readytofire && m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0)) - call intake to retrieve balls
+            break;
         case kManualFire:
             // if m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0) - call intake to retrieve balls
+            break;
         case kOff:
             // nothing
             break;

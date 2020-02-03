@@ -87,6 +87,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define NEO_CONVERSION (WHEEL_DIAMETER * 3.1415926535 / 5.2)
 
 //  Turret
+#define TUR_SHOOTER_ID 1
 #define TUR_TIMEOUT_MS 30
 #define ENCODER_TICKS_PER_REV 4096.00
 #define MINUTES_TO_HUNDRED_MS 0.00166666
