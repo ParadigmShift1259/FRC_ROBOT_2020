@@ -147,6 +147,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define INT_SENSOR1 ENABLED(INT_ENABLED, 1)
 #define INT_SENSOR2 ENABLED(INT_ENABLED, 2)
 #define INT_SENSOR3 ENABLED(INT_ENABLED, 3)
+#define INT_INTAKE_SPEED 0.5
 
 
 // Feeder
@@ -159,7 +160,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define FDR_MOTOR ENABLED(FDR_ENABLED, 9)
 #define FDR_SENSOR ENABLED(FDR_ENABLED, 0)
 #define BALL_REGISTER_DISTANCE 3
-#define REFRESH_SPEED_LOAD 0.
+#define REFRESH_SPEED_LOAD 0.5
 #define REFRESH_SPEED_FIRE 0.7
 
 

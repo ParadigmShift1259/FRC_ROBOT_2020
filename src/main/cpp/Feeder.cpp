@@ -109,18 +109,20 @@ void Feeder::FeederStateMachine()
             power = REFRESH_SPEED_LOAD;
 
         m_motor->Set(power);
-        
-        if (false && m_shoot)   // replace with encoder / distance checking
+        if (false)
         {
-            m_hasball = false;
-            m_shoot = false;
-            m_feederstate = kFire;
-        }
-        else
-        if (true && !m_shoot)   // replace with encoder / distance checking
-        {
-            m_hasball = true;
-            m_feederstate = kIdle;
+            if (m_shoot)
+            {
+                m_hasball = true;
+                m_shoot = false;
+                m_feederstate = kFire;
+            }
+            else
+            if (!m_shoot)
+            {
+                m_hasball = true;
+                m_feederstate = kIdle;
+            }
         }
         break;
 

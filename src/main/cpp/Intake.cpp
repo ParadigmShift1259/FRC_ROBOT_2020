@@ -115,8 +115,8 @@ void Intake::Loop()
         if ((m_ballcount >= 3) && !m_drivingbecauseshooting)
             m_intakestate = kIdle;
 
-        m_motor1->Set(0.5);
-        m_motor2->Set(0.5);
+        m_motor1->Set(INT_INTAKE_SPEED);
+        m_motor2->Set(INT_INTAKE_SPEED);
         break;
 
     default: 
@@ -133,8 +133,6 @@ void Intake::Stop()
         return;
     
     m_intakestate = kIdle;
-    m_solenoid1->Set(false);
-    m_solenoid2->Set(false);
 }
 
 
@@ -144,7 +142,7 @@ void Intake::Dashboard()
         return;
 }
 
-
+// Returns if the feeder should refresh
 bool Intake::LoadRefresh()
 {
     return (m_ballcount >= 2 && !m_drivingbecauseshooting);
