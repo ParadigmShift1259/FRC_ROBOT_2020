@@ -106,7 +106,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 //   Compressor
-#define PCM_ENABLED 0            // set to 1 to enable compressor
+#define PCM_ENABLED 1            // set to 1 to enable compressor
 #define PCM_COMPRESSOR_SOLENOID ENABLED(PCM_ENABLED, 0)
 #define CAN_POWER_DISTRIBUTION_PANEL 0
 #define PNE_CURRENT_DRAW 80
@@ -139,7 +139,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 // Intake
-#define INT_ENABLED 0           // set to 1 to enable intake motors
+#define INT_ENABLED 1           // set to 1 to enable intake motors
 #define INT_SOLENOID1 ENABLED(INT_ENABLED, 0)
 #define INT_SOLENOID2 ENABLED(INT_ENABLED, 1)
 #define INT_MOTOR1 ENABLED(INT_ENABLED, 7)
