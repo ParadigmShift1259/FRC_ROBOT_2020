@@ -7,8 +7,6 @@
 
 #include "Turret.h"
 #include "Const.h"
-//#include "Feeder.h"
-//#include "Intake.h"
 
 
 using namespace std;
@@ -16,207 +14,263 @@ using namespace std;
 
 Turret::Turret(OperatorInputs *inputs)
 {
-	m_inputs = inputs;
+    m_inputs = inputs;
 
-	m_flywheelmotor = nullptr;
+    m_flywheelmotor = nullptr;
+    m_flywheelPID = nullptr;
+    m_flywheelencoder = nullptr;
+    
+    m_flywheelsetpoint = 0;
+    m_flywheelrampedsetpoint = 0;
+    m_initialfeedforward = 0;
 
-	// P, I, D, FF, Iz, nominal, peak
-	// PID Values tuned for MiniCIM 1/17/20 Geoffrey
-	m_flywheelPIDvals[0] = 0.8; 
-	m_flywheelPIDvals[1] = 0.0; 
-	m_flywheelPIDvals[2] = 0.029; 
-	m_flywheelPIDvals[3] = 0.035;
-	m_flywheelPIDvals[4] = 2000;
-	m_flywheelPIDvals[5] = 0;
-	m_flywheelPIDvals[6] = 0.5;
-	
-	m_flywheelsetpoint = 0;
+    m_readytofire = false;
 
-	//m_pigeon = nullptr;
-	//m_heading = 0;
-	//m_hoodmotor = nullptr;
-	//m_turretmotor = nullptr;
-	//m_hoodPID = nullptr;
-	//m_turretPID = nullptr;
-	//m_hoodPIDvals[0] = 0.0; m_hoodPIDvals[1] = 0.0; m_hoodPIDvals[2] = 0.0;
-	//m_turretPIDvals[0] = 0.0; m_turretPIDvals[1] = 0.0; m_turretPIDvals[2] = 0.0;
-
-	m_turretstate = kIdle;
-	m_firemode = kHoldFire;
+    m_turretstate = kIdle;
+    m_firemode = kHoldFire;
+    m_rampstate = kMaintain;
 }
 
 
 Turret::~Turret()
 {
-	if (m_flywheelmotor != nullptr)
-		delete m_flywheelmotor;
-	/*
-	if (m_flywheelPID != nullptr)
-		delete m_flywheelPID;
-	if (m_flywheelencoder != nullptr)
-		delete m_flywheelencoder;
-		*/
-	/*
-	if (m_pigeon != nullptr)
-		delete m_pigeon;
-	if (m_hoodmotor != nullptr)
-		delete m_hoodmotor;
-	if (m_turretmotor != nullptr)
-		delete m_turretmotor;
-	if (m_hoodPID != nullptr)
-		delete m_hoodPID;
-	if (m_turretPID != nullptr)
-		delete m_turretPID;
-	*/
+    if (m_flywheelmotor != nullptr)
+        delete m_flywheelmotor;
 }
 
 
 void Turret::Init()
 {
-	/**
-	 * Constants needed:
-	 * CAN_GYRO_TURRET
-	 * CAN_FLYWHEEL_PORT
-	 * CAN_HOOD_PORT
-	 * CAN_TURRET_PORT
-	 */
+	if (!NullCheck())
+		return;
 
-	m_flywheelmotor = new TalonSRX(0);
-	m_flywheelmotor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, TIMEOUT_MS);
-	m_flywheelmotor->SetSensorPhase(true);
-	m_flywheelmotor->SetInverted(true);
+	m_flywheelmotor = new CANSparkMax(TUR_SHOOTER_ID, CANSparkMax::MotorType::kBrushless);
+    m_flywheelPID = new CANPIDController(*m_flywheelmotor);
+    m_flywheelencoder = new CANEncoder(*m_flywheelmotor);
 
+    m_flywheelmotor->SetInverted(true);
+    m_flywheelmotor->SetIdleMode(CANSparkMax::IdleMode::kCoast);
 
-	/* set the peak and nominal outputs */
-	m_flywheelmotor->ConfigNominalOutputForward(m_flywheelPIDvals[5], TIMEOUT_MS);
-	m_flywheelmotor->ConfigNominalOutputReverse(-1 * m_flywheelPIDvals[5], TIMEOUT_MS);
-	m_flywheelmotor->ConfigPeakOutputForward(m_flywheelPIDvals[6], TIMEOUT_MS);
-	m_flywheelmotor->ConfigPeakOutputReverse(-1 * m_flywheelPIDvals[6], TIMEOUT_MS);
-	/* set closed loop gains in slot0 */
-	m_flywheelmotor->Config_kP(0, m_flywheelPIDvals[0], TIMEOUT_MS);
-	m_flywheelmotor->Config_kI(0, m_flywheelPIDvals[1], TIMEOUT_MS);
-	m_flywheelmotor->Config_kD(0, m_flywheelPIDvals[2], TIMEOUT_MS);
-	m_flywheelmotor->Config_kF(0, m_flywheelPIDvals[3], TIMEOUT_MS);
-	m_flywheelmotor->SetNeutralMode(NeutralMode::Coast);
+    m_PIDslot = 0;
+    // set the peak and nominal outputs
+    m_flywheelPID->SetOutputRange(TUR_MINOUT, TUR_MAXOUT);
+    // use WPILIB simple motor feed forward class to pair with robot characterization
+    m_flywheelPID->SetFF(0, 0);
+    m_simplemotorfeedforward = new SimpleMotorFeedforward<units::meters>(
+                            units::volt_t{TUR_KS}, 
+                            TUR_KV * 1_V * 1_s / 1_m, 
+                            TUR_KA * 1_V * 1_s * 1_s / 1_m);
+    // set increase and decrease PID gains on slot 0
+    m_flywheelPID->SetP(TUR_P, 0);
+    m_flywheelPID->SetI(TUR_I, 0);
+    m_flywheelPID->SetD(TUR_D, 0);
+    // set maintain PID gains on slot 1
+    m_flywheelPID->SetP(TUR_MP, 1);
+    m_flywheelPID->SetI(TUR_MI, 1);
+    m_flywheelPID->SetD(TUR_MD, 1);
 
-	//m_pigeon = new PigeonIMU(0);
-	//m_heading = 0;
-	//m_hoodmotor = new TalonSRX(1);
-	//m_turretmotor = new TalonSRX(2);
-	//m_hoodPID = new PIDController(m_hoodPIDvals[0], m_hoodPIDvals[1], m_hoodPIDvals[2], nullptr, nullptr);
-	//m_turretPID = new PIDController(m_turretPIDvals[0], m_turretPIDvals[1], m_turretPIDvals[2], nullptr, nullptr);
+    m_flywheelsetpoint = 0;
+    m_flywheelrampedsetpoint = 0;
+    m_initialfeedforward = 0;
 
-	m_turretstate = kIdle;
-	m_firemode = kHoldFire;
+    m_readytofire = false;
 
-	// Testing purposes for PID
-	SmartDashboard::PutNumber("TU1_P Gain",        m_flywheelPIDvals[0]);
-	SmartDashboard::PutNumber("TU2_I Gain",        m_flywheelPIDvals[1]);
-	SmartDashboard::PutNumber("TU3_D Gain",        m_flywheelPIDvals[2]);
-	//SmartDashboard::PutNumber("I Zone",        m_flywheelPIDvals[3]);
-	SmartDashboard::PutNumber("TU4_Feed Forward",  m_flywheelPIDvals[3]);
-	SmartDashboard::PutNumber("TU5_Min Output",    m_flywheelPIDvals[5]);
-	SmartDashboard::PutNumber("TU6_Max Output",    m_flywheelPIDvals[6]);
-	SmartDashboard::PutNumber("TU7_RPMScaling", 100);
+    m_turretstate = kIdle;
+    m_firemode = kHoldFire;
+    m_rampstate = kMaintain;
 }
 
 
 void Turret::Loop()
 {
-	// read PID coefficients from SmartDashboard
-	double p = SmartDashboard::GetNumber("TU1_P Gain", 0);
-	double i = SmartDashboard::GetNumber("TU2_I Gain", 0);
-	double d = SmartDashboard::GetNumber("TU3_D Gain", 0);
-	//double iz = SmartDashboard::GetNumber("I Zone", 0);
-	double ff = SmartDashboard::GetNumber("TU4_Feed Forward", 0);
-	double peak = SmartDashboard::GetNumber("TU5_Max Output", 0);
-	double nominal = SmartDashboard::GetNumber("TU6_Min Output", 0);
-	double RPMScaling = SmartDashboard::GetNumber("TU7_RPMScaling", 100);
+	if (!NullCheck())
+		return;
 
-	// if PID coefficients on SmartDashboard have changed, write new values to controller
-	if((p != m_flywheelPIDvals[0])) { m_flywheelmotor->Config_kP(0, p, TIMEOUT_MS); m_flywheelPIDvals[0] = p; }
-	if((i != m_flywheelPIDvals[1])) { m_flywheelmotor->Config_kI(0, i, TIMEOUT_MS); m_flywheelPIDvals[1] = i; }
-	if((d != m_flywheelPIDvals[2])) { m_flywheelmotor->Config_kD(0, d, TIMEOUT_MS); m_flywheelPIDvals[2] = d; }
-	//if((iz != m_flywheelPIDvals[3])) { m_flywheelPID->SetIZone(iz); m_flywheelPIDvals[3] = iz; }
-	if((ff != m_flywheelPIDvals[3])) { m_flywheelmotor->Config_kF(0, ff, TIMEOUT_MS); m_flywheelPIDvals[3] = ff; }
-	if((nominal != m_flywheelPIDvals[5]) || (peak != m_flywheelPIDvals[6])) 
-	{ 
-		m_flywheelmotor->ConfigNominalOutputForward(nominal, TIMEOUT_MS);
-		m_flywheelmotor->ConfigNominalOutputReverse(-1 * nominal, TIMEOUT_MS);
-		m_flywheelmotor->ConfigPeakOutputForward(peak, TIMEOUT_MS);
-		m_flywheelmotor->ConfigPeakOutputReverse(-1 * peak, TIMEOUT_MS);
-		m_flywheelPIDvals[5] = nominal; m_flywheelPIDvals[6] = peak; 
-	}
+    TurretStates();
+    FireModes();
 
-	// Testing sample speeds
+    RampUpSetpoint();
 
-	if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
-		m_flywheelsetpoint = 0;
-	else if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
-		m_flywheelsetpoint = 1 * RPMScaling;
-	else if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0))
-		m_flywheelsetpoint = 2 * RPMScaling;
-	else if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0))
-		m_flywheelsetpoint = 3 * RPMScaling;
-	
-	if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 0))
-		m_flywheelsetpoint += 10;
-	else if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0) && (m_flywheelsetpoint >= 10))
-		m_flywheelsetpoint -= 10;
-
-	double targetVelocity_UnitsPer100ms = m_flywheelsetpoint * ENCODER_TICKS_PER_REV * MINUTES_TO_HUNDRED_MS;
-	/* 500 RPM in either direction */
-	m_flywheelmotor->Set(ControlMode::Velocity, targetVelocity_UnitsPer100ms); 
-	//m_flywheelPID->SetReference(setpoint, ControlType::kVelocity);
-
-	SmartDashboard::PutNumber("TU8_SetPoint", m_flywheelsetpoint);
-	SmartDashboard::PutNumber("TU9_Encoder_Position in Revolutions", m_flywheelmotor->GetSelectedSensorPosition(0) / ENCODER_TICKS_PER_REV);
-	SmartDashboard::PutNumber("TU10_Encoder_Velocity in RPM", m_flywheelmotor->GetSelectedSensorVelocity(0) / MINUTES_TO_HUNDRED_MS / ENCODER_TICKS_PER_REV);
-	SmartDashboard::PutNumber("TU11_ClosedLoopError", m_flywheelmotor->GetClosedLoopError(0));
-	SmartDashboard::PutNumber("TU12_ClosedLoopTarget", m_flywheelmotor->GetClosedLoopTarget(0));
-	SmartDashboard::PutNumber("TU13_Motor Voltage", m_flywheelmotor->GetMotorOutputVoltage());
-
-	//TurretStates();
-	//FireModes();
+    SmartDashboard::PutNumber("TUR0_Setpoint", m_flywheelsetpoint);
+    SmartDashboard::PutNumber("TUR1_Encoder_Position in Native units", m_flywheelencoder->GetPosition());
+    SmartDashboard::PutNumber("TUR2_Encoder_Velocity in Native Speed", m_flywheelencoder->GetVelocity());
+    SmartDashboard::PutNumber("TUR3_SimpleMotorFeedforward", m_initialfeedforward);
+    SmartDashboard::PutNumber("TUR4_Error", m_flywheelrampedsetpoint - m_flywheelencoder->GetVelocity());
+    SmartDashboard::PutNumber("TUR5_RampedSetpoint", m_flywheelrampedsetpoint);
+    SmartDashboard::PutNumber("TUR6_RampState", m_rampstate);
+    SmartDashboard::PutNumber("TUR7_PIDslot", m_PIDslot);
 }
 
 
 void Turret::Stop()
 {
-	m_flywheelsetpoint = 0;
-	//m_flywheelPID->SetReference(0, ControlType::kVelocity);
+	if (!NullCheck())
+		return;
+
+    m_flywheelsetpoint = 0;
+    m_flywheelmotor->SetIdleMode(CANSparkMax::IdleMode::kCoast);
 }
 
 
 void Turret::TurretStates()
 {
-	switch (m_turretstate)
-	{
-		case kIdle:
-		case kPreMove:
-		case kHoming:
-		case kReady:
-		case kFire:
-		case kReturn:
-			break;
-	}
+    switch (m_turretstate)
+    {
+        case kIdle:
+            m_readytofire = false;
+            m_flywheelsetpoint = TUR_IDLE_STATE_RPM;
+            // Bring m_shooter to as close to 0 angle as possible
+
+            if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))    // and vision target is found
+                m_turretstate = kHoming;
+            else
+            if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+                m_turretstate = kPreMove;
+            
+            break;
+        case kPreMove:
+            m_readytofire = false;
+            m_flywheelsetpoint = TUR_PREMOVE_STATE_RPM;
+            // Manual movement of m_shooter to get closer to vision target
+
+            if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))    // and vision target is found
+                m_turretstate = kHoming;
+            break;
+        case kHoming:
+            m_readytofire = false;
+            // CalculateHoodFlywheel(distance, m_hoodangle, m_setpoint);
+            if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
+                m_flywheelsetpoint = 2700;
+            else if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0))
+                m_flywheelsetpoint = 2800;
+            else if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0))
+                m_flywheelsetpoint = 2900;
+            
+            if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 0))
+                m_flywheelsetpoint += 100;
+            else if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0) && (m_flywheelsetpoint >= 50))
+                m_flywheelsetpoint -= 100;
+
+            if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))       // needs to be changed so automatic
+                m_turretstate = kReady;
+            break;
+    
+        case kReady:
+            // if turret angle is off by tolerance, set readytofire to false and go back to kHoming
+            m_readytofire = true;
+            // wait until FireModes turns turretstate back to kReturn
+            break;
+
+        case kReturn:
+            m_readytofire = false;
+            m_flywheelsetpoint = TUR_IDLE_STATE_RPM;
+            if (m_rampstate == RampState::kMaintain)
+                m_turretstate = kIdle;
+            break;
+    }
 }
 
 
 void Turret::FireModes()
 {
-	switch (m_firemode)
-	{
-		case kFireWhenReady:
-		case kHoldFire:
-		case kManualFire:
-		case kOff:
-			break;
-	}
+    switch (m_firemode)
+    {
+        case kFireWhenReady:
+            // if (m_readytofire) - Call intake to retrieve balls
+            break;
+        case kHoldFire:
+            // if (m_readytofire && m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0)) - call intake to retrieve balls
+            break;
+        case kManualFire:
+            // if m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0) - call intake to retrieve balls
+            break;
+        case kOff:
+            // nothing
+            break;
+    }
 }
 
 
 void Turret::CalculateHoodFlywheel(double distance, double &hoodangle, double &flywheelspeed)
 {
 
+}
+
+
+void Turret::RampUpSetpoint()
+{
+
+    switch (m_rampstate)
+    {
+        case kMaintain:
+            m_PIDslot = 1;
+            if (m_flywheelsetpoint > m_flywheelrampedsetpoint)
+            {
+                m_rampstate = kIncrease;
+            }
+            else
+            if (m_flywheelsetpoint < m_flywheelrampedsetpoint)
+            {
+                m_rampstate = kDecrease;
+            }
+            
+            break;
+        case kIncrease:
+            m_PIDslot = 0;
+            // Provided that the setpoint hasn't been reached and the ramping has already reached halfway
+            if ((m_flywheelsetpoint > m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() - m_flywheelrampedsetpoint > -1.0 * TUR_RAMPING_RATE / 2))
+            {
+                m_flywheelrampedsetpoint += TUR_RAMPING_RATE;
+
+                if (m_flywheelsetpoint <= m_flywheelrampedsetpoint)
+                    m_flywheelrampedsetpoint = m_flywheelsetpoint;
+            }
+            else
+            // If ramped setpoint has reached to the right speed
+            if (m_flywheelsetpoint <= m_flywheelrampedsetpoint)
+            {
+                m_flywheelrampedsetpoint = m_flywheelsetpoint;
+                m_rampstate = kMaintain;
+                m_PIDslot = 1;
+            }
+            break;
+        case kDecrease:
+            m_PIDslot = 0;
+            // Provided that the setpoint hasn't been reached and the ramping has already reached halfway
+            if ((m_flywheelsetpoint < m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() - m_flywheelrampedsetpoint < TUR_RAMPING_RATE / 1.5))
+            {
+                m_flywheelrampedsetpoint -= TUR_RAMPING_RATE;
+
+                if (m_flywheelsetpoint >= m_flywheelrampedsetpoint)
+                    m_flywheelrampedsetpoint = m_flywheelsetpoint;
+            }
+            else
+            // If ramped setpoint has lowered to the right speed
+            if (m_flywheelsetpoint >= m_flywheelrampedsetpoint)
+            {
+                m_flywheelrampedsetpoint = m_flywheelsetpoint;
+                m_rampstate = kMaintain;
+                m_PIDslot = 1;
+            }
+            break;
+    };
+
+    // Ignore PIDF feedforward and substitute WPILib's SimpleMotorFeedforward class
+    m_flywheelPID->SetFF(0);
+    // Converting setpoint to rotations per second, plugging into simplemotorfeedforward calculate and converting to a double  
+    // The feed forward is set immediately to setpoint as velocity control allows for it
+    // ramping the setpoint is only used to prevent PID from overshooting
+    m_initialfeedforward = m_simplemotorfeedforward->Calculate(m_flywheelsetpoint * TUR_MINUTES_TO_SECONDS * 1_mps).to<double>();
+    m_flywheelPID->SetReference(m_flywheelrampedsetpoint, ControlType::kVelocity, m_PIDslot, m_initialfeedforward);
+}
+
+
+bool Turret::NullCheck()
+{
+	if (TUR_SHOOTER_ID == -1)
+	{
+		return false;
+	}
+
+	return true;
 }
