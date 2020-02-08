@@ -9,6 +9,7 @@
 #include "Const.h"
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/Timer.h>
+#include "math.h"
 
 
 using namespace std;
@@ -74,6 +75,8 @@ void ControlPanel::Init()
 {
 	if (m_spinner == nullptr)
 		return;
+
+	m_colorsensor->ConfigureColorSensor(rev::ColorSensorV3::ColorResolution::k13bit, rev::ColorSensorV3::ColorMeasurementRate::k25ms);
 
 	m_spinnerstate = kBlindSpin;
 
@@ -191,8 +194,19 @@ void ControlPanel::ControlPanelStates()
 		}
 
 		// If one color is registered enough times, stop spinning
-		if (m_colorregisteredcount[3] >= 4)
+		if (m_colorregisteredcount[0] >= 7)
 			m_stop = true;
+
+		if (m_colorregisteredcount[1] >= 7)
+			m_stop = true;
+
+		if (m_colorregisteredcount[2] >= 7)
+			m_stop = true;
+
+		if (m_colorregisteredcount[3] >= 7)
+			m_stop = true;
+
+		
 		
 
 		
@@ -201,7 +215,7 @@ void ControlPanel::ControlPanelStates()
 		{
 			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
 			{
-				std::cout << "TimeStamp, detectedcolor.red, detectedcolor.green, detectedcolor.blue, rawcolor.red, rawcolor.green, rawcolor.blue, rawcolor.ir, matchedcolor.red, matchedcolor.green, matchedcolor.blue, m_currentcolor, m_colorbouncecount, m_registeredcolor, m_colorregisteredcount[0], m_colorregisteredcount[1], m_colorregisteredcount[2], m_colorregisteredcount[3], m_spinnersetpoint" << std::endl;
+				std::cout << "TimeStamp, rawcolor.red, rawcolor.green, rawcolor.blue, hue, sat, m_currentcolor, m_colorbouncecount, m_registeredcolor, m_colorregisteredcount[0], m_colorregisteredcount[1], m_colorregisteredcount[2], m_colorregisteredcount[3], m_spinnersetpoint" << std::endl;
 				m_stop = false;
 				m_colorregisteredcount[0] = 0;
 				m_colorregisteredcount[1] = 0;
@@ -250,11 +264,18 @@ int ControlPanel::GetColor()
     double g = static_cast<double>(rawcolor.green);
     double b = static_cast<double>(rawcolor.blue);
     double mag = r + g + b;
-    Color detectedcolor = frc::Color(r / mag, g / mag, b / mag);
 
-	Color matchedcolor = m_colormatcher.MatchClosestColor(detectedcolor, m_confidence);
+	double hue = fmod(((180/3.14 * atan2(sqrt(3) / 2 * (g - b), r - .5*g - .5*b)) + 360), 360);
+	double M = fmax(fmax(r, g),b);
+	double sat = (M - fmin(fmin(r, g),b)) / M;
+
 
 	int color = 0;
+
+    /* 
+	Color detectedcolor = frc::Color(r / mag, g / mag, b / mag);
+
+	Color matchedcolor = m_colormatcher.MatchClosestColor(detectedcolor, m_confidence);
 
 	if (matchedcolor == kYellowTarget)
 		color = 1;
@@ -267,16 +288,30 @@ int ControlPanel::GetColor()
 	else
 	if (matchedcolor == kBlueTarget)
 		color = 4;
+	*/
 
-	SmartDashboard::PutNumber("CPSIMP1_R", detectedcolor.red);
-	SmartDashboard::PutNumber("CPSIMP2_G", detectedcolor.green);
-	SmartDashboard::PutNumber("CPSIMP3_B", detectedcolor.blue);
+	if (hue > 80 && hue < 100)
+		color = 1;
+	else if (hue > 20 && hue < 40)
+		color = 2;
+	else
+	if (hue < 150 && hue > 120)
+		color = 3;
+	else
+	if (hue < 210 && hue > 180)
+		color = 4;
+
+	SmartDashboard::PutNumber("CPSIMP1_R", r);
+	SmartDashboard::PutNumber("CPSIMP2_G", g);
+	SmartDashboard::PutNumber("CPSIMP3_B", b);
 	SmartDashboard::PutNumber("CPSIMP4_Color", color);
+	SmartDashboard::PutNumber("CPSIMP5_Hue", hue);
+	SmartDashboard::PutNumber("CPSIMP6_Saturation", sat);
+
+
 	if(!m_stop)
 		{
-		std::cout << m_timer->GetFPGATimestamp() << ", " << detectedcolor.red << ", " << detectedcolor.green << ", " << detectedcolor.blue << ", "
-			<< rawcolor.red << ", " << rawcolor.green << ", " << rawcolor.blue << ", " << rawcolor.ir <<  ", " 
-			<< matchedcolor.red << ", " << matchedcolor.green << ", " << matchedcolor.blue << ", ";
+		std::cout << m_timer->GetFPGATimestamp()<< ", " << rawcolor.red << ", " << rawcolor.green << ", " << rawcolor.blue << ", " << hue << ", " << sat << ", ";
 		}
 
 
