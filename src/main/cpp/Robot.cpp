@@ -54,31 +54,33 @@ void Robot::TestPeriodic()
 
 void Robot::TeleopInit()
 {
-	//m_gyrodrive->Init();
+	m_gyrodrive->Init();
 	m_pneumatics->Init();
-	//m_turret->Init();
-	//m_controlpanel->Init();
+	m_turret->Init();
+	m_controlpanel->Init();
 	m_intake->Init();
 }
 
 
 void Robot::TeleopPeriodic()
 {
-	//m_gyrodrive->Loop();
+	m_gyrodrive->Loop();
 	m_pneumatics->Loop();
-	//m_turret->Loop();
-	//m_controlpanel->Loop();
+	m_turret->Loop();
+	m_controlpanel->Loop();
 	m_intake->Loop();
 }
 
 
 void Robot::DisabledInit()
 {
-	//m_gyrodrive->Stop();
-	//m_pneumatics->Stop();
-	//m_turret->Stop();
-	//m_controlpanel->Stop();
+	/*
+	m_gyrodrive->Stop();
+	m_pneumatics->Stop();
+	m_turret->Stop();
+	m_controlpanel->Stop();
 	m_intake->Stop();
+	*/
 }
 
 

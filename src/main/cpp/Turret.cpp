@@ -89,7 +89,8 @@ void Turret::Loop()
     //TurretStates();
     //FireModes();
 
-   m_flywheelsetpoint = abs(m_inputs->xBoxRightY(1*INP_DUAL));
+    // experimental setting of setpoint with controller for now
+    m_flywheelsetpoint = abs(m_inputs->xBoxRightY(1 * INP_DUAL)) * 2500;
     
 
     RampUpSetpoint();

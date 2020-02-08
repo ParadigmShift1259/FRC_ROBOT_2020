@@ -9,23 +9,17 @@
 #include "Intake.h"
 #include "Const.h"
 #include <frc/SmartDashboard/SmartDashboard.h>
-#include <rev/Rev2mDistanceSensor.h>
 #include <frc/I2C.h>
 
 using namespace std;
-using namespace rev;
 
 
 Intake::Intake(OperatorInputs *inputs)
 {
 	m_inputs = inputs;
     m_solenoid1 = nullptr;
-    if (INT_SOLENOID1 != -1)
-        m_solenoid1 = new Solenoid(INT_SOLENOID1);
-
-    m_solenoid2 = nullptr;
-    if (INT_SOLENOID2 != -1)
-        m_solenoid2 = new Solenoid(INT_SOLENOID2);
+    if (INT_SOLENOID != -1)
+        m_solenoid1 = new Solenoid(INT_SOLENOID);
 
     m_motor1 = nullptr;
     if (INT_MOTOR1 != -1)
@@ -45,9 +39,6 @@ Intake::~Intake()
     if (m_solenoid1 != nullptr)
         delete m_solenoid1;
 
-    if (m_solenoid2 != nullptr)
-        delete m_solenoid2;
-
     if (m_motor1 != nullptr)
         delete m_motor1;
 
@@ -59,10 +50,7 @@ bool Intake::NullCheck()
 {
     if (m_solenoid1 == nullptr)
         return false;
-
-    if (m_solenoid2 == nullptr)
-        return false;
-
+    
     if (m_motor1 == nullptr)
         return false;
 
@@ -80,7 +68,6 @@ void Intake::Init()
 
     m_intakestate = kIdle;
     m_solenoid1->Set(false);
-    m_solenoid2->Set(false);
     m_ballcount = 0;
     m_drivingbecauseshooting = false;
 }
@@ -96,10 +83,10 @@ void Intake::Loop()
     if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         m_intakestate = kEject;    
     if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        //m_solenoid1->Set(true);
+        m_solenoid1->Set(true);
         //m_solenoid2->Set(true);
     if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        //m_solenoid1->Set(false);
+        m_solenoid1->Set(false);
         //m_solenoid2->Set(false);
     switch (m_intakestate)
     {
@@ -124,8 +111,8 @@ void Intake::Loop()
         m_motor2->Set(INT_INTAKE_SPEED);
         break;
     case kEject:
-       // m_motor1->Set(-1);
-        //m_motor2->Set(-1);
+        m_motor1->Set(-INT_INTAKE_SPEED);
+        m_motor2->Set(-INT_INTAKE_SPEED);
         
     default: 
         break;

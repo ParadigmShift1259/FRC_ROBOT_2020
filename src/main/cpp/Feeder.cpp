@@ -9,7 +9,6 @@
 #include "Feeder.h"
 #include "Const.h"
 #include <frc/SmartDashboard/SmartDashboard.h>
-#include <rev/Rev2mDistanceSensor.h>
 #include <frc/I2C.h>
 
 
@@ -24,7 +23,7 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake)
 
     m_motor = nullptr;
     if (FDR_MOTOR != -1)
-        m_motor = new Spark(FDR_MOTOR);
+        m_motor = new CANSparkMax(FDR_MOTOR, CANSparkMax::MotorType::kBrushless);
 
     m_solenoid = nullptr;
     if (FDR_SOLENOID != -1)

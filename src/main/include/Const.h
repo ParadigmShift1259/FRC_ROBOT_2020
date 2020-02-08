@@ -63,7 +63,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 //   Drivetrain
-#define DT_ENABLED 0            // set to 1 to enable drivetrain
+#define DT_ENABLED 1            // set to 1 to enable drivetrain
 //   Direction
 #define DT_DEFAULT_DIRECTION -1.0
 //   Inverts
@@ -115,7 +115,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 // Gyro
-#define GRY_ENABLED 0            // set to 1 to enable gyro
+#define GRY_ENABLED 1            // set to 1 to enable gyro
 #define CAN_GYRO1 ENABLED(GRY_ENABLED, 0)
 #define CAN_GYRO2 -1
 
@@ -134,14 +134,13 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 // ControlPanel
-#define CPL_ENABLED 0           // set to 1 to enable control panel motor
+#define CPL_ENABLED 1           // set to 1 to enable control panel motor
 #define CPL_MOTOR ENABLED(CPL_ENABLED, 11)
 
 
 // Intake
 #define INT_ENABLED 1           // set to 1 to enable intake motors
-#define INT_SOLENOID1 ENABLED(INT_ENABLED, 0)
-#define INT_SOLENOID2 ENABLED(INT_ENABLED, 1)
+#define INT_SOLENOID ENABLED(INT_ENABLED, 0)
 #define INT_MOTOR1 ENABLED(INT_ENABLED, 7)
 #define INT_MOTOR2 ENABLED(INT_ENABLED, 8)
 #define INT_SENSOR1 ENABLED(INT_ENABLED, 1)
@@ -151,18 +150,12 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 // Feeder
-#define FDR_ENABLED 0           // set to 1 to enable feeder motor
+#define FDR_ENABLED 1           // set to 1 to enable feeder motor
 #define FDR_MOTOR ENABLED(FDR_ENABLED, 9)
-#define FDR_SOLENOID ENABLED(FDR_ENABLED,2)
-
-
-// Feeder
-#define FDR_ENABLED 0           // set to 1 to enable feeder motor
-#define FDR_MOTOR ENABLED(FDR_ENABLED, 9)
-#define FDR_SENSOR ENABLED(FDR_ENABLED, 0)
+#define FDR_SOLENOID ENABLED(FDR_ENABLED, 2)
 #define BALL_REGISTER_DISTANCE 3
-#define REFRESH_SPEED_LOAD 0.5
-#define REFRESH_SPEED_FIRE 0.7
+#define REFRESH_SPEED_LOAD 0.3
+#define REFRESH_SPEED_FIRE 0.5
 
 
 // Climber

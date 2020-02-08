@@ -12,13 +12,12 @@
 
 #include "OperatorInputs.h" 
 #include "Intake.h"
+#include <rev\CANSparkMax.h>
 #include <frc\Solenoid.h>
 #include <frc/Spark.h>
-#include <rev/Rev2mDistanceSensor.h>
 
 
 using namespace frc;
-using namespace rev;
 
 
 class Feeder
@@ -42,7 +41,7 @@ public:
 protected:
     OperatorInputs *m_inputs;
     Intake *m_intake;
-    Spark *m_motor;
+    CANSparkMax *m_motor;
 	Solenoid *m_solenoid;
 
 	bool m_hasball;

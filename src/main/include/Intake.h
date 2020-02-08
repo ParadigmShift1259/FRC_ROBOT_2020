@@ -14,12 +14,9 @@
 #include "Const.h"
 #include <frc\Solenoid.h>
 #include <frc\Spark.h>
-#include <rev\Rev2mDistanceSensor.h>
 
 
 using namespace frc;
-using namespace rev;
-
 
 class Intake
 {
