@@ -217,9 +217,13 @@ void Turret::RampUpSetpoint()
             {
                 m_rampstate = kDecrease;
             }
-            
+            else
+            {
+                // ramping the setpoint is only used to prevent PID from overshooting
+                m_initialfeedforward = m_simplemotorfeedforward->Calculate(m_flywheelsetpoint * TUR_MINUTES_TO_SECONDS * 1_mps).to<double>();
+            }
             break;
-
+    
         case kIncrease:
             m_PIDslot = 0;
             // Provided that the setpoint hasn't been reached and the ramping has already reached halfway
@@ -245,7 +249,7 @@ void Turret::RampUpSetpoint()
         case kDecrease:
             m_PIDslot = 0;
             // Provided that the setpoint hasn't been reached and the ramping has already reached halfway
-            if ((m_flywheelsetpoint < m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() - m_flywheelrampedsetpoint < TUR_RAMPING_RATE / 1.25))
+            if ((m_flywheelsetpoint < m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() - m_flywheelrampedsetpoint < (TUR_RAMPING_RATE * 1.25)))
             {
                 m_flywheelrampedsetpoint -= TUR_RAMPING_RATE;
 

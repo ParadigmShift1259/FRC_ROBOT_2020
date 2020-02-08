@@ -80,14 +80,14 @@ void Intake::Loop()
 
     if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
     {
-        m_motor1->Set(-INT_INTAKE_SPEED);
-        m_motor2->Set(-INT_INTAKE_SPEED);   
+        m_motor1->Set(-INT_INTAKE_ROLLER_SPEED);
+        m_motor2->Set(-INT_INTAKE_WHEEL_SPEED);   
     }   
     else
     if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
     {
-        m_motor1->Set(INT_INTAKE_SPEED);
-        m_motor2->Set(INT_INTAKE_SPEED);   
+        m_motor1->Set(INT_INTAKE_ROLLER_SPEED);
+        m_motor2->Set(INT_INTAKE_WHEEL_SPEED);   
     }   
     else
     {

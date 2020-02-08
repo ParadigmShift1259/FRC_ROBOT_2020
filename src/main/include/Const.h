@@ -146,7 +146,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define INT_SENSOR1 ENABLED(INT_ENABLED, 1)
 #define INT_SENSOR2 ENABLED(INT_ENABLED, 2)
 #define INT_SENSOR3 ENABLED(INT_ENABLED, 3)
-#define INT_INTAKE_SPEED 0.6
+#define INT_INTAKE_WHEEL_SPEED 0.5
+#define INT_INTAKE_ROLLER_SPEED .75
 
 
 // Feeder
