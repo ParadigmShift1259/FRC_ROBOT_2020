@@ -219,6 +219,7 @@ void Turret::RampUpSetpoint()
             }
             
             break;
+
         case kIncrease:
             m_PIDslot = 0;
             // Provided that the setpoint hasn't been reached and the ramping has already reached halfway
@@ -237,11 +238,14 @@ void Turret::RampUpSetpoint()
                 m_rampstate = kMaintain;
                 m_PIDslot = 1;
             }
+            // ramping the setpoint is only used to prevent PID from overshooting
+            m_initialfeedforward = m_simplemotorfeedforward->Calculate(m_flywheelsetpoint * TUR_MINUTES_TO_SECONDS * 1_mps).to<double>();
             break;
+    
         case kDecrease:
             m_PIDslot = 0;
             // Provided that the setpoint hasn't been reached and the ramping has already reached halfway
-            if ((m_flywheelsetpoint < m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() - m_flywheelrampedsetpoint < TUR_RAMPING_RATE / 1.5))
+            if ((m_flywheelsetpoint < m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() - m_flywheelrampedsetpoint < TUR_RAMPING_RATE / 1.25))
             {
                 m_flywheelrampedsetpoint -= TUR_RAMPING_RATE;
 
@@ -256,6 +260,8 @@ void Turret::RampUpSetpoint()
                 m_rampstate = kMaintain;
                 m_PIDslot = 1;
             }
+            // ramping the setpoint is only used to prevent PID from overshooting
+            m_initialfeedforward = m_simplemotorfeedforward->Calculate(m_flywheelrampedsetpoint * TUR_MINUTES_TO_SECONDS * 1_mps).to<double>();
             break;
     };
 
@@ -263,8 +269,7 @@ void Turret::RampUpSetpoint()
     m_flywheelPID->SetFF(0);
     // Converting setpoint to rotations per second, plugging into simplemotorfeedforward calculate and converting to a double  
     // The feed forward is set immediately to setpoint as velocity control allows for it
-    // ramping the setpoint is only used to prevent PID from overshooting
-    m_initialfeedforward = m_simplemotorfeedforward->Calculate(m_flywheelsetpoint * TUR_MINUTES_TO_SECONDS * 1_mps).to<double>();
+
     m_flywheelPID->SetReference(m_flywheelrampedsetpoint, ControlType::kVelocity, m_PIDslot, m_initialfeedforward);
 }
 
