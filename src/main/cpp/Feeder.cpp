@@ -47,9 +47,13 @@ void Feeder::Loop()
 {
     if (m_motor == nullptr)
         return;
-
+    if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        m_feederstate = kRefresh;
+    if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        m_feederstate = kFire;
+        m_shoot = true;
     FeederStateMachine();
-
+    
     Dashboard(); 
 }
 

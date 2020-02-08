@@ -94,7 +94,8 @@ void Intake::Loop()
     if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         m_intakestate = kGather;
     if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        m_intakestate = kIdle;
+        m_intakestate = kEject;    
+        //xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL)
 
     switch (m_intakestate)
     {
@@ -118,7 +119,10 @@ void Intake::Loop()
         m_motor1->Set(INT_INTAKE_SPEED);
         m_motor2->Set(INT_INTAKE_SPEED);
         break;
-
+    case kEject:
+       // m_motor1->Set(-1);
+        //m_motor2->Set(-1);
+        
     default: 
         break;
     }

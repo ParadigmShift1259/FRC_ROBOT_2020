@@ -29,7 +29,7 @@ public:
 	 * kIdle ->
 	 * kGather ->
 	 */
-	enum IntakeState {kIdle, kGather};
+	enum IntakeState {kIdle, kGather,kEject};
 
 	Intake(OperatorInputs *inputs);
 	~Intake();
