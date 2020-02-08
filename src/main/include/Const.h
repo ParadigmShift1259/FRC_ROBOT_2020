@@ -173,7 +173,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_IDLE_STATE_RPM 2000
 #define TUR_PREMOVE_STATE_RPM 2500
 // kS, kV, kA values tuned using frc-characterization 1/28/20 for the V1 Shooter Flywheel by Geoffrey
-#define TUR_KS 0.3745
+#define TUR_KS 0.0868
 #define TUR_KV 0.126
 #define TUR_KA 0.0
 // Increasing/Decreasing PID values tuned manually 1/27/20 for the V1 Shooter Flywheel by Geoffrey
