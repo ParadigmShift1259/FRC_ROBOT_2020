@@ -95,8 +95,12 @@ void Intake::Loop()
         m_intakestate = kGather;
     if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         m_intakestate = kEject;    
-        //xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL)
-
+    if (xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        //m_solenoid1->Set(true);
+        //m_solenoid2->Set(true);
+    if (xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        //m_solenoid1->Set(false);
+        //m_solenoid2->Set(false);
     switch (m_intakestate)
     {
     case kIdle: 
