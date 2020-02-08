@@ -25,6 +25,10 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake)
     m_motor = nullptr;
     if (FDR_MOTOR != -1)
         m_motor = new Spark(FDR_MOTOR);
+
+    m_solenoid = nullptr;
+    if (FDR_SOLENOID != -1)
+        m_solenoid = new Solenoid(FDR_SOLENOID);     
 }
 
 
@@ -32,12 +36,14 @@ Feeder::~Feeder()
 {	
     if (m_motor != nullptr)
         delete m_motor;
+     if (m_solenoid != nullptr)
+        delete m_solenoid;
 }
 
 
 void Feeder::Init()
 {
-    if (m_motor == nullptr)
+    if (m_motor == nullptr || m_solenoid == nullptr)
         return;
     m_feederstate = kIdle;
 }
@@ -45,15 +51,18 @@ void Feeder::Init()
 // /FeederBallCheck();
 void Feeder::Loop()
 {
-    if (m_motor == nullptr)
+     if (m_motor == nullptr || m_solenoid == nullptr)
         return;
     if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         m_feederstate = kRefresh;
     if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        m_feederstate = kFire;
-        m_shoot = true;
+        m_feederstate = kReverse;
+    if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        m_solenoid->Set(true);
+    if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        m_solenoid->Set(false);
+
     FeederStateMachine();
-    
     Dashboard(); 
 }
 
@@ -130,7 +139,8 @@ void Feeder::FeederStateMachine()
         }
         break;
 
-    default:
+    case kReverse:
+        m_motor-> Set(-0.3);
         break;
     } 
 }

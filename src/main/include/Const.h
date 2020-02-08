@@ -153,6 +153,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Feeder
 #define FDR_ENABLED 0           // set to 1 to enable feeder motor
 #define FDR_MOTOR ENABLED(FDR_ENABLED, 9)
+#define FDR_SOLENOID ENABLED(FDR_ENABLED,2)
 
 
 // Feeder

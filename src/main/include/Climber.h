@@ -12,6 +12,7 @@
 
 #include "OperatorInputs.h" 
 #include <ctre\Phoenix.h>
+#include <frc\Solenoid.h>
 #include <frc/Spark.h>
 
 
@@ -31,6 +32,7 @@ public:
 protected:
     OperatorInputs *m_inputs;
     Spark *m_motor;
+	Solenoid *m_solenoid;
 };
 
 

@@ -86,8 +86,11 @@ void Turret::Loop()
 	if (!NullCheck())
 		return;
 
-    TurretStates();
-    FireModes();
+    //TurretStates();
+    //FireModes();
+
+   m_flywheelsetpoint = abs(m_inputs->xBoxRightY(1*INP_DUAL));
+    
 
     RampUpSetpoint();
 

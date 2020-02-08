@@ -155,8 +155,12 @@ void ControlPanel::Loop()
 		m_spinnerPIDvals[5] = nominal; m_spinnerPIDvals[6] = peak; 
 	}
 
-	ControlPanelStates();
-
+	//ControlPanelStates();
+	if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+		m_spinner->Set(ControlMode::PercentOutput, 0.25);
+	else
+		m_spinner->Set(ControlMode::PercentOutput, 0);
+		
 	SmartDashboard::PutNumber("CPM11_Encoder_Position in Revolutions", m_spinner->GetSelectedSensorPosition(0) / ENCODER_TICKS_PER_REV);
 	SmartDashboard::PutNumber("CPM12_Encoder_Velocity in RPM", m_spinner->GetSelectedSensorVelocity(0) / MINUTES_TO_HUNDRED_MS / ENCODER_TICKS_PER_REV);
 	SmartDashboard::PutNumber("CPM13_ClosedLoopError", m_spinner->GetClosedLoopError(0));

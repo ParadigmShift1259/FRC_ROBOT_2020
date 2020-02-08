@@ -12,6 +12,7 @@
 
 #include "OperatorInputs.h" 
 #include "Intake.h"
+#include <frc\Solenoid.h>
 #include <frc/Spark.h>
 #include <rev/Rev2mDistanceSensor.h>
 
@@ -24,7 +25,7 @@ class Feeder
 {
 public:
 	
-	enum FeederState {kIdle, kFire, kRefresh};
+	enum FeederState {kIdle, kFire, kRefresh, kReverse};
 	
 	Feeder(OperatorInputs *inputs, Intake *intake);
 	~Feeder();
@@ -42,6 +43,7 @@ protected:
     OperatorInputs *m_inputs;
     Intake *m_intake;
     Spark *m_motor;
+	Solenoid *m_solenoid;
 
 	bool m_hasball;
 	bool m_shoot;
