@@ -78,16 +78,30 @@ void Intake::Loop()
     if (!NullCheck())
         return;
 
-    if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        m_intakestate = kGather;
-    if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        m_intakestate = kEject;    
-    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+    if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+    {
+        m_motor1->Set(-INT_INTAKE_SPEED);
+        m_motor2->Set(-INT_INTAKE_SPEED);   
+    }   
+    else
+    if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+    {
+        m_motor1->Set(INT_INTAKE_SPEED);
+        m_motor2->Set(INT_INTAKE_SPEED);   
+    }   
+    else
+    {
+        m_motor1->Set(0);
+        m_motor2->Set(0);
+    }
+    
+    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         m_solenoid1->Set(true);
         //m_solenoid2->Set(true);
     if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         m_solenoid1->Set(false);
         //m_solenoid2->Set(false);
+    /*
     switch (m_intakestate)
     {
     case kIdle: 
@@ -117,7 +131,7 @@ void Intake::Loop()
     default: 
         break;
     }
-
+    */
 	Dashboard();
 }
 

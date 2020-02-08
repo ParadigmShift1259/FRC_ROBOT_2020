@@ -18,6 +18,7 @@
 
 
 using namespace frc;
+using namespace rev;
 
 
 class Feeder

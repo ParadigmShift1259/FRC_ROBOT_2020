@@ -14,7 +14,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 // OperatorInputs
 //   Controllers
-#define INP_DUAL 1
+#define INP_DUAL 0
 #define INP_JOYSTICK -1
 #define INP_XBOX_1 0
 #define INP_XBOX_2 1
@@ -134,7 +134,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 // ControlPanel
-#define CPL_ENABLED 1           // set to 1 to enable control panel motor
+#define CPL_ENABLED 0           // set to 1 to enable control panel motor
 #define CPL_MOTOR ENABLED(CPL_ENABLED, 11)
 
 
@@ -146,7 +146,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define INT_SENSOR1 ENABLED(INT_ENABLED, 1)
 #define INT_SENSOR2 ENABLED(INT_ENABLED, 2)
 #define INT_SENSOR3 ENABLED(INT_ENABLED, 3)
-#define INT_INTAKE_SPEED 0.5
+#define INT_INTAKE_SPEED 0.6
 
 
 // Feeder
@@ -154,7 +154,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define FDR_MOTOR ENABLED(FDR_ENABLED, 9)
 #define FDR_SOLENOID ENABLED(FDR_ENABLED, 2)
 #define BALL_REGISTER_DISTANCE 3
-#define REFRESH_SPEED_LOAD 0.3
+#define REFRESH_SPEED_LOAD 0.2
 #define REFRESH_SPEED_FIRE 0.5
 
 

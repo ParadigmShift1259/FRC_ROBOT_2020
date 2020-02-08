@@ -52,16 +52,23 @@ void Feeder::Loop()
 {
      if (m_motor == nullptr || m_solenoid == nullptr)
         return;
-    if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        m_feederstate = kRefresh;
-    if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        m_feederstate = kReverse;
+    
+    if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+        m_motor->Set(REFRESH_SPEED_LOAD);
+    else
+    if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+        m_motor->Set(-REFRESH_SPEED_LOAD);
+    else
+    {
+        m_motor->Set(0);
+    }
+    
     if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         m_solenoid->Set(true);
     if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         m_solenoid->Set(false);
 
-    FeederStateMachine();
+    //FeederStateMachine();
     Dashboard(); 
 }
 

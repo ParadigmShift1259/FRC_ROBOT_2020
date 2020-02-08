@@ -59,6 +59,7 @@ void Robot::TeleopInit()
 	m_turret->Init();
 	m_controlpanel->Init();
 	m_intake->Init();
+	m_feeder->Init();
 }
 
 
@@ -69,6 +70,7 @@ void Robot::TeleopPeriodic()
 	m_turret->Loop();
 	m_controlpanel->Loop();
 	m_intake->Loop();
+	m_feeder->Loop();
 }
 
 
