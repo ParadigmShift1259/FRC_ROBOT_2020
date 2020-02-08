@@ -46,6 +46,7 @@ private:
 	OperatorInputs *m_inputs;
 	TalonSRX *m_spinner;
 	ColorSensorV3 *m_colorsensor;
+	Timer *m_timer;
 
 	SpinnerState m_spinnerstate;
 
@@ -57,6 +58,7 @@ private:
 	double m_registeredcolor;
 	double m_colorbouncecount;
 	double m_colorregisteredcount[4];
+	
 	bool m_stop;
 
 	double m_targetcolor;

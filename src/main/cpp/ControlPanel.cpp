@@ -8,6 +8,7 @@
 #include "ControlPanel.h"
 #include "Const.h"
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <frc/Timer.h>
 
 
 using namespace std;
@@ -30,6 +31,7 @@ ControlPanel::ControlPanel(OperatorInputs *inputs)
 		m_spinner = new TalonSRX(CPL_MOTOR);
 		
 	m_colorsensor = new ColorSensorV3(i2cPort);
+	m_timer = new Timer();
 
 	m_spinnerstate = kBlindSpin;
 
@@ -189,14 +191,17 @@ void ControlPanel::ControlPanelStates()
 		}
 
 		// If one color is registered enough times, stop spinning
-		if (m_colorregisteredcount[3] >= 7)
+		if (m_colorregisteredcount[3] >= 4)
 			m_stop = true;
-			
+		
+
+		
 		// Once stopped, use A button to restart. If not, set the speed to spinpower
 		if (m_stop)
 		{
 			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
 			{
+				std::cout << "TimeStamp, detectedcolor.red, detectedcolor.green, detectedcolor.blue, rawcolor.red, rawcolor.green, rawcolor.blue, rawcolor.ir, matchedcolor.red, matchedcolor.green, matchedcolor.blue, m_currentcolor, m_colorbouncecount, m_registeredcolor, m_colorregisteredcount[0], m_colorregisteredcount[1], m_colorregisteredcount[2], m_colorregisteredcount[3], m_spinnersetpoint" << std::endl;
 				m_stop = false;
 				m_colorregisteredcount[0] = 0;
 				m_colorregisteredcount[1] = 0;
@@ -208,6 +213,9 @@ void ControlPanel::ControlPanelStates()
 		else
 		{
 			m_spinner->Set(ControlMode::PercentOutput, m_spinnersetpoint); 
+			std::cout << m_currentcolor << ", " << m_colorbouncecount << ", " << m_registeredcolor <<
+			", " << m_colorregisteredcount[0] << ", " << m_colorregisteredcount[1] << ", " << m_colorregisteredcount[2] << ", " << m_colorregisteredcount[3] << ", " 
+			<< m_spinnersetpoint << std::endl;
 		}
 
 		if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
@@ -217,6 +225,7 @@ void ControlPanel::ControlPanelStates()
 			m_colorregisteredcount[2] = 0;
 			m_colorregisteredcount[3] = 0;
 		}
+		
 		break;
 	
 	case kColorSpin:
@@ -233,7 +242,16 @@ void ControlPanel::ControlPanelStates()
 
 int ControlPanel::GetColor()
 {
-	Color detectedcolor = m_colorsensor->GetColor();
+	//Color detectedcolor = m_colorsensor->GetColor();
+	
+	ColorSensorV3::RawColor rawcolor = m_colorsensor->GetRawColor();
+	
+	double r = static_cast<double>(rawcolor.red);
+    double g = static_cast<double>(rawcolor.green);
+    double b = static_cast<double>(rawcolor.blue);
+    double mag = r + g + b;
+    Color detectedcolor = frc::Color(r / mag, g / mag, b / mag);
+
 	Color matchedcolor = m_colormatcher.MatchClosestColor(detectedcolor, m_confidence);
 
 	int color = 0;
@@ -254,6 +272,13 @@ int ControlPanel::GetColor()
 	SmartDashboard::PutNumber("CPSIMP2_G", detectedcolor.green);
 	SmartDashboard::PutNumber("CPSIMP3_B", detectedcolor.blue);
 	SmartDashboard::PutNumber("CPSIMP4_Color", color);
+	if(!m_stop)
+		{
+		std::cout << m_timer->GetFPGATimestamp() << ", " << detectedcolor.red << ", " << detectedcolor.green << ", " << detectedcolor.blue << ", "
+			<< rawcolor.red << ", " << rawcolor.green << ", " << rawcolor.blue << ", " << rawcolor.ir <<  ", " 
+			<< matchedcolor.red << ", " << matchedcolor.green << ", " << matchedcolor.blue << ", ";
+		}
+
 
 	return color;
 }
