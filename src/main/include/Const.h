@@ -102,6 +102,6 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define ENCODER_TICKS_PER_REV 4096.00
 #define MINUTES_TO_HUNDRED_MS 0.00166666
 
-#define CPL_MOTOR 11
+#define CPL_MOTOR 2
 
 #endif /* SRC_CONST_H_ */
