@@ -15,6 +15,7 @@
 #include <rev\CANPIDController.h>
 #include <frc\controller\SimpleMotorFeedforward.h>
 #include <units/units.h>
+#include <ctre/Phoenix.h>
 
 #include "OperatorInputs.h"
 
@@ -60,11 +61,17 @@ protected:
     void FireModes();
     // Takes the distance from the target and returns the hood angle and flywheel speed
     void CalculateHoodFlywheel(double distance, double &hoodangle, double &flywheelspeed);
+    void CalculateAbsoluteAngle();
+    bool VisionTurretAngle();
     void RampUpSetpoint();
+    void RampUpAngle();
+    double TicksToDegrees(double ticks);
+    double DegreesToTicks(double degrees);
 
 private:
     OperatorInputs *m_inputs;
 
+    // Flywheel
     CANSparkMax *m_flywheelmotor;
     CANPIDController *m_flywheelPID;
     CANEncoder *m_flywheelencoder;
@@ -73,14 +80,29 @@ private:
     double m_flywheelsetpoint;
     double m_flywheelrampedsetpoint;
 
-    SimpleMotorFeedforward<units::meters> *m_simplemotorfeedforward;
-    double m_initialfeedforward;
+    SimpleMotorFeedforward<units::meters> *m_flywheelsimplemotorfeedforward;
+    double m_flywheelinitialfeedforward;
 
-    bool m_readytofire;
+    // Turret
+    WPI_TalonSRX *m_turretmotor;
+
+    double m_absoluteangle;
+    double m_robotangle;
+    double m_turretangle;
+    double m_turretrampedangle;
+    
+    double m_turretinitialfeedforward;
+
 
     TurretState m_turretstate;
     FireMode m_firemode;
-    RampState m_rampstate;
+    RampState m_flywheelrampstate;
+    RampState m_turretrampstate;
+    bool m_readytofire;
+
+    // Temp (For testing purposes)
+    CANSparkMax *m_feedermotor;
+    PigeonIMU *m_robotgyro;
 };
 
 
