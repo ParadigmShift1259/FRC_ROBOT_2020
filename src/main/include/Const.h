@@ -134,7 +134,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_WHEEL_DIAMETER 0.1524    // in meters
 #define TUR_ROTATIONS_TO_METERS (3.1415926535 * TUR_WHEEL_DIAMETER)
 #define TUR_MINUTES_TO_SECONDS (1/60)
-#define TUR_PULLEY 2.74828
+#define TUR_PULLEY 2.7305
 #define TUR_TURRET_SPINNER 29.845
 #define REV_TO_TURRET_REV (TUR_PULLEY / TUR_TURRET_SPINNER) 
 #define TURRET_REV_TO_DEGREES 360

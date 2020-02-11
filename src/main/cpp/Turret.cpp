@@ -308,28 +308,50 @@ void Turret::FireModes()
 // Calculates the angle of the turret given an angle relative to the field and the robot gyro 
 void Turret::CalculateAbsoluteAngle()
 {
-    // Making robot angle from 0 - 360
-    double robotangle = remainder(m_robotgyro->GetFusedHeading(), 360);
-    if (robotangle < 0)
-        robotangle += 360;
+    m_robotangle = SmartDashboard::GetNumber("Robot Setup Angle", 0);
+    m_absoluteangle = SmartDashboard::GetNumber("Absolute Setup Angle", 0);
 
-    double filter1 = remainder((m_robotangle + 45), 360);
-    double filter2 = remainder((m_robotangle + 135), 360);
-    // When the calculate turretangle would be in the turret deadzone, don't calulcate
-    if (m_absoluteangle < max(filter1, filter2) && m_absoluteangle > min(filter1, filter2))
+    double filter1 = fmod((m_robotangle + 45), 360.0);
+    double filter2 = fmod((m_robotangle + 135), 360.0);
+    // In between border of 0 - 360
+    if (fmax(filter1, filter2) > (fmin(filter1, filter2) + 90))
     {
-        SmartDashboard::PutBoolean("TUR_Robot Angle Ignored", true);
+        if (m_absoluteangle > fmax(filter1, filter2) || m_absoluteangle < fmin(filter1, filter2))
+            SmartDashboard::PutBoolean("Robot Angle Ignored", true);
+        else
+        {
+            SmartDashboard::PutBoolean("Robot Angle Ignored", false);
+            double mirrorangle = 112.5 + m_absoluteangle / 2;
+            double reflect = m_robotangle - mirrorangle;
+            m_turretangle = mirrorangle - reflect;
+            SmartDashboard::PutNumber("Turret Pre-Remainder Angle", m_turretangle);
+            m_turretangle = fmod(m_turretangle, 360.0);
+            m_turretangle = 270 - m_turretangle;
+            m_turretangle = fmod(m_turretangle, 360.0);
+
+            SmartDashboard::PutNumber("Mirror Setup Angle", mirrorangle);
+            SmartDashboard::PutNumber("Reflect Setup Angle", reflect);
+        }
+        
     }
-    // If calculated turret angle is, good, set turretangle to that position
+    else
+    // In between zone not on border of 0 - 360
+    if (m_absoluteangle < fmax(filter1, filter2) && m_absoluteangle > fmin(filter1, filter2))
+    {
+        SmartDashboard::PutBoolean("Robot Angle Ignored", true);
+    }
     else
     {
-        SmartDashboard::PutBoolean("TUR_Robot Angle Ignored", false);
+        SmartDashboard::PutBoolean("Robot Angle Ignored", false);
         double mirrorangle = 112.5 + m_absoluteangle / 2;
         double reflect = m_robotangle - mirrorangle;
         m_turretangle = mirrorangle - reflect;
-        m_turretangle = remainder(m_turretangle, 360);
-        SmartDashboard::PutNumber("TUR_Mirror Angle", mirrorangle);
-        SmartDashboard::PutNumber("TUR_Reflect", reflect);
+        m_turretangle = fmod(m_turretangle, 360.0);
+        m_turretangle = 270 - m_turretangle;
+        m_turretangle = fmod(m_turretangle, 360.0);
+
+        SmartDashboard::PutNumber("Mirror Setup Angle", mirrorangle);
+        SmartDashboard::PutNumber("Reflect Setup Angle", reflect);
     }
 }
 
