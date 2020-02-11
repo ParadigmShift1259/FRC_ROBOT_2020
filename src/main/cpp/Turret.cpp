@@ -111,27 +111,31 @@ void Turret::Init()
     m_turretmotor->ConfigNominalOutputReverse(-1 * TUR_TURRET_MINOUT, TUR_TIMEOUT_MS);
     m_turretmotor->ConfigPeakOutputForward(TUR_TURRET_MAXOUT, TUR_TIMEOUT_MS);
     m_turretmotor->ConfigPeakOutputReverse(-1 * TUR_TURRET_MAXOUT, TUR_TIMEOUT_MS);
-    m_turretmotor->SetSelectedSensorPosition(0, 0, TUR_TIMEOUT_MS);
+    m_turretmotor->SetSelectedSensorPosition(DegreesToTicks(135), 0, TUR_TIMEOUT_MS);
     
     m_absoluteangle = 0;
     m_robotangle = 0;
-    m_turretangle = 0;      // Change these when starting orientation is different
-    m_turretrampedangle = 0;
+    m_turretangle = 45;      // Change these when starting orientation is different
+    m_turretrampedangle = 135;
+    
+    SmartDashboard::PutNumber("Robot Setup Angle", m_robotangle);
+    SmartDashboard::PutNumber("Absolute Setup Angle", m_absoluteangle);
 
     m_turretinitialfeedforward = 0;
 
 
     m_turretstate = kIdle;
-    m_firemode = kHoldFire;
+    m_firemode = kManualFire;
     m_flywheelrampstate = kMaintain;
     m_turretrampstate = kMaintain;
     m_readytofire = false;
 
     // Temp (for testing purposes)
     m_feedermotor = new CANSparkMax(9, CANSparkMax::MotorType::kBrushless);
-    m_flywheelmotor->SetInverted(true);
-    m_flywheelmotor->SetIdleMode(CANSparkMax::IdleMode::kBrake);
+    m_feedermotor->SetInverted(true);
+    m_feedermotor->SetIdleMode(CANSparkMax::IdleMode::kBrake);
     m_robotgyro = new PigeonIMU(0);
+    m_robotgyro->SetFusedHeading(0);
 }
 
 
@@ -151,6 +155,10 @@ void Turret::Loop()
     SmartDashboard::PutNumber("TUR5_RampedSetpoint", m_flywheelrampedsetpoint);
     SmartDashboard::PutNumber("TUR6_RampState", m_flywheelrampstate);
     SmartDashboard::PutNumber("TUR7_PIDslot", m_PIDslot);
+    SmartDashboard::PutNumber("Robot Gyro", m_robotgyro->GetFusedHeading());
+    SmartDashboard::PutNumber("TUR8_Turret Degrees", TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()));
+    SmartDashboard::PutNumber("TUR9_Setpoint Angle", m_turretmotor->GetClosedLoopTarget(0));
+    SmartDashboard::PutNumber("TUR10_Flywheel Ramp State", m_flywheelrampstate);
 }
 
 
@@ -182,21 +190,22 @@ void Turret::TurretStates()
             // allow for manual movement of absolute angle to find vision target
             // X and Y are flipped due to angles in tangent starting between Quad I and IV, not Quad II and I
             // theoretical, not tested
-            if (m_inputs->xBoxRightX(1 * INP_DUAL) > 0.95 || m_inputs->xBoxRightY(1 * INP_DUAL) > 0.95)
+            if (fabs(m_inputs->xBoxRightX(1 * INP_DUAL)) > 0.95 || fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.95)
             {
                 // Prevent divide by 0 errors
                 if (m_inputs->xBoxRightY(1 * INP_DUAL) == 0)
                 {
-                    m_turretangle = m_inputs->xBoxRightX(1 * INP_DUAL) > 0 ? 90 : 270;
+                    m_absoluteangle = m_inputs->xBoxRightX(1 * INP_DUAL) > 0 ? 90 : 270;
                 }
                 else
                 {
                     double radians = atan(m_inputs->xBoxRightX(1 * INP_DUAL) / m_inputs->xBoxRightY()); // only between +- pi/2
                     double degrees = radians / 2 / 3.1415926535 * 360;   // 90 -> -90
-                    m_turretangle = m_inputs->xBoxRightY(1 * INP_DUAL) > 0 ? degrees : degrees + 180;   // -90 -> 270
-                    m_turretangle = m_turretangle < 0 ? m_turretangle + 360 : m_turretangle;   // 0 -> 360
-                    m_turretangle = remainder(m_turretangle, 360);   // just for safety
+                    m_absoluteangle = m_inputs->xBoxRightY(1 * INP_DUAL) > 0 ? degrees : degrees + 180;   // -90 -> 270
+                    m_absoluteangle = m_absoluteangle < 0 ? m_absoluteangle + 360 : m_absoluteangle;   // 0 -> 360
+                    m_absoluteangle = fmod(m_absoluteangle, 360);   // just for safety
                 }
+                SmartDashboard::PutNumber("TUR11_Absolute Angle", m_absoluteangle);
             }
             CalculateAbsoluteAngle();
             if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))    // if vision target is found, progress
@@ -220,12 +229,12 @@ void Turret::TurretStates()
                 m_flywheelsetpoint -= 100;
 
             VisionTurretAngle();
-        
+            /*
             // if turret is only off by a small amount with its error and its flywheel is up to speed, progress
             if (TicksToDegrees(m_turretmotor->GetClosedLoopError()) <= TUR_TURRET_ERROR &&
                 m_flywheelsetpoint == m_flywheelrampedsetpoint)
                 m_turretstate = kReady;
-
+            */
             if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))       // forced ready
                 m_turretstate = kReady;
             break;
@@ -308,8 +317,7 @@ void Turret::FireModes()
 // Calculates the angle of the turret given an angle relative to the field and the robot gyro 
 void Turret::CalculateAbsoluteAngle()
 {
-    m_robotangle = SmartDashboard::GetNumber("Robot Setup Angle", 0);
-    m_absoluteangle = SmartDashboard::GetNumber("Absolute Setup Angle", 0);
+    m_robotangle = fmod(m_robotgyro->GetFusedHeading(), 360.0);
 
     double filter1 = fmod((m_robotangle + 45), 360.0);
     double filter2 = fmod((m_robotangle + 135), 360.0);
@@ -328,11 +336,7 @@ void Turret::CalculateAbsoluteAngle()
             m_turretangle = fmod(m_turretangle, 360.0);
             m_turretangle = 270 - m_turretangle;
             m_turretangle = fmod(m_turretangle, 360.0);
-
-            SmartDashboard::PutNumber("Mirror Setup Angle", mirrorangle);
-            SmartDashboard::PutNumber("Reflect Setup Angle", reflect);
         }
-        
     }
     else
     // In between zone not on border of 0 - 360
@@ -346,9 +350,9 @@ void Turret::CalculateAbsoluteAngle()
         double mirrorangle = 112.5 + m_absoluteangle / 2;
         double reflect = m_robotangle - mirrorangle;
         m_turretangle = mirrorangle - reflect;
-        m_turretangle = fmod(m_turretangle, 360.0);
-        m_turretangle = 270 - m_turretangle;
-        m_turretangle = fmod(m_turretangle, 360.0);
+        m_turretangle = fmod(m_turretangle, 360.0); // safety
+        m_turretangle = 270 - m_turretangle;        // flipped because values were originally calculated wrong
+        m_turretangle = fmod(m_turretangle, 360.0); // safety
 
         SmartDashboard::PutNumber("Mirror Setup Angle", mirrorangle);
         SmartDashboard::PutNumber("Reflect Setup Angle", reflect);

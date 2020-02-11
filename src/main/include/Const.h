@@ -15,7 +15,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 // OperatorInputs
 //   Controllers
-#define INP_DUAL 1
+#define INP_DUAL 0
 #define INP_JOYSTICK -1
 #define INP_XBOX_1 0
 #define INP_XBOX_2 1
@@ -89,7 +89,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 //  Turret
 #define TUR_SHOOTER_ID 1
-#define TUR_TURRET_ID 11
+#define TUR_TURRET_ID 7
 #define TUR_TIMEOUT_MS 30
 #define ENCODER_TICKS_PER_REV 4096.00
 #define MINUTES_TO_HUNDRED_MS 0.00166666
@@ -115,7 +115,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_SHOOTER_MAXOUT 1.0
 
 // Turret Spinning
-#define TUR_TURRET_RAMPING_RATE 3           // in degrees
+#define TUR_TURRET_RAMPING_RATE 5           // in degrees
 // kS, kV, kA values turned using frc-characterization 2/8/20 for the Metal V2 Shooter Flywheel by Geoffrey
 #define TUR_TURRET_KS_FORWARDS 0.76
 #define TUR_TURRET_KS_BACKWARDS 0.86
@@ -133,7 +133,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Miscellaneous Values for Turret
 #define TUR_WHEEL_DIAMETER 0.1524    // in meters
 #define TUR_ROTATIONS_TO_METERS (3.1415926535 * TUR_WHEEL_DIAMETER)
-#define TUR_MINUTES_TO_SECONDS (1/60)
+#define TUR_MINUTES_TO_SECONDS 1/60
 #define TUR_PULLEY 2.7305
 #define TUR_TURRET_SPINNER 29.845
 #define REV_TO_TURRET_REV (TUR_PULLEY / TUR_TURRET_SPINNER) 
