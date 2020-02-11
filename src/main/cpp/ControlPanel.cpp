@@ -26,7 +26,7 @@ ControlPanel::ControlPanel(OperatorInputs *inputs)
 	static constexpr auto i2cPort = I2C::Port::kOnboard;
 
 	m_inputs = inputs;
-
+	
 	m_spinner = nullptr;
 	if (CPL_MOTOR != -1)
 		m_spinner = new TalonSRX(CPL_MOTOR);
@@ -36,17 +36,10 @@ ControlPanel::ControlPanel(OperatorInputs *inputs)
 
 	m_spinnerstate = kBlindSpin;
 
-	m_currentcolor = 0;
-	m_previouscolor = 0;
-	m_registeredcolor = 0;
-	m_colorbouncecount = 0;
-	m_colorregisteredcount[0] = 0;
-	m_colorregisteredcount[1] = 0;
-	m_colorregisteredcount[2] = 0;
-	m_colorregisteredcount[3] = 0;
 	m_stop = false;
 
 	m_targetcolor = 0;
+	m_currentcolor = kNone;
 
 	// P, I, D, FF, Iz, nominal, peak
 	// PID Values NOT YET tuned for talonSRX Minicim on Woody 1/22/20
@@ -76,7 +69,7 @@ void ControlPanel::Init()
 	if (m_spinner == nullptr)
 		return;
 
-	m_colorsensor->ConfigureColorSensor(rev::ColorSensorV3::ColorResolution::k13bit, rev::ColorSensorV3::ColorMeasurementRate::k25ms);
+	m_colorsensor->ConfigureColorSensor(rev::ColorSensorV3::ColorResolution::k13bit, rev::ColorSensorV3::ColorMeasurementRate::k50ms);
 
 	m_spinnerstate = kBlindSpin;
 
@@ -85,15 +78,9 @@ void ControlPanel::Init()
 	m_colormatcher.AddColorMatch(kGreenTarget);
 	m_colormatcher.AddColorMatch(kBlueTarget);
 	m_confidence = 0.6;
-
-	m_currentcolor = 0;
-	m_previouscolor = 0;
-	m_registeredcolor = 0;
-	m_colorbouncecount = 0;
-	m_colorregisteredcount[0] = 0;
-	m_colorregisteredcount[1] = 0;
-	m_colorregisteredcount[2] = 0;
-	m_colorregisteredcount[3] = 0;
+	m_redCount = 0;
+	m_blueCount = 0;
+	m_currentcolor = kNone;
 	m_stop = true;
 
 	m_targetcolor = 0;
@@ -102,11 +89,11 @@ void ControlPanel::Init()
 	SmartDashboard::PutNumber("CPIN2_Confidence", m_confidence);
 	SmartDashboard::PutNumber("CPIN3_TargetColor", m_targetcolor);
 
-	m_spinner->SetNeutralMode(NeutralMode::Coast);
+	m_spinner->SetNeutralMode(NeutralMode::Brake);
 	m_spinner->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0);
 	m_spinner->SetSensorPhase(true);
 	m_spinner->SetInverted(true);
-	m_spinner->SetNeutralMode(NeutralMode::Coast);
+	m_spinner->SetNeutralMode(NeutralMode::Brake);
 	m_spinnersetpoint = 0;
 }
 
@@ -154,59 +141,25 @@ void ControlPanel::ControlPanelStates()
 		// Color is not the same color as the registered one already
 		// 
 		// Color must pass filter that checks for sensor inconsistencies
-		if (m_currentcolor == m_previouscolor && m_registeredcolor != m_currentcolor && SensorSanityCheck())
-		{
-			m_colorbouncecount++;
-		}
-		else if (SensorSanityCheck())
-		{
-			m_previouscolor = m_currentcolor;
-		}
-		// Once picked up twice, set and log the registered color and reset color bounce count
-		if (m_colorbouncecount >= 2)
-		{
-			if (m_currentcolor == 1)
-			{
-				SmartDashboard::PutString("CPVER1_TrueColor", "Yellow");
-				m_registeredcolor = 1;
-				m_colorregisteredcount[0]++;
-			}
-			else if (m_currentcolor == 2)
+		
+		
+			if (m_currentcolor == kRed && m_redCount <= m_blueCount)
 			{
 				SmartDashboard::PutString("CPVER1_TrueColor", "Red");
-				m_registeredcolor = 2;
-				m_colorregisteredcount[1]++;
+				m_redCount ++ ;
 			}
-			else if (m_currentcolor == 3)
-			{
-				SmartDashboard::PutString("CPVER1_TrueColor", "Green");
-				m_registeredcolor = 3;
-				m_colorregisteredcount[2]++;
-			}
-			else if (m_currentcolor == 4)
+			else if (m_currentcolor == kBlue && m_blueCount <= m_redCount)
 			{
 				SmartDashboard::PutString("CPVER1_TrueColor", "Blue");
-				m_registeredcolor = 4;
-				m_colorregisteredcount[3]++;
-			}
-			m_previouscolor = m_currentcolor;
-			m_colorbouncecount = 0;          
-		}
-
-		// If one color is registered enough times, stop spinning
-		if (m_colorregisteredcount[0] >= 7)
-			m_stop = true;
-
-		if (m_colorregisteredcount[1] >= 7)
-			m_stop = true;
-
-		if (m_colorregisteredcount[2] >= 7)
-			m_stop = true;
-
-		if (m_colorregisteredcount[3] >= 7)
-			m_stop = true;
-
+				m_blueCount ++ ;
+			}        
 		
+		
+
+		if (m_blueCount == 14 || m_redCount == 14 )
+		{
+			m_stop = true;
+		}
 		
 
 		
@@ -215,29 +168,24 @@ void ControlPanel::ControlPanelStates()
 		{
 			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
 			{
-				std::cout << "TimeStamp, rawcolor.red, rawcolor.green, rawcolor.blue, hue, sat, m_currentcolor, m_colorbouncecount, m_registeredcolor, m_colorregisteredcount[0], m_colorregisteredcount[1], m_colorregisteredcount[2], m_colorregisteredcount[3], m_spinnersetpoint" << std::endl;
+				std::cout << "TimeStamp, rawcolor.red, rawcolor.green, rawcolor.blue, hue, sat, m_currentcolor, m_RedCount, m_BlueCount, m_spinnersetpoint" << std::endl;
 				m_stop = false;
-				m_colorregisteredcount[0] = 0;
-				m_colorregisteredcount[1] = 0;
-				m_colorregisteredcount[2] = 0;
-				m_colorregisteredcount[3] = 0;
+				m_redCount = 0;
+				m_blueCount = 0;
 			}
 			m_spinner->Set(ControlMode::PercentOutput, 0);
 		}
 		else
 		{
 			m_spinner->Set(ControlMode::PercentOutput, m_spinnersetpoint); 
-			std::cout << m_currentcolor << ", " << m_colorbouncecount << ", " << m_registeredcolor <<
-			", " << m_colorregisteredcount[0] << ", " << m_colorregisteredcount[1] << ", " << m_colorregisteredcount[2] << ", " << m_colorregisteredcount[3] << ", " 
-			<< m_spinnersetpoint << std::endl;
+			std::cout << m_currentcolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << std::endl;
 		}
 
 		if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
 		{
-			m_colorregisteredcount[0] = 0;
-			m_colorregisteredcount[1] = 0;
-			m_colorregisteredcount[2] = 0;
-			m_colorregisteredcount[3] = 0;
+			m_stop = true;
+			m_redCount = 0;
+			m_blueCount = 0;
 		}
 		
 		break;
@@ -247,14 +195,14 @@ void ControlPanel::ControlPanelStates()
 	}
 
 	// Displays the total registered color count of each color
-	SmartDashboard::PutNumber("CPVER2_Registered Yellow Count", m_colorregisteredcount[0]);
-	SmartDashboard::PutNumber("CPVER3_Registered Red Count", m_colorregisteredcount[1]);
-	SmartDashboard::PutNumber("CPVER4_Registered Green Count", m_colorregisteredcount[2]);
-	SmartDashboard::PutNumber("CPVER5_Registered Blue Count", m_colorregisteredcount[3]);
+	//SmartDashboard::PutNumber("CPVER2_Registered Yellow Count", m_colorregisteredcount[0]);
+	SmartDashboard::PutNumber("CPVER3_Registered Red Count", m_redCount);
+	//SmartDashboard::PutNumber("CPVER4_Registered Green Count", m_colorregisteredcount[2]);
+	SmartDashboard::PutNumber("CPVER5_Registered Blue Count", m_blueCount);
 }
 
 
-int ControlPanel::GetColor()
+ControlPanel::ColorOptions ControlPanel::GetColor()
 {
 	//Color detectedcolor = m_colorsensor->GetColor();
 	
@@ -270,7 +218,7 @@ int ControlPanel::GetColor()
 	double sat = (M - fmin(fmin(r, g),b)) / M;
 
 
-	int color = 0;
+	ControlPanel::ColorOptions color = kNone;
 
     /* 
 	Color detectedcolor = frc::Color(r / mag, g / mag, b / mag);
@@ -291,15 +239,15 @@ int ControlPanel::GetColor()
 	*/
 
 	if (hue > 80 && hue < 100)
-		color = 1;
-	else if (hue > 20 && hue < 40)
-		color = 2;
+		color = kYellow;
+	else if (hue > 20 && hue < 45)
+		color = kRed;
 	else
 	if (hue < 150 && hue > 120)
-		color = 3;
+		color = kGreen;
 	else
 	if (hue < 210 && hue > 180)
-		color = 4;
+		color = kBlue;
 
 	SmartDashboard::PutNumber("CPSIMP1_R", r);
 	SmartDashboard::PutNumber("CPSIMP2_G", g);
@@ -318,7 +266,7 @@ int ControlPanel::GetColor()
 	return color;
 }
 
-
+/*
 bool ControlPanel::SensorSanityCheck()
 // Checks if it has gathered enough data
 // Once it has, check for color mis-followings with the color sensor
@@ -331,7 +279,7 @@ bool ControlPanel::SensorSanityCheck()
 			return true;
 	}
 
-	if (m_currentcolor == 0 || m_previouscolor == 0)
+	if (m_currentcolor == 0 )
 		return true;
 
 	// color can never be two states ahead/below itself
@@ -355,3 +303,4 @@ bool ControlPanel::SensorSanityCheck()
 	else
 		return true;
 }
+*/

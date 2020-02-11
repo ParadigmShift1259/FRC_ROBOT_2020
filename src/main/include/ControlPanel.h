@@ -29,7 +29,7 @@ public:
 	 * ColorSpin - Attempts to spin the control panel to a specific color
 	 */
 	enum SpinnerState {kOff, kBlindSpin, kColorSpin};
-
+	enum ColorOptions {kNone, kYellow, kRed, kGreen, kBlue};
 	ControlPanel(OperatorInputs *inputs);
 	~ControlPanel();
 	void Init();
@@ -38,26 +38,24 @@ public:
 	
 protected:
 	void ControlPanelStates();
-	int GetColor();
+	ColorOptions GetColor();
 	bool SensorSanityCheck();
 
 
 private:
 	OperatorInputs *m_inputs;
+	ColorOptions m_color;
 	TalonSRX *m_spinner;
 	ColorSensorV3 *m_colorsensor;
 	Timer *m_timer;
-
+	int m_redCount;
+	int m_blueCount;
 	SpinnerState m_spinnerstate;
 
 	ColorMatch m_colormatcher;
 	double m_confidence;
 
-	double m_currentcolor;
-	double m_previouscolor;
-	double m_registeredcolor;
-	double m_colorbouncecount;
-	double m_colorregisteredcount[4];
+	ColorOptions m_currentcolor;
 	
 	bool m_stop;
 
