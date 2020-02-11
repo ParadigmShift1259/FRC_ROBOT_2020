@@ -20,7 +20,8 @@ bool Debug = true;
 void Robot::RobotInit()
 {
     m_operatorinputs = new OperatorInputs();
-    m_turret = new Turret(m_operatorinputs);
+    m_vision = new Vision();
+    m_turret = new Turret(m_operatorinputs, m_vision);
 }
 
 
@@ -34,12 +35,14 @@ void Robot::TestPeriodic(){}
 void Robot::TeleopInit()
 {
     m_turret->Init();
+    m_vision->Init();
 }
 
 
 void Robot::TeleopPeriodic()
 {
     m_turret->Loop();
+    m_vision->Loop();
 }
 
 

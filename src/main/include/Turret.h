@@ -18,6 +18,7 @@
 #include <ctre/Phoenix.h>
 
 #include "OperatorInputs.h"
+#include "Vision.h"
 
 
 using namespace frc;
@@ -50,7 +51,7 @@ public:
     enum RampState {kMaintain, kIncrease, kDecrease};
 
     // Will add Drivetrain, Intake, PID, and Vision classes as pass pointers
-    Turret(OperatorInputs *inputs);
+    Turret(OperatorInputs *inputs, Vision *vision);
     ~Turret();
     void Init();
     void Loop();
@@ -70,6 +71,7 @@ protected:
 
 private:
     OperatorInputs *m_inputs;
+    Vision *m_vision;
 
     // Flywheel
     CANSparkMax *m_flywheelmotor;
@@ -99,6 +101,9 @@ private:
     RampState m_flywheelrampstate;
     RampState m_turretrampstate;
     bool m_readytofire;
+
+    // Hood / Vision
+    double m_distance;
 
     // Temp (For testing purposes)
     CANSparkMax *m_feedermotor;

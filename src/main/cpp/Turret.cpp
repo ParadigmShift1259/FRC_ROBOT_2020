@@ -12,9 +12,10 @@
 using namespace std;
 
 
-Turret::Turret(OperatorInputs *inputs)
+Turret::Turret(OperatorInputs *inputs, Vision *vision)
 {
     m_inputs = inputs;
+    m_vision = vision;
 
     // Flywheel
     m_flywheelmotor = nullptr;
@@ -127,6 +128,8 @@ void Turret::Init()
     m_turretrampstate = kMaintain;
     m_readytofire = false;
 
+    m_distance = 0;
+
     // Temp (for testing purposes)
     m_feedermotor = new CANSparkMax(9, CANSparkMax::MotorType::kBrushless);
     m_flywheelmotor->SetInverted(true);
@@ -199,12 +202,13 @@ void Turret::TurretStates()
                 }
             }
             CalculateAbsoluteAngle();
-            if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))    // if vision target is found, progress
+            if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0) || VisionTurretAngle())    // if vision target is found, progress
                 m_turretstate = kHoming;
             break;
 
         case kHoming:
             m_readytofire = false;
+            VisionTurretAngle();
             // CalculateHoodFlywheel(distance, m_hoodangle, m_setpoint);
             // currently only manual work for now
             if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
@@ -218,8 +222,6 @@ void Turret::TurretStates()
                 m_flywheelsetpoint += 100;
             else if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0) && (m_flywheelsetpoint >= 50))
                 m_flywheelsetpoint -= 100;
-
-            VisionTurretAngle();
         
             // if turret is only off by a small amount with its error and its flywheel is up to speed, progress
             if (TicksToDegrees(m_turretmotor->GetClosedLoopError()) <= TUR_TURRET_ERROR &&
@@ -336,7 +338,12 @@ void Turret::CalculateAbsoluteAngle()
 // Uses vision input and calculates angle, adds it to the current angle and sets turretangle
 bool Turret::VisionTurretAngle()
 {
-    return false;
+    if (!m_vision->GetActive())
+        return false;
+    
+    m_turretangle = TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()) + m_vision->GetAngle();      // Change +/- when testing
+    m_distance = m_vision->GetDistance();
+    return true;
 }
 
 

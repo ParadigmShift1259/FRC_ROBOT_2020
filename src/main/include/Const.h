@@ -139,4 +139,11 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define REV_TO_TURRET_REV (TUR_PULLEY / TUR_TURRET_SPINNER) 
 #define TURRET_REV_TO_DEGREES 360
 
+
+// Vision
+#define VIS_MOUNTING_ANGLE 10.8     // degrees
+#define VIS_MOUNTING_HEIGHT 20      // inches
+#define VIS_TARGET_HEIGHT 98.25     // inches
+#define VIS_TARGET_SIZE 15          // inches
+
 #endif /* SRC_CONST_H_ */
