@@ -63,7 +63,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 //   Drivetrain
-#define DT_ENABLED 1            // set to 1 to enable drivetrain
+#define DT_ENABLED 0            // set to 1 to enable drivetrain
 //   Direction
 #define DT_DEFAULT_DIRECTION -1.0
 //   Inverts
@@ -139,7 +139,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 // Intake
-#define INT_ENABLED 1           // set to 1 to enable intake motors
+#define INT_ENABLED 0           // set to 1 to enable intake motors
 #define INT_SOLENOID ENABLED(INT_ENABLED, 0)
 #define INT_MOTOR1 ENABLED(INT_ENABLED, 7)
 #define INT_MOTOR2 ENABLED(INT_ENABLED, 8)
@@ -164,7 +164,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define CLM_MOTOR ENABLED(CLM_ENABLED, 10)
 
 //  Turret
-#define TUR_ENABLED 1            // set to 1 to enable turret motor
+#define TUR_ENABLED 0            // set to 1 to enable turret motor
 #define TUR_SHOOTER_ID ENABLED(TUR_ENABLED, 1)
 #define TUR_TIMEOUT_MS 30
 #define ENCODER_TICKS_PER_REV 4096.00
