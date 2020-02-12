@@ -6,6 +6,7 @@
 #include "Const.h"
 #include "OperatorInputs.h"
 #include "Turret.h"
+#include "Vision.h"
 
 
 using namespace frc;
@@ -28,6 +29,7 @@ public:
 protected:
     OperatorInputs *m_operatorinputs;
     Turret *m_turret;
+    Vision *m_vision;
 
 };
 
