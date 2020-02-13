@@ -104,4 +104,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 #define CPL_MOTOR 2
 
+// ControlPanel
+#define COUNTS_PER_CW_REV 8.2
+#define COUNTS_PER_CW_SECTOR (COUNTS_PER_CW_REV/8)
 #endif /* SRC_CONST_H_ */

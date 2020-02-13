@@ -10,10 +10,10 @@
 
 
 #include "OperatorInputs.h"
-#include <rev/ColorSensorV3.h>
-#include <rev/ColorMatch.h>
+#include "rev/ColorSensorV3.h"
+#include "rev/ColorMatch.h"
 #include <ctre/Phoenix.h>
-
+#include <frc/DriverStation.h>
 
 using namespace frc;
 using namespace rev;
@@ -36,30 +36,37 @@ public:
 	void Loop();
 	void Stop();
 	
+	
 protected:
 	void ControlPanelStates();
 	ColorOptions GetColor();
 	bool SensorSanityCheck();
-
+	ColorOptions GetTargetColor();
 
 private:
 	OperatorInputs *m_inputs;
 	ColorOptions m_color;
+	ColorOptions m_targetcolor;
+	int m_colordelta;
 	TalonSRX *m_spinner;
 	ColorSensorV3 *m_colorsensor;
 	Timer *m_timer;
 	int m_redCount;
 	int m_blueCount;
 	SpinnerState m_spinnerstate;
+	int m_direction;
+	double m_startencodervalue;
+	double m_currentencodervalue;
+	
 
 	ColorMatch m_colormatcher;
 	double m_confidence;
 
-	ColorOptions m_currentcolor;
-	
+	ColorOptions m_currentcolor,m_previouscolor;
+ //1 = red,  2 = blue
 	bool m_stop;
 
-	double m_targetcolor;
+
 
 	double m_spinnerPIDvals[7];
 	double m_spinnersetpoint;
