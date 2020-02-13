@@ -16,10 +16,10 @@
 using namespace std;
 
 
-static constexpr Color kYellowTarget = Color(.323364, .588501, .088013);
-static constexpr Color kRedTarget = Color(0.580933, 0.310425, 0.108521);    
-static constexpr Color kGreenTarget = Color(0.118286, 0.574829, .302368);
-static constexpr Color kBlueTarget = Color(0.084595, 0.361450, 0.553833);
+//static constexpr Color kYellowTarget = Color(.323364, .588501, .088013);
+//static constexpr Color kRedTarget = Color(0.580933, 0.310425, 0.108521);    
+//static constexpr Color kGreenTarget = Color(0.118286, 0.574829, .302368);
+//static constexpr Color kBlueTarget = Color(0.084595, 0.361450, 0.553833);
 
 
 ControlPanel::ControlPanel(OperatorInputs *inputs)
@@ -31,7 +31,7 @@ ControlPanel::ControlPanel(OperatorInputs *inputs)
 	m_spinner = nullptr;
 	if (CPL_MOTOR != -1)
 		m_spinner = new TalonSRX(CPL_MOTOR);
-		
+
 	m_colorsensor = new ColorSensorV3(i2cPort);
 	m_timer = new Timer();
 
@@ -67,12 +67,12 @@ void ControlPanel::Init()
 
 	m_colorsensor->ConfigureColorSensor(rev::ColorSensorV3::ColorResolution::k13bit, rev::ColorSensorV3::ColorMeasurementRate::k25ms);
 
-	m_spinnerstate = kColorSpin;
+	
 
-	m_colormatcher.AddColorMatch(kYellowTarget);
-	m_colormatcher.AddColorMatch(kRedTarget);
-	m_colormatcher.AddColorMatch(kGreenTarget);
-	m_colormatcher.AddColorMatch(kBlueTarget);
+	//m_colormatcher.AddColorMatch(kYellowTarget);
+	//m_colormatcher.AddColorMatch(kRedTarget);
+	//m_colormatcher.AddColorMatch(kGreenTarget);
+	//m_colormatcher.AddColorMatch(kBlueTarget);
 	m_confidence = 0.6;
 	m_redCount = 0;
 	m_blueCount = 0;
@@ -81,10 +81,9 @@ void ControlPanel::Init()
 	m_previouscolor = kNone;
 	m_targetcolor = kNone;
 	m_direction = 0;
-
-	SmartDashboard::PutNumber("CPIN1_SpinnerSetpoint", m_spinnersetpoint);
-	SmartDashboard::PutNumber("CPIN2_Confidence", m_confidence);
-	SmartDashboard::PutNumber("CPIN3_TargetColor", m_targetcolor);
+	m_spinnersetpoint = 0;
+	m_spinnerstate = kOff;
+	m_spinnerstatehelper = 1.0;
 
 	m_spinner->SetNeutralMode(NeutralMode::Brake);
 	m_spinner->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0);
@@ -92,7 +91,12 @@ void ControlPanel::Init()
 	m_spinner->SetInverted(true);
 	m_spinner->ConfigPeakOutputForward(1);
 	m_spinner->ConfigPeakOutputReverse(-1);
-	m_spinnersetpoint = 0;
+	
+	SmartDashboard::PutNumber("CPIN1_SpinnerSetpoint", m_spinnersetpoint);
+	SmartDashboard::PutNumber("CPIN2_Confidence", m_confidence);
+	SmartDashboard::PutNumber("CPIN3_TargetColor", m_targetcolor);
+	SmartDashboard::PutNumber("CPIN2_Confidence", m_spinnerstatehelper);
+	
 }
 
 
@@ -102,7 +106,6 @@ void ControlPanel::Loop()
 		return;
 
 	ControlPanelStates();
-
 
 	SmartDashboard::PutNumber("CPM11_Encoder_Position in Revolutions", m_spinner->GetSelectedSensorPosition(0) / ENCODER_TICKS_PER_REV);
 	SmartDashboard::PutNumber("CPM12_Encoder_Velocity in RPM", m_spinner->GetSelectedSensorVelocity(0) / MINUTES_TO_HUNDRED_MS / ENCODER_TICKS_PER_REV);
@@ -120,10 +123,30 @@ void ControlPanel::Stop()
 }
 
 
+
+
 void ControlPanel::ControlPanelStates()
 {
+	m_spinnerstatehelper= SmartDashboard::GetNumber("CPIN3_SpinnerState", 0);
 	m_spinnersetpoint = SmartDashboard::GetNumber("CPIN1_SpinnerSetpoint", 0);
 	m_confidence = SmartDashboard::GetNumber("CPIN2_Confidence", 0);
+	
+	cout<<SmartDashboard::GetNumber("CPIN3_SpinnerState", 0)<<SmartDashboard::GetNumber("CPIN1_SpinnerSetpoint", 0)<<endl;
+	
+	if (m_spinnerstatehelper == 1) 
+	{
+		m_spinnerstate = kBlindSpin;
+	}
+	else if(m_spinnerstatehelper == 2)
+	{
+		m_spinnerstate = kColorSpin;
+	}
+	else
+	{
+		m_spinnerstate = kOff;
+	}
+	//cout<<m_spinnerstate<<m_spinnerstatehelper<<m_spinnersetpoint<<endl;
+	
 	//cout << "spinner state =" << m_spinnerstate<< endl;
 	//m_targetcolor = SmartDashboard::GetNumber("CPIN3_TargetColor", 0);
 
@@ -140,16 +163,14 @@ void ControlPanel::ControlPanelStates()
 			{
 				SmartDashboard::PutString("CPVER1_TrueColor", "Red");
 				m_redCount ++ ;
-				
 			}
 			else if (m_currentcolor == kBlue &&  m_previouscolor != kBlue )
 			{
 				SmartDashboard::PutString("CPVER1_TrueColor", "Blue");
 				m_blueCount ++ ;
-				
 			}	
 
-		if (m_blueCount == 21 || m_redCount == 21 )
+		if (m_blueCount == 7 || m_redCount == 7 )
 			m_stop = true;
 		
 		// Once stopped, use A button to restart. If not, set the speed to spinpower
@@ -183,12 +204,10 @@ void ControlPanel::ControlPanelStates()
 				m_targetcolor = GetTargetColor();
 				m_colordelta = m_targetcolor - m_currentcolor;
 				cout<< "ColorDelta:"<< m_colordelta << endl;
-				m_stop = false;
 				if (m_colordelta == 1 || m_colordelta == -3)
-					m_direction = -1;	//m_spinnersetpoint
+					m_direction = -1;	
 				else
-					m_direction = 1;
-					m_spinnersetpoint = 0.15;
+					m_direction = 1;	
 					
 			}
 		

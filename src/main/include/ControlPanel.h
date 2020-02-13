@@ -66,8 +66,7 @@ private:
  //1 = red,  2 = blue
 	bool m_stop;
 
-
-
+	double m_spinnerstatehelper;
 	double m_spinnerPIDvals[7];
 	double m_spinnersetpoint;
 };
