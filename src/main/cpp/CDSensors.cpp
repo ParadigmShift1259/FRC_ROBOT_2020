@@ -41,18 +41,23 @@ void CDSensors::Init()
 {
     using ds = rev::Rev2mDistanceSensorEx;
 
+    m_ballpresent1 = 1.0;
+    m_ballpresent2 = 1.0;
+    m_ballpresent3 = 1.0;
+    m_ballpresent4 = 1.0;
+
     // Connect to I2C through mux one on at a time
     MuxSelect(0);
     m_distsensor1 = new Rev2mDistanceSensorEx(ds::Port::kOnboard
                                             , ds::DistanceUnit::kInches
                                             , ds::RangeProfile::kDefault
-                                            , 0x56);
+                                            , 0x54);
 
     MuxSelect(1);
     m_distsensor2 = new Rev2mDistanceSensorEx(ds::Port::kOnboard
                                             , ds::DistanceUnit::kInches
                                             , ds::RangeProfile::kDefault
-                                            , 0x54);
+                                            , 0x56);
 
     MuxSelect(2);
     m_distsensor3 = new Rev2mDistanceSensorEx(ds::Port::kOnboard
@@ -64,7 +69,7 @@ void CDSensors::Init()
     m_distsensor4 = new Rev2mDistanceSensorEx(ds::Port::kOnboard
                                             , ds::DistanceUnit::kInches
                                             , ds::RangeProfile::kDefault
-                                            , 0x5A);
+                                            , 0x5A); 
 
     // Connect all ports on the I2C bus                                          
     MuxSelectAll();
@@ -149,10 +154,49 @@ void CDSensors::Dashboard()
 {
 }
 
+bool CDSensors::BallPresent(int sensornum)
+{
+  double dist;
+  bool ballpresent = false;
+  
+  switch (sensornum)
+  {
+    case FeederSensor:
+      dist = ReadDistance(*m_distsensor1, sensornum);
+      if (dist <= m_ballpresent1)
+        ballpresent = true;
+      break;
+
+    case Chute1Sensor:
+      dist = ReadDistance(*m_distsensor2, sensornum);
+      if (dist <= m_ballpresent2)
+        ballpresent = true;    
+      break;
+
+    case Chute2Sensor:
+      dist = ReadDistance(*m_distsensor3, sensornum);
+      if (dist <= m_ballpresent3)
+        ballpresent = true;    
+      break;
+
+    case RollerSensor:
+      dist = ReadDistance(*m_distsensor4, sensornum);
+      if (dist <= m_ballpresent4)
+        ballpresent = true;    
+      break;
+
+    default:
+      break;
+  }
+
+  return ballpresent;
+}
+
 
 // Returns timestamp
-double Robot::ReadDistance(Rev2mDistanceSensorEx& distSensor, int sensorNum) 
+double CDSensors::ReadDistance(Rev2mDistanceSensorEx& distSensor, int sensorNum) 
 {
+  double dist = 100.0;
   bool isValid = distSensor.IsRangeValid();
 
   char buf[100];
@@ -160,8 +204,7 @@ double Robot::ReadDistance(Rev2mDistanceSensorEx& distSensor, int sensorNum)
   frc::SmartDashboard::PutBoolean(buf, isValid);
   //printf(buf, "Data %d Valid %d\n", sensorNum, isValid);
   //frc::DriverStation::ReportError(buf);
-
-  double timestamp;
+  
   if (isValid)
   {
     /**
@@ -169,37 +212,16 @@ double Robot::ReadDistance(Rev2mDistanceSensorEx& distSensor, int sensorNum)
      * this range is returned in inches.
      */
     sprintf(buf, "Distance %d (in)", sensorNum);
-    auto dist = distSensor.GetRange();
+    dist = distSensor.GetRange();
     frc::SmartDashboard::PutNumber(buf, dist);
     printf("Distance %d (in) %.3f\n", sensorNum, dist);
     //frc::DriverStation::ReportError(buf);
-
-    /**
-     * The timestamp of the last valid measurement (measured in seconds since 
-     * the program started), is returned by GetTimestamp().
-     */
-    sprintf(buf, "Timestamp %d", sensorNum);
-    timestamp = distSensor.GetTimestamp();
-    frc::SmartDashboard::PutNumber(buf, timestamp);
-    printf("Timestamp %d (in) %.3f\n", sensorNum, timestamp);
-    //sprintf(buf, "Timestamp %d (in) %.3f", sensorNum, timestamp);
-    //frc::DriverStation::ReportError(buf);
-  }
-  else 
-  {
-    sprintf(buf, "Distance %d (in)", sensorNum);
-    frc::SmartDashboard::PutNumber(buf, -1);
-    sprintf(buf, "Timestamp %d", sensorNum);
-    timestamp = distSensor.GetTimestamp();
-    frc::SmartDashboard::PutNumber(buf, timestamp);
   }
 
-  return timestamp;
+  return dist;
 }
 
-void Robot::TestPeriodic() {}
-
-void Robot::MuxSelect(uint8_t muxPort)
+void CDSensors::MuxSelect(uint8_t muxPort)
 {
   if (muxPort > 7)
   {
@@ -217,7 +239,7 @@ void Robot::MuxSelect(uint8_t muxPort)
   frc::DriverStation::ReportError(buf);
 }
 
-void Robot::MuxSelectAll()
+void CDSensors::MuxSelectAll()
 {
   uint8_t muxPortBit[2];
   muxPortBit[0] = 0xFF;

@@ -13,7 +13,6 @@
 
 #include <frc/i2c.h>
 #include <frc/smartdashboard/SendableChooser.h>
-#include <frc/DigitalOutput.h>
 #include "../native/include/rev/Rev2mDistanceSensorEx.h"
 #include <rev/ColorSensorV3.h>
 
@@ -22,6 +21,13 @@ using namespace frc;
 using namespace rev;
 using namespace std;
 
+enum ESensors
+{
+    FeederSensor = 1,
+    Chute1Sensor,
+    Chute2Sensor,
+    RollerSensor
+};
 
 class CDSensors
 {
@@ -32,6 +38,8 @@ public:
 	void Loop();
 	void Stop();
 	void Dashboard();
+    bool BallPresent(int sensornum);
+    ColorSensorV3* GetColorSensor() { return m_colorsensor; }
 
 private:
     void MuxSelect(uint8_t i);
@@ -50,6 +58,11 @@ private:
     Rev2mDistanceSensorEx* m_distsensor3;
     Rev2mDistanceSensorEx* m_distsensor4;
     ColorSensorV3* m_colorsensor;
+
+    double m_ballpresent1;
+    double m_ballpresent2;
+    double m_ballpresent3;
+    double m_ballpresent4;
 };
 
 

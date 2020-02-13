@@ -60,10 +60,12 @@ model {
             sources.cpp {
                 source {
                     srcDir 'src/main/cpp'
+                    srcDir 'src/main/native/cpp'
                     include '**/*.cpp', '**/*.cc'
                 }
                 exportedHeaders {
                     srcDir 'src/main/include'
+                    srcDir 'src/main/native/include'
                     if (includeSrcInIncludeRoot) {
                         srcDir 'src/main/cpp'
                     }
