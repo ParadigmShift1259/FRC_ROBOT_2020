@@ -23,10 +23,10 @@ using namespace std;
 
 enum ESensors
 {
-    FeederSensor = 1,
-    Chute1Sensor,
+    RollerSensor = 0,
     Chute2Sensor,
-    RollerSensor
+    Chute1Sensor,
+    FeederSensor
 };
 
 class CDSensors

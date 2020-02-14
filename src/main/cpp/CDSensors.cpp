@@ -29,22 +29,13 @@ CDSensors::CDSensors()
     m_distsensor2 = nullptr;
     m_distsensor3 = nullptr;
     m_distsensor4 = nullptr;
-}
 
+   using ds = rev::Rev2mDistanceSensorEx;
 
-CDSensors::~CDSensors()
-{        
-}
-
-
-void CDSensors::Init()
-{
-    using ds = rev::Rev2mDistanceSensorEx;
-
-    m_ballpresent1 = 1.0;
-    m_ballpresent2 = 1.0;
-    m_ballpresent3 = 1.0;
-    m_ballpresent4 = 1.0;
+    m_ballpresent1 = 7.0;
+    m_ballpresent2 = 4.0;
+    m_ballpresent3 = 4.0;
+    m_ballpresent4 = 7.0;
 
     // Connect to I2C through mux one on at a time
     MuxSelect(0);
@@ -75,7 +66,16 @@ void CDSensors::Init()
     MuxSelectAll();
 
     m_colorsensor = new ColorSensorV3(I2C::kOnboard);
+}
 
+
+CDSensors::~CDSensors()
+{
+}
+
+
+void CDSensors::Init()
+{
     m_distsensor1->SetEnabled(true);
     m_distsensor2->SetEnabled(true);
     m_distsensor3->SetEnabled(true);
@@ -91,62 +91,22 @@ void CDSensors::Loop()
 {
     //double IR = m_colorsensor->GetIR();
     Color detectedColor = m_colorsensor->GetColor();
+
     frc::SmartDashboard::PutNumber("Color R", detectedColor.red);
     frc::SmartDashboard::PutNumber("Color G", detectedColor.green);
     frc::SmartDashboard::PutNumber("Color B", detectedColor.blue);
 
-    static double prevTimestamp1 = 0.0;
-    static double prevTimestamp2 = 0.0;
-    static double prevTimestamp3 = 0.0;
-    static double prevTimestamp4 = 0.0;
-    double newTimestamp = ReadDistance(*m_distsensor1, 1);
-    frc::SmartDashboard::PutNumber("Sensor 1 Time delta", newTimestamp - prevTimestamp1);
-    prevTimestamp1 = newTimestamp;
+    frc::SmartDashboard::PutBoolean("Roller Ball Present", BallPresent(RollerSensor));
+    frc::SmartDashboard::PutBoolean("Chute 1 Ball Present", BallPresent(Chute1Sensor));
+    frc::SmartDashboard::PutBoolean("Chute 2 Ball Present", BallPresent(Chute2Sensor));
+    frc::SmartDashboard::PutBoolean("Feeder Ball Present", BallPresent(FeederSensor));
 
-    newTimestamp = ReadDistance(*m_distsensor2, 2);
-    frc::SmartDashboard::PutNumber("Sensor 2 Time delta", newTimestamp - prevTimestamp2);
-    prevTimestamp2 = newTimestamp;
-
-    newTimestamp = ReadDistance(*m_distsensor3, 3);
-    frc::SmartDashboard::PutNumber("Sensor 3 Time delta", newTimestamp - prevTimestamp3);
-    prevTimestamp3 = newTimestamp;
-
-    newTimestamp = ReadDistance(*m_distsensor4, 4);
-    frc::SmartDashboard::PutNumber("Sensor 4 Time delta", newTimestamp - prevTimestamp4);
-    prevTimestamp4 = newTimestamp;
     Dashboard();
 }
 
 
 void CDSensors::Stop()
 {
-    if (m_distsensor1 != nullptr)
-    {
-        m_distsensor1->SetAutomaticMode(false);
-        delete m_distsensor1;
-        m_distsensor1 = nullptr;
-    }
-
-    if (m_distsensor2 != nullptr)
-    {
-        m_distsensor2->SetAutomaticMode(false);
-        delete m_distsensor2;
-        m_distsensor2 = nullptr;
-    }
-
-    if (m_distsensor3 != nullptr)
-    {
-        m_distsensor3->SetAutomaticMode(false);
-        delete m_distsensor3;
-        m_distsensor3 = nullptr;
-    }
-
-    if (m_distsensor4 != nullptr)
-    {
-        m_distsensor4->SetAutomaticMode(false);
-        delete m_distsensor4;
-        m_distsensor4 = nullptr;
-    }
 }
 
 
@@ -161,25 +121,25 @@ bool CDSensors::BallPresent(int sensornum)
   
   switch (sensornum)
   {
-    case FeederSensor:
+    case RollerSensor:
       dist = ReadDistance(*m_distsensor1, sensornum);
       if (dist <= m_ballpresent1)
         ballpresent = true;
       break;
 
-    case Chute1Sensor:
+    case Chute2Sensor:
       dist = ReadDistance(*m_distsensor2, sensornum);
       if (dist <= m_ballpresent2)
         ballpresent = true;    
       break;
 
-    case Chute2Sensor:
+    case Chute1Sensor:
       dist = ReadDistance(*m_distsensor3, sensornum);
       if (dist <= m_ballpresent3)
         ballpresent = true;    
       break;
 
-    case RollerSensor:
+    case FeederSensor:
       dist = ReadDistance(*m_distsensor4, sensornum);
       if (dist <= m_ballpresent4)
         ballpresent = true;    
@@ -214,7 +174,7 @@ double CDSensors::ReadDistance(Rev2mDistanceSensorEx& distSensor, int sensorNum)
     sprintf(buf, "Distance %d (in)", sensorNum);
     dist = distSensor.GetRange();
     frc::SmartDashboard::PutNumber(buf, dist);
-    printf("Distance %d (in) %.3f\n", sensorNum, dist);
+    //printf("Distance %d (in) %.3f\n", sensorNum, dist);
     //frc::DriverStation::ReportError(buf);
   }
 

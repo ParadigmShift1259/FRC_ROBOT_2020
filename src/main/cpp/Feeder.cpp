@@ -15,11 +15,12 @@
 using namespace std;
 
 
-Feeder::Feeder(OperatorInputs *inputs, Intake *intake)
+Feeder::Feeder(OperatorInputs *inputs, Intake *intake, CDSensors *sensors)
 {	
 
     m_inputs = inputs;
     m_intake = intake;
+    m_sensors = sensors;
 
     m_motor = nullptr;
     if (FDR_MOTOR != -1)

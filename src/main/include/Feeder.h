@@ -12,6 +12,8 @@
 
 #include "OperatorInputs.h" 
 #include "Intake.h"
+#include "CDSensors.h"
+
 #include <rev\CANSparkMax.h>
 #include <frc\Solenoid.h>
 #include <frc/Spark.h>
@@ -27,7 +29,7 @@ public:
 	
 	enum FeederState {kIdle, kFire, kRefresh, kReverse};
 	
-	Feeder(OperatorInputs *inputs, Intake *intake);
+	Feeder(OperatorInputs *inputs, Intake *intake, CDSensors *sensors);
 	~Feeder();
 	void Init();
 	void Loop();
@@ -42,6 +44,8 @@ public:
 protected:
     OperatorInputs *m_inputs;
     Intake *m_intake;
+	CDSensors *m_sensors;
+
     CANSparkMax *m_motor;
 	Solenoid *m_solenoid;
 

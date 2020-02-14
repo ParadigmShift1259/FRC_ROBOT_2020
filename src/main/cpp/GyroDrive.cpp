@@ -80,7 +80,7 @@ void GyroDrive::Loop()
 		}
 		break;
 	}
-	if	(m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+	if	(m_inputs->xBoxRightTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
 		m_drivetrain->SetLowSpeedMode(true);
 	if (m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
 		m_drivetrain->SetLowSpeedMode(false);

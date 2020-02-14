@@ -63,7 +63,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 //   Drivetrain
-#define DT_ENABLED 0            // set to 1 to enable drivetrain
+#define DT_ENABLED 1            // set to 1 to enable drivetrain
 //   Direction
 #define DT_DEFAULT_DIRECTION -1.0
 //   Inverts
@@ -84,9 +84,9 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 //   Ramping
 #define RAMPING_RATE_PERIOD 0.10
 #define RAMPING_RATE_UP_MIN 0.6
-#define RAMPING_RATE_UP_MAX 3.0
-#define RAMPING_RATE_DOWN_MIN 3.0
-#define RAMPING_RATE_DOWN_MAX 3.0
+#define RAMPING_RATE_UP_MAX 4.0
+#define RAMPING_RATE_DOWN_MIN 0.6
+#define RAMPING_RATE_DOWN_MAX 5.0
 //   Scaling
 #define JOYSTICK_SCALING_X 0.5
 #define JOYSTICK_SCALING_Y 1.0
@@ -139,13 +139,10 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 // Intake
-#define INT_ENABLED 0           // set to 1 to enable intake motors
+#define INT_ENABLED 1           // set to 1 to enable intake motors
 #define INT_SOLENOID ENABLED(INT_ENABLED, 0)
 #define INT_MOTOR1 ENABLED(INT_ENABLED, 7)
 #define INT_MOTOR2 ENABLED(INT_ENABLED, 8)
-#define INT_SENSOR1 ENABLED(INT_ENABLED, 1)
-#define INT_SENSOR2 ENABLED(INT_ENABLED, 2)
-#define INT_SENSOR3 ENABLED(INT_ENABLED, 3)
 #define INT_INTAKE_WHEEL_SPEED 0.5
 #define INT_INTAKE_ROLLER_SPEED .6
 

@@ -12,6 +12,7 @@
 
 #include "OperatorInputs.h"
 #include "Const.h"
+#include "CDSensors.h"
 #include <frc\Solenoid.h>
 #include <frc\Spark.h>
 
@@ -28,7 +29,7 @@ public:
 	 */
 	enum IntakeState {kIdle, kGather, kEject};
 
-	Intake(OperatorInputs *inputs);
+	Intake(OperatorInputs *inputs, CDSensors *sensors);
 	~Intake();
 	void Init();
 	void Loop();
@@ -38,6 +39,7 @@ public:
 	// If there are no balls left, shooting will be set to false
 	void SetDrivingBecauseShooting() { m_drivingbecauseshooting = true;}
 	bool GetDrivingBecauseShooting() { return m_drivingbecauseshooting; }
+	void CountBalls();
 
 	bool LoadRefresh();
 
@@ -49,6 +51,8 @@ private:
 
 protected:
     OperatorInputs *m_inputs;
+	CDSensors *m_sensors;
+
     Solenoid *m_solenoid1;
     Solenoid *m_solenoid2;
     Spark *m_motor1;

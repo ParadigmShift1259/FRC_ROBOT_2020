@@ -125,10 +125,10 @@ void Turret::TurretStates()
             m_flywheelsetpoint = TUR_IDLE_STATE_RPM;
             // Bring m_shooter to as close to 0 angle as possible
 
-            if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))    // and vision target is found
+            if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 0))    // and vision target is found
                 m_turretstate = kHoming;
             else
-            if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+            if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
                 m_turretstate = kPreMove;
             
             break;
@@ -137,25 +137,27 @@ void Turret::TurretStates()
             m_flywheelsetpoint = TUR_PREMOVE_STATE_RPM;
             // Manual movement of m_shooter to get closer to vision target
 
-            if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))    // and vision target is found
+            if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 0))    // and vision target is found
                 m_turretstate = kHoming;
             break;
         case kHoming:
             m_readytofire = false;
             // CalculateHoodFlywheel(distance, m_hoodangle, m_setpoint);
+            /*
             if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
                 m_flywheelsetpoint = 2700;
             else if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0))
                 m_flywheelsetpoint = 2800;
             else if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0))
                 m_flywheelsetpoint = 2900;
+                */
             
-            if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 0))
+            if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 0))
                 m_flywheelsetpoint += 100;
             else if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0) && (m_flywheelsetpoint >= 50))
                 m_flywheelsetpoint -= 100;
 
-            if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))       // needs to be changed so automatic
+            if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 0))       // needs to be changed so automatic
                 m_turretstate = kReady;
             break;
     
@@ -163,6 +165,8 @@ void Turret::TurretStates()
             // if turret angle is off by tolerance, set readytofire to false and go back to kHoming
             m_readytofire = true;
             // wait until FireModes turns turretstate back to kReturn
+            if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 0))       // needs to be changed so automatic
+                m_turretstate = kIdle;
             break;
 
         case kReturn:
