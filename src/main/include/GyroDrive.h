@@ -31,6 +31,9 @@ public:
 	void Loop();
 	void Stop();
 	void Disabled();
+
+	DualGyro *GetGyro() { return m_gyro; }
+
 	void Drive(double x, double y, bool ramp = false);
 	void SetStraightPID(double P = -1, double I = -1, double D = -1);
 	void SetAnglePID(double P = -1, double I = -1, double D = -1);

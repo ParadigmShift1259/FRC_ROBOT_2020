@@ -48,9 +48,9 @@ void Climber::Loop()
 {
     if (m_motor == nullptr || m_solenoid == nullptr)
         return;
-     if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+     if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
          m_solenoid->Set(true);  
-     if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+     if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
          m_solenoid->Set(false); 
 
     Dashboard(); 

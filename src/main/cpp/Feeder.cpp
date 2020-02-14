@@ -43,6 +43,7 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake, CDSensors *sensors)
     m_sensors = sensors;
 
     m_motor = new CANSparkMax(FDR_MOTOR, CANSparkMax::MotorType::kBrushless);
+    m_motor->SetIdleMode(CANSparkMax::IdleMode::kBrake);
     m_encoder = new CANEncoder(*m_motor);
     m_feederPID = new ProfiledPIDController<units::meters>(
         m_feederPIDvals[0],
@@ -140,13 +141,10 @@ void Feeder::FeederStateMachine()
         m_motor->Set(0);
         
         // manual drives
-        if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
-            m_motor->Set(FDR_REFRESH_SPEED_LOAD);
-        else
-        if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
-            m_motor->Set(-FDR_REFRESH_SPEED_LOAD);
-        else
-        if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        //if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+        //    m_motor->Set(FDR_REFRESH_SPEED_LOAD);
+        //else
+        if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_feederstate = kRefresh;
             m_setpoint = feedersetpoint;
@@ -156,13 +154,14 @@ void Feeder::FeederStateMachine()
 
     case kFire:
         // If we are shooting and have a ball or the intake is still running balls in, refresh
-        if (m_shoot && (m_sensors->BallPresent(FeederSensor) || m_intake->GetDrivingBecauseShooting()))
+        if (m_sensors->BallPresent(FeederSensor) || m_intake->GetDrivingBecauseShooting())
         {
             m_feederstate = kRefresh;
         }
         // if not, consider shooting done and return to idle
         else 
         {
+            m_shoot = false;
             m_feederstate = kIdle;
         }
         
@@ -176,8 +175,8 @@ void Feeder::FeederStateMachine()
         // Constraining maximum and minimum outputs
         if (m_power < 0)
             m_power = 0;
-        if (m_power > 0.5)
-            m_power = 0.5;
+        if (m_power > FDR_MAX_POWER)
+            m_power = FDR_MAX_POWER;
 
         m_motor->Set(m_power + feedforward);
 
@@ -198,7 +197,7 @@ void Feeder::StartFire()
     m_shoot = true;
 }
 
-bool Feeder::GetFire()
+bool Feeder::GetFinished()
 {
     return m_shoot;
 }

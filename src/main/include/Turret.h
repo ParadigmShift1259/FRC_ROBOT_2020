@@ -20,6 +20,7 @@
 #include "OperatorInputs.h"
 #include "Vision.h"
 #include "Feeder.h"
+#include "GyroDrive.h"
 
 
 using namespace frc;
@@ -52,7 +53,7 @@ public:
     enum RampState {kMaintain, kIncrease, kDecrease};
 
     // Will add Drivetrain, Intake, PID, and Vision classes as pass pointers
-    Turret(OperatorInputs *inputs, Vision *vision);
+    Turret(OperatorInputs *inputs, Feeder *feeder, Vision *vision, GyroDrive *gyrodrive);
     ~Turret();
     void Init();
     void Loop();
@@ -73,6 +74,7 @@ protected:
 
 private:
     OperatorInputs *m_inputs;
+    Feeder *m_feeder;
     Vision *m_vision;
 
     // Flywheel
@@ -92,6 +94,7 @@ private:
 
     double m_absoluteangle;
     double m_robotangle;
+    DualGyro *m_robotgyro;
     double m_turretangle;
     double m_turretrampedangle;
     
@@ -106,10 +109,6 @@ private:
 
     // Hood / Vision
     double m_distance;
-
-    // Temp (For testing purposes)
-    CANSparkMax *m_feedermotor;
-    PigeonIMU *m_robotgyro;
 };
 
 

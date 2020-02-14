@@ -27,14 +27,12 @@ Intake::Intake(OperatorInputs *inputs, CDSensors *sensors)
     if (INT_MOTOR1 != -1)
     {
         m_motor1 = new Spark(INT_MOTOR1);
-        //m_motor1->SetInverted(true);
     }
 
     m_motor2 = nullptr;
     if (INT_MOTOR2 != -1)
     {
         m_motor2 = new Spark(INT_MOTOR2);
-        //m_motor2->SetInverted(true);
     }
     
     m_ballcount = 0;
@@ -99,8 +97,8 @@ void Intake::Loop()
             m_intakestate = kGather;
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             m_intakestate = kGather;
-        if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-            m_intakestate = kEject;
+        //if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        //   m_intakestate = kEject;
     
         m_motor1->Set(0.0);
         m_motor2->Set(0.0);
@@ -150,14 +148,12 @@ void Intake::Stop()
 void Intake::CountBalls()
 {
     m_ballcount = 0;
-    /*
     if (m_sensors->BallPresent(RollerSensor))
-        m_ballcount++;
-    if (m_sensors->BallPresent(Chute1Sensor))
         m_ballcount++;
     if (m_sensors->BallPresent(Chute2Sensor))
         m_ballcount++;
-    */
+    if (m_sensors->BallPresent(Chute1Sensor))
+        m_ballcount++;
 }
 
 

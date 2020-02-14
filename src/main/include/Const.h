@@ -14,7 +14,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 // OperatorInputs
 //   Controllers
-#define INP_DUAL 0
+#define INP_DUAL 1
 #define INP_JOYSTICK -1
 #define INP_XBOX_1 0
 #define INP_XBOX_2 1
@@ -136,6 +136,14 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // ControlPanel ---------------------------------------
 #define CPL_ENABLED 0           // set to 1 to enable control panel motor
 #define CPL_MOTOR ENABLED(CPL_ENABLED, 11)
+#define CPL_SOLENOID ENABLED(CPL_ENABLED, 2)
+#define CPL_KS
+#define CPL_KV
+#define CPL_P
+#define CPL_I
+#define CPL_D
+#define CPL_MIN 0
+#define CPL_MAX 0.5
 
 
 // Intake ---------------------------------------
@@ -150,7 +158,6 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Feeder ---------------------------------------
 #define FDR_ENABLED 1           // set to 1 to enable feeder motor
 #define FDR_MOTOR ENABLED(FDR_ENABLED, 15)
-#define FDR_SOLENOID ENABLED(FDR_ENABLED, 2)
 #define FDR_REFRESH_SPEED_LOAD 0.2
 #define FDR_REFRESH_SPEED_FIRE 0.5
 #define FDR_HIGH_NUMBER 10000
@@ -166,6 +173,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define FDR_LOW_D 
 // Refresh distance in inches
 #define FDR_REFRESH_DISTNACE 27.531
+// Max percent output that feeder can apply
+#define FDR_MAX_POWER 0.4
 
 
 // Climber ---------------------------------------

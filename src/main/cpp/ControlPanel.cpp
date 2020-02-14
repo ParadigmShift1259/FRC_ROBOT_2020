@@ -7,7 +7,9 @@
 
 #include "ControlPanel.h"
 #include "Const.h"
+
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <frc/DriverStation.h>
 
 
 using namespace std;
@@ -19,17 +21,21 @@ static constexpr Color kGreenTarget = Color(0.118286, 0.574829, .302368);
 static constexpr Color kBlueTarget = Color(0.084595, 0.361450, 0.553833);
 
 
-ControlPanel::ControlPanel(OperatorInputs *inputs)
+ControlPanel::ControlPanel(OperatorInputs *inputs, CDSensors *sensors)
 {
-	static constexpr auto i2cPort = I2C::Port::kOnboard;
+	if (CPL_MOTOR == -1)
+	{
+		DriverStation::ReportError("Control Panel Not Enabled");
+		return;
+	}
 
 	m_inputs = inputs;
+	m_sensors = sensors;
 
-	m_spinner = nullptr;
-	if (CPL_MOTOR != -1)
-		m_spinner = new TalonSRX(CPL_MOTOR);
+	m_spinner = new TalonSRX(CPL_MOTOR);
+	m_solenoid = new Solenoid(CPL_SOLENOID);
 		
-	m_colorsensor = new ColorSensorV3(i2cPort);
+	m_colorsensor = m_sensors->GetColorSensor();
 
 	m_spinnerstate = kOff;
 
@@ -50,10 +56,6 @@ ControlPanel::ControlPanel(OperatorInputs *inputs)
 	m_spinnerPIDvals[0] = 0.0; 
 	m_spinnerPIDvals[1] = 0.0; 
 	m_spinnerPIDvals[2] = 0.0; 
-	m_spinnerPIDvals[3] = 0.0;
-	m_spinnerPIDvals[4] = 0;
-	m_spinnerPIDvals[5] = 0;
-	m_spinnerPIDvals[6] = 1;
 	
 	m_spinnersetpoint = 0;
 }
@@ -72,6 +74,8 @@ void ControlPanel::Init()
 {
 	if (m_spinner == nullptr)
 		return;
+
+	m_solenoid->Set(false);
 
 	m_spinnerstate = kBlindSpin;
 
@@ -93,36 +97,31 @@ void ControlPanel::Init()
 
 	m_targetcolor = 0;
 
-	SmartDashboard::PutNumber("CPIN1_SpinnerSetpoint", m_spinnersetpoint);
-	SmartDashboard::PutNumber("CPIN2_Confidence", m_confidence);
-	SmartDashboard::PutNumber("CPIN3_TargetColor", m_targetcolor);
-
-	m_spinner->SetNeutralMode(NeutralMode::Coast);
+	m_spinner->SetNeutralMode(NeutralMode::Brake);
 	m_spinner->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, TIMEOUT_MS);
 	m_spinner->SetSensorPhase(true);
 	m_spinner->SetInverted(true);
-	m_spinner->SetNeutralMode(NeutralMode::Coast);
 	m_spinnersetpoint = 0;
 
 	/* set the peak and nominal outputs */
-	m_spinner->ConfigNominalOutputForward(m_spinnerPIDvals[5], TIMEOUT_MS);
-	m_spinner->ConfigNominalOutputReverse(-1 * m_spinnerPIDvals[5], TIMEOUT_MS);
-	m_spinner->ConfigPeakOutputForward(m_spinnerPIDvals[6], TIMEOUT_MS);
-	m_spinner->ConfigPeakOutputReverse(-1 * m_spinnerPIDvals[6], TIMEOUT_MS);
+	m_spinner->ConfigNominalOutputForward(CPL_MIN);
+	m_spinner->ConfigNominalOutputReverse(0);
+	m_spinner->ConfigPeakOutputForward(CPL_MAX);
+	m_spinner->ConfigPeakOutputReverse(0);
 	/* set closed loop gains in slot0 */
 	m_spinner->Config_kP(0, m_spinnerPIDvals[0], TIMEOUT_MS);
 	m_spinner->Config_kI(0, m_spinnerPIDvals[1], TIMEOUT_MS);
 	m_spinner->Config_kD(0, m_spinnerPIDvals[2], TIMEOUT_MS);
-	m_spinner->Config_kF(0, m_spinnerPIDvals[3], TIMEOUT_MS);
+	m_spinner->Config_kF(0, 0);
 
+	SmartDashboard::PutNumber("CPIN1_SpinnerSetpoint", m_spinnersetpoint);
+	SmartDashboard::PutNumber("CPIN2_Confidence", m_confidence);
+	SmartDashboard::PutNumber("CPIN3_TargetColor", m_targetcolor);
 	// Testing purposes for PID
-	SmartDashboard::PutNumber("CPM1_P Gain",        m_spinnerPIDvals[0]);
-	SmartDashboard::PutNumber("CPM2_I Gain",        m_spinnerPIDvals[1]);
-	SmartDashboard::PutNumber("CPM3_D Gain",        m_spinnerPIDvals[2]);
-	//SmartDashboard::PutNumber("I Zone",        m_spinnerPIDvals[3]);
-	SmartDashboard::PutNumber("CPM4_Feed Forward",  m_spinnerPIDvals[3]);
-	SmartDashboard::PutNumber("CPM5_Min Output",    m_spinnerPIDvals[5]);
-	SmartDashboard::PutNumber("CPM6_Max Output",    m_spinnerPIDvals[6]);
+	SmartDashboard::PutNumber("CPM4_P Gain",        m_spinnerPIDvals[0]);
+	SmartDashboard::PutNumber("CPM5_I Gain",        m_spinnerPIDvals[1]);
+	SmartDashboard::PutNumber("CPM6_D Gain",        m_spinnerPIDvals[2]);
+
 }
 
 
@@ -131,32 +130,21 @@ void ControlPanel::Loop()
 	if (m_spinner == nullptr)
 		return;
 
+	if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+		m_solenoid->Set(!m_solenoid->Get());
+
 	// read PID coefficients from SmartDashboard
-	double p = SmartDashboard::GetNumber("CPM1_P Gain", 0);
-	double i = SmartDashboard::GetNumber("CPM2_I Gain", 0);
-	double d = SmartDashboard::GetNumber("CPM3_D Gain", 0);
-	//double iz = SmartDashboard::GetNumber("I Zone", 0);
-	double ff = SmartDashboard::GetNumber("CPM4_Feed Forward", 0);
-	double peak = SmartDashboard::GetNumber("CPM5_Max Output", 0);
-	double nominal = SmartDashboard::GetNumber("CPM6_Min Output", 0);
+	double p = SmartDashboard::GetNumber("CPM4_P Gain", 0);
+	double i = SmartDashboard::GetNumber("CPM5_I Gain", 0);
+	double d = SmartDashboard::GetNumber("CPM6_D Gain", 0);
 
 	// if PID coefficients on SmartDashboard have changed, write new values to controller
 	if ((p != m_spinnerPIDvals[0])) { m_spinner->Config_kP(0, p, TIMEOUT_MS); m_spinnerPIDvals[0] = p; }
 	if ((i != m_spinnerPIDvals[1])) { m_spinner->Config_kI(0, i, TIMEOUT_MS); m_spinnerPIDvals[1] = i; }
 	if ((d != m_spinnerPIDvals[2])) { m_spinner->Config_kD(0, d, TIMEOUT_MS); m_spinnerPIDvals[2] = d; }
-	//if ((iz != m_spinnerPIDvals[3])) { m_spinnerPID->SetIZone(iz); m_spinnerPIDvals[3] = iz; }
-	if ((ff != m_spinnerPIDvals[3])) { m_spinner->Config_kF(0, ff, TIMEOUT_MS); m_spinnerPIDvals[3] = ff; }
-	if ((nominal != m_spinnerPIDvals[5]) || (peak != m_spinnerPIDvals[6])) 
-	{ 
-		m_spinner->ConfigNominalOutputForward(nominal, TIMEOUT_MS);
-		m_spinner->ConfigNominalOutputReverse(-1 * nominal, TIMEOUT_MS);
-		m_spinner->ConfigPeakOutputForward(peak, TIMEOUT_MS);
-		m_spinner->ConfigPeakOutputReverse(-1 * peak, TIMEOUT_MS);
-		m_spinnerPIDvals[5] = nominal; m_spinnerPIDvals[6] = peak; 
-	}
 
 	//ControlPanelStates();
-	if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+	if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
 		m_spinner->Set(ControlMode::PercentOutput, 0.25);
 	else
 		m_spinner->Set(ControlMode::PercentOutput, 0);
@@ -177,54 +165,6 @@ void ControlPanel::Stop()
 	m_spinnerstate = kOff;
 	m_spinnersetpoint = 0;
 }
-
-/*
-int ControlPanel::GetColor()
-{
-	//double IR = m_colorsensor->GetIR();
-	Color detectedColor = m_colorsensor->GetColor();
-	//uint32_t proximity = m_colorsensor->GetProximity();
-	double K = 1 - fmax(fmax(detectedColor.red, detectedColor.blue), detectedColor.green);
-	double C = (1 - detectedColor.red - K) / (1 - K);
-	double M = (1 - detectedColor.green - K) / (1 - K);
-	double Y = (1 - detectedColor.blue - K) / (1 - K);
-	
-	int color = 0; // 1-4 Yellow, Green, Blue, Red
-
-	if (C < .300)
-	{
-		color = 2;
-		SmartDashboard::PutString("CPTEST_Color", "Red");
-	}
-	else if (Y < .300)
-	{
-		color = 4;
-		SmartDashboard::PutString("CPTEST_Color", "Blue");
-	}
-	else if (M < .200  && C > Y )
-	{
-		color = 3;
-		SmartDashboard::PutString("CPTEST_Color", "Green");
-	}
-	else if (M < .200  && Y > C )
-	{
-		color = 1;
-		SmartDashboard::PutString("CPTEST_Color", "Yellow");
-	}
-
-	SmartDashboard::PutNumber("CP1_K", K);
-	SmartDashboard::PutNumber("CP2_C", C);
-	SmartDashboard::PutNumber("CP3_M", M);
-	SmartDashboard::PutNumber("CP4_Y", Y);
-	SmartDashboard::PutNumber("CP1000_R", detectedColor.red);
-	SmartDashboard::PutNumber("CP2000_G", detectedColor.green);
-	SmartDashboard::PutNumber("CP3000_B", detectedColor.blue);
-	//SmartDashboard::PutNumber("CP5_IR", IR);
-	//SmartDashboard::PutNumber("CP6_Proximity",proximity);
-	SmartDashboard::PutNumber("CP7_Color", color);
-	return color;
-}
-*/
 
 
 void ControlPanel::ControlPanelStates()
@@ -292,7 +232,7 @@ void ControlPanel::ControlPanelStates()
 		// Once stopped, use A button to restart. If not, set the speed to spinpower
 		if (m_stop)
 		{
-			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
+			if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 			{
 				m_stop = false;
 				m_colorregisteredcount[0] = 0;
@@ -309,7 +249,7 @@ void ControlPanel::ControlPanelStates()
 			m_spinner->Set(ControlMode::Velocity, targetVelocity_UnitsPer100ms); 
 		}
 
-		if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
+		if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		{
 			m_colorregisteredcount[0] = 0;
 			m_colorregisteredcount[1] = 0;
@@ -374,7 +314,7 @@ void ControlPanel::ControlPanelStates()
 		// Once stopped, use A button to restart. If not, set the speed to spinpower
 		if (m_stop)
 		{
-			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
+			if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 0))
 			{
 				m_stop = false;
 				m_colorregisteredcount[0] = 0;

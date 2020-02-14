@@ -14,7 +14,7 @@
 using namespace std;
 
 
-Turret::Turret(OperatorInputs *inputs, Vision *vision)
+Turret::Turret(OperatorInputs *inputs, Feeder *feeder, Vision *vision, GyroDrive *gyrodrive)
 {
     if (!NullCheck())
     {
@@ -24,6 +24,7 @@ Turret::Turret(OperatorInputs *inputs, Vision *vision)
 
     m_inputs = inputs;
     m_vision = vision;
+    m_feeder = feeder;
 
     // Flywheel
     m_flywheelmotor = new CANSparkMax(TUR_SHOOTER_ID, CANSparkMax::MotorType::kBrushless);
@@ -52,6 +53,8 @@ Turret::Turret(OperatorInputs *inputs, Vision *vision)
     
     m_absoluteangle = 0;
     m_robotangle = 0;
+    m_robotgyro = gyrodrive->GetGyro();
+    m_robotgyro->ZeroHeading();
     m_turretangle = 0;      // Change these when starting orientation is different
     m_turretrampedangle = 0;
 
@@ -63,13 +66,6 @@ Turret::Turret(OperatorInputs *inputs, Vision *vision)
     m_flywheelrampstate = kMaintain;
     m_turretrampstate = kMaintain;
     m_readytofire = false;
-
-    // Temp (for testing purposes)
-    m_feedermotor = new CANSparkMax(9, CANSparkMax::MotorType::kBrushless);
-    m_feedermotor->SetInverted(true);
-    m_feedermotor->SetIdleMode(CANSparkMax::IdleMode::kBrake);
-    m_robotgyro = new PigeonIMU(0);
-    m_robotgyro->SetFusedHeading(0);
 }
 
 
@@ -146,6 +142,14 @@ void Turret::Loop()
     if (!NullCheck())
         return;
 
+    if (m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+        m_firemode = kFireWhenReady;
+    else
+    if (m_inputs->xBoxRightTrigger(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+        m_firemode = kHoldFire;
+    else
+        m_firemode = kManualFire;
+
     TurretStates();
     FireModes();
 
@@ -160,7 +164,8 @@ void Turret::Loop()
     SmartDashboard::PutNumber("TUR5_RampedSetpoint", m_flywheelrampedsetpoint);
     SmartDashboard::PutNumber("TUR6_RampState", m_flywheelrampstate);
     SmartDashboard::PutNumber("TUR7_PIDslot", m_PIDslot);
-    SmartDashboard::PutNumber("Robot Gyro", m_robotgyro->GetFusedHeading());
+    double heading = m_robotgyro->GetHeading(heading);
+    SmartDashboard::PutNumber("Robot Gyro", heading);
     SmartDashboard::PutNumber("TUR8_Turret Degrees", TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()));
     SmartDashboard::PutNumber("TUR9_Setpoint Angle", m_turretmotor->GetClosedLoopTarget(0));
     SmartDashboard::PutNumber("TUR10_Flywheel Ramp State", m_flywheelrampstate);
@@ -199,7 +204,7 @@ void Turret::TurretStates()
             // maintain flywheel at last absolute angle
             CalculateAbsoluteAngle();
             // if a button is pressed, allow second driver to change absolute angle and shoot
-            if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+            if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
                 m_turretstate = kPreMove;
             break;
 
@@ -227,7 +232,7 @@ void Turret::TurretStates()
                 SmartDashboard::PutNumber("TUR11_Absolute Angle", m_absoluteangle);
             }
             CalculateAbsoluteAngle();
-            if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) || VisionTurretAngle())    // if vision target is found, progress
+            if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) || VisionTurretAngle())    // if vision target is found, progress
                 m_turretstate = kHoming;
             break;
 
@@ -246,7 +251,7 @@ void Turret::TurretStates()
                 m_flywheelsetpoint == m_flywheelrampedsetpoint)
                 m_turretstate = kReady;
 
-            if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))       // forced ready
+            if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))       // forced ready
                 m_turretstate = kReady;
             break;
     
@@ -279,46 +284,56 @@ void Turret::FireModes()
     switch (m_firemode)
     {
         case kFireWhenReady:
+            // if ready to fire, fire again and again until all balls are gone
             if (m_readytofire)
             {
-                m_feedermotor->Set(0.2);
+                m_feeder->StartFire();
             }
             else
+            if (!m_feeder->GetFinished())
             {
-                m_feedermotor->StopMotor();
+                    m_turretstate = kReturn;
             }
+
+            // forced manual
             if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
                 m_turretstate = kReturn;
             break;
 
         case kHoldFire:
-            if (m_readytofire && m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+            // if ready to fire, fire all when A button is pressed
+            if (m_readytofire && m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
             {
-                m_feedermotor->Set(0.2);
+                m_feeder->StartFire();
+                m_readytofire = false;
             }
             else
+            if (!m_feeder->GetFinished())
             {
-                m_feedermotor->StopMotor();
+                    m_turretstate = kReturn;
             }
+            
+            // forced manual
             if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
                 m_turretstate = kReturn;
             break;
 
         case kManualFire:
-            if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+            if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
             {
-                m_feedermotor->Set(0.2);
+                m_feeder->StartFire();
+                m_readytofire = false;
             }
-            else
+            if (!m_feeder->GetFinished())
             {
-                m_feedermotor->StopMotor();
+                    m_turretstate = kReturn;
             }
+            
             if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
                 m_turretstate = kReturn;
             break;
 
         case kOff:
-            m_feedermotor->StopMotor();
             if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
                 m_turretstate = kReturn;
             break;
@@ -328,7 +343,10 @@ void Turret::FireModes()
 // Calculates the angle of the turret given an angle relative to the field and the robot gyro 
 void Turret::CalculateAbsoluteAngle()
 {
-    m_robotangle = fmod(m_robotgyro->GetFusedHeading(), 360.0);
+    double heading = m_robotgyro->GetHeading(heading);
+    m_robotangle = fmod(heading, 360.0);
+    if (m_robotangle < 0)
+        m_robotangle += 360;
 
     double filter1 = fmod((m_robotangle + 45), 360.0);
     double filter2 = fmod((m_robotangle + 135), 360.0);

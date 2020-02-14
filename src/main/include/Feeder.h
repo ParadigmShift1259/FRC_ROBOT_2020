@@ -25,7 +25,6 @@
 using namespace frc;
 using namespace rev;
 using namespace std;
-using namespace frc2;
 
 
 class Feeder
@@ -43,7 +42,7 @@ public:
 	void FeederStateMachine();
 	// Called by shooter to start one cycle
 	void StartFire();
-	bool GetFire();
+	bool GetFinished();
 	void ConfigureProfile();
 	void ConfigurePID();
 	void ConfigureLowPID();

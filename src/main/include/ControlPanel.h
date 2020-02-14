@@ -10,9 +10,12 @@
 
 
 #include "OperatorInputs.h"
+#include "CDSensors.h"
+
 #include <rev/ColorSensorV3.h>
 #include <rev/ColorMatch.h>
 #include <ctre/Phoenix.h>
+#include <frc/Solenoid.h>
 
 
 using namespace frc;
@@ -30,7 +33,7 @@ public:
 	 */
 	enum SpinnerState {kOff, kBlindSpin, kColorSpin};
 
-	ControlPanel(OperatorInputs *inputs);
+	ControlPanel(OperatorInputs *inputs, CDSensors *sensors);
 	~ControlPanel();
 	void Init();
 	void Loop();
@@ -44,6 +47,10 @@ protected:
 
 private:
 	OperatorInputs *m_inputs;
+	CDSensors *m_sensors;
+
+	Solenoid *m_solenoid;
+
 	TalonSRX *m_spinner;
 	ColorSensorV3 *m_colorsensor;
 
@@ -61,7 +68,7 @@ private:
 
 	double m_targetcolor;
 
-	double m_spinnerPIDvals[7];
+	double m_spinnerPIDvals[3];
 	double m_spinnersetpoint;
 };
 
