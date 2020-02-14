@@ -2,7 +2,7 @@
  *  Feeder.h
  *  Date:
  *  Last Edited By:
- * Jival.C
+ * 
  */
 
 
@@ -15,12 +15,17 @@
 #include "CDSensors.h"
 
 #include <rev\CANSparkMax.h>
-#include <frc\Solenoid.h>
-#include <frc/Spark.h>
+
+#include <units/units.h>
+
+#include <frc/controller/ProfiledPIDController.h>
+#include <frc/trajectory/TrapezoidProfile.h>
 
 
 using namespace frc;
 using namespace rev;
+using namespace std;
+using namespace frc2;
 
 
 class Feeder
@@ -34,12 +39,14 @@ public:
 	void Init();
 	void Loop();
 	void Stop();
-	void Dashboard();
 
 	void FeederStateMachine();
 	// Called by shooter to start one cycle
 	void StartFire();
 	bool GetFire();
+	void ConfigureProfile();
+	void ConfigurePID();
+	void ConfigureLowPID();
 
 protected:
     OperatorInputs *m_inputs;
@@ -47,11 +54,21 @@ protected:
 	CDSensors *m_sensors;
 
     CANSparkMax *m_motor;
-	Solenoid *m_solenoid;
+	CANEncoder *m_encoder;
+
+    TrapezoidProfile<units::meters>::Constraints m_constraints;
+    units::meter_t m_tolerance;
+
+    ProfiledPIDController<units::meters> *m_feederPID;
+    double m_feederPIDvals[3];
+	double m_feederPIDlowvals[3];
+	units::meter_t m_setpoint;
+	units::meter_t m_prevgoal;
 
 	bool m_hasball;
 	bool m_shoot;
 	FeederState m_feederstate;
+	double m_power;
 };
 
 

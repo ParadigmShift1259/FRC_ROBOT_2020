@@ -12,6 +12,7 @@
 #include "ControlPanel.h"
 #include "Intake.h"
 #include "Feeder.h"
+#include "Vision.h"
 
 
 using namespace frc;
@@ -32,15 +33,16 @@ public:
 	virtual void DisabledPeriodic();
 
 protected:
-	Timer m_timer;
+	frc::Timer m_timer;
 	OperatorInputs *m_operatorinputs;
 	GyroDrive *m_gyrodrive;
 	Pneumatics *m_pneumatics;
-	Turret *m_turret;
 	CDSensors *m_sensors;
-	ControlPanel *m_controlpanel;
+	Vision *m_vision;
 	Intake *m_intake;
 	Feeder *m_feeder;
+	Turret *m_turret;
+	ControlPanel *m_controlpanel;
 };
 
 
