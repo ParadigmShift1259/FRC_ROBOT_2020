@@ -16,12 +16,6 @@
 using namespace std;
 
 
-//static constexpr Color kYellowTarget = Color(.323364, .588501, .088013);
-//static constexpr Color kRedTarget = Color(0.580933, 0.310425, 0.108521);    
-//static constexpr Color kGreenTarget = Color(0.118286, 0.574829, .302368);
-//static constexpr Color kBlueTarget = Color(0.084595, 0.361450, 0.553833);
-
-
 ControlPanel::ControlPanel(OperatorInputs *inputs)
 {
 	static constexpr auto i2cPort = I2C::Port::kOnboard;
@@ -67,13 +61,6 @@ void ControlPanel::Init()
 
 	m_colorsensor->ConfigureColorSensor(rev::ColorSensorV3::ColorResolution::k13bit, rev::ColorSensorV3::ColorMeasurementRate::k25ms);
 
-	
-
-	//m_colormatcher.AddColorMatch(kYellowTarget);
-	//m_colormatcher.AddColorMatch(kRedTarget);
-	//m_colormatcher.AddColorMatch(kGreenTarget);
-	//m_colormatcher.AddColorMatch(kBlueTarget);
-	m_confidence = 0.6;
 	m_redCount = 0;
 	m_blueCount = 0;
 	m_currentcolor = kNone;
@@ -81,7 +68,6 @@ void ControlPanel::Init()
 	m_previouscolor = kNone;
 	m_targetcolor = kNone;
 	m_direction = 0;
-	m_spinnersetpoint = 0;
 	m_spinnerstate = kOff;
 	m_spinnerstatehelper = 1.0;
 
@@ -92,11 +78,8 @@ void ControlPanel::Init()
 	m_spinner->ConfigPeakOutputForward(1);
 	m_spinner->ConfigPeakOutputReverse(-1);
 	
-	SmartDashboard::PutNumber("CPIN1_SpinnerSetpoint", m_spinnersetpoint);
-	SmartDashboard::PutNumber("CPIN2_Confidence", m_confidence);
 	SmartDashboard::PutNumber("CPIN3_TargetColor", m_targetcolor);
-	SmartDashboard::PutNumber("CPIN2_Confidence", m_spinnerstatehelper);
-	
+	SmartDashboard::PutNumber("CPIN4_SpinnerState", m_spinnerstatehelper);
 }
 
 
@@ -105,11 +88,14 @@ void ControlPanel::Loop()
 	if (m_spinner == nullptr)
 		return;
 
+	ChangeSpinnerState();
+
 	ControlPanelStates();
 
-	SmartDashboard::PutNumber("CPM11_Encoder_Position in Revolutions", m_spinner->GetSelectedSensorPosition(0) / ENCODER_TICKS_PER_REV);
-	SmartDashboard::PutNumber("CPM12_Encoder_Velocity in RPM", m_spinner->GetSelectedSensorVelocity(0) / MINUTES_TO_HUNDRED_MS / ENCODER_TICKS_PER_REV);
+	SmartDashboard::PutNumber("CPM11_Encoder_Position in Revolutions", m_spinner->GetSelectedSensorPosition(0) / COUNTS_PER_CW_REV);
+	SmartDashboard::PutNumber("CPM12_Encoder_Velocity in RPM", m_spinner->GetSelectedSensorVelocity(0) / MINUTES_TO_HUNDRED_MS / COUNTS_PER_CW_REV);
 	SmartDashboard::PutNumber("CPM15_Motor Voltage", m_spinner->GetMotorOutputVoltage());
+	SmartDashboard::PutNumber("CPIN4_SpinnerState", m_spinnerstatehelper);
 }
 
 
@@ -119,36 +105,13 @@ void ControlPanel::Stop()
 		return;
 
 	m_spinnerstate = kOff;
-	m_spinnersetpoint = 0;
 }
-
 
 
 
 void ControlPanel::ControlPanelStates()
 {
-	m_spinnerstatehelper= SmartDashboard::GetNumber("CPIN3_SpinnerState", 0);
-	m_spinnersetpoint = SmartDashboard::GetNumber("CPIN1_SpinnerSetpoint", 0);
-	m_confidence = SmartDashboard::GetNumber("CPIN2_Confidence", 0);
-	
-	cout<<SmartDashboard::GetNumber("CPIN3_SpinnerState", 0)<<SmartDashboard::GetNumber("CPIN1_SpinnerSetpoint", 0)<<endl;
-	
-	if (m_spinnerstatehelper == 1) 
-	{
-		m_spinnerstate = kBlindSpin;
-	}
-	else if(m_spinnerstatehelper == 2)
-	{
-		m_spinnerstate = kColorSpin;
-	}
-	else
-	{
-		m_spinnerstate = kOff;
-	}
-	//cout<<m_spinnerstate<<m_spinnerstatehelper<<m_spinnersetpoint<<endl;
-	
-	//cout << "spinner state =" << m_spinnerstate<< endl;
-	//m_targetcolor = SmartDashboard::GetNumber("CPIN3_TargetColor", 0);
+	//m_spinnerstate = (SpinnerState) SmartDashboard::GetNumber("CPIN4_SpinnerState", 0);
 
 	switch (m_spinnerstate)
 	{
@@ -156,7 +119,7 @@ void ControlPanel::ControlPanelStates()
 		m_spinner->Set(ControlMode::PercentOutput, 0);
 		break;
 
-	case kBlindSpin:
+	case kRotationControl:
 		m_currentcolor = GetColor();	
 		
 			if (m_currentcolor == kRed && m_previouscolor != kRed)
@@ -170,7 +133,7 @@ void ControlPanel::ControlPanelStates()
 				m_blueCount ++ ;
 			}	
 
-		if (m_blueCount == 7 || m_redCount == 7 )
+		if (m_blueCount == ROTATION_CONTROL_COUNT_LIMIT_BLUE || m_redCount == ROTATION_CONTROL_COUNT_LIMIT_RED )
 			m_stop = true;
 		
 		// Once stopped, use A button to restart. If not, set the speed to spinpower
@@ -178,7 +141,6 @@ void ControlPanel::ControlPanelStates()
 		{
 			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
 			{
-				std::cout << "TimeStamp, rawcolor.red, rawcolor.green, rawcolor.blue, hue, sat, m_currentcolor, m_previouscolor, m_RedCount, m_BlueCount, m_spinnersetpoint" << std::endl;
 				m_stop = false;
 				m_redCount = 0;
 				m_blueCount = 0;
@@ -187,8 +149,10 @@ void ControlPanel::ControlPanelStates()
 		}
 		else
 		{
+			m_currentencodervalue = m_spinner->GetSelectedSensorPosition(0);
+			m_spinnersetpoint = ROTATION_CONTROL_FAST;
 			m_spinner->Set(ControlMode::PercentOutput, m_spinnersetpoint); 
-			std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint <<  std::endl;
+			std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
 		}
 
 		if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
@@ -197,8 +161,9 @@ void ControlPanel::ControlPanelStates()
 		m_previouscolor = m_currentcolor;
 		break;
 	
-	case kColorSpin:
+	case kPositionControl:
 		m_currentcolor = GetColor();
+		m_currentencodervalue = m_spinner->GetSelectedSensorPosition(0);
 		if (m_targetcolor == kNone)
 			{
 				m_targetcolor = GetTargetColor();
@@ -208,26 +173,35 @@ void ControlPanel::ControlPanelStates()
 					m_direction = -1;	
 				else
 					m_direction = 1;	
-					
+				m_spinnersetpoint = POSITION_CONTROL_FAST;
 			}
 		
 		if(m_currentcolor == m_targetcolor)
 			{
 			if (m_startencodervalue == 0)
+				{
+				cout << "found target color!" << endl;
 				m_startencodervalue = m_spinner->GetSelectedSensorPosition(0);
+				}
 			else if (abs(m_currentencodervalue - m_startencodervalue) >= COUNTS_PER_CW_SECTOR/2 )
+				{
+				//cout << "done!" << endl;
 				m_stop = true;
-			m_spinner -> Set(ControlMode::PercentOutput, 0.125 * m_direction);
+				}
+			m_spinnersetpoint = POSITION_CONTROL_SLOW;
 			}
 		else
+			{
+
 			m_startencodervalue = 0;
+			m_spinnersetpoint = POSITION_CONTROL_FAST;
+			}
 
 		
 		if (m_stop)
 		{
 			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
 			{
-				std::cout << "TimeStamp, rawcolor.red, rawcolor.green, rawcolor.blue, hue, sat, m_currentcolor, m_previouscolor, m_RedCount, m_BlueCount, m_spinnersetpoint" << std::endl;
 				m_stop = false;
 				m_targetcolor = kNone;
 			}
@@ -236,7 +210,7 @@ void ControlPanel::ControlPanelStates()
 		else
 		{
 			m_spinner->Set(ControlMode::PercentOutput, m_spinnersetpoint * m_direction); 
-			std::cout << m_currentcolor << ", " << m_targetcolor << ", " << m_direction << std::endl;
+			std::cout << m_currentcolor << ", " << m_targetcolor << ", " << m_direction << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << ", " << m_startencodervalue << endl;
 		}
 		
 		break;
@@ -267,15 +241,15 @@ ControlPanel::ColorOptions ControlPanel::GetColor()
 
 	m_color = kNone;
 
-	if (hue > 80 && hue < 100)
+	if (hue > YELLOW_MINIMUM_HUE && hue < YELLOW_MAXIMUM_HUE)
 		m_color = kYellow;
-	else if (hue > 20 && hue < 45)
+	else if (hue > RED_MINIMUM_HUE && hue < RED_MAXIMUM_HUE)
 		m_color = kRed;
 	else
-	if (hue < 150 && hue > 120)
+	if (hue > GREEN_MINIMUM_HUE && hue < GREEN_MAXIMUM_HUE)
 		m_color = kGreen;
 	else
-	if (hue < 210 && hue > 180)
+	if (hue > BLUE_MINIMUM_HUE && hue < BLUE_MAXIMUM_HUE)
 		m_color = kBlue;
 
 	SmartDashboard::PutNumber("CPSIMP1_R", r);
@@ -298,7 +272,10 @@ ControlPanel::ColorOptions ControlPanel::GetColor()
 ControlPanel::ColorOptions ControlPanel::GetTargetColor()
 {
 	string message = frc::DriverStation::GetInstance().GetGameSpecificMessage();
-
+	/*
+	Code converts the FMS data and changes the color to the color 90 degress from it because the game 
+	looks for the colors underneath the bar on the control pannel
+	*/
 	switch(message[0])
 	{
 		case 'Y' :
@@ -316,4 +293,20 @@ ControlPanel::ColorOptions ControlPanel::GetTargetColor()
 	}
 
 	return  kNone;
+}
+
+void ControlPanel::ChangeSpinnerState()
+{
+	if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0))
+	{
+		m_spinnerstate = kRotationControl;
+		cout<<"spinnerState =" << m_spinnerstate << endl;
+	}
+		
+	if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0))
+	{
+		m_spinnerstate = kPositionControl;
+		cout<<"spinnerState =" << m_spinnerstate << endl;
+	}
+
 }

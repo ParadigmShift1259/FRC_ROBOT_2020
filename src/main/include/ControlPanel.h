@@ -28,7 +28,7 @@ public:
 	 * BlindSpin - Attempts to spin the control panel from three to five times 
 	 * ColorSpin - Attempts to spin the control panel to a specific color
 	 */
-	enum SpinnerState {kOff, kBlindSpin, kColorSpin};
+	enum SpinnerState {kOff, kRotationControl, kPositionControl};
 	enum ColorOptions {kNone, kYellow, kRed, kGreen, kBlue};
 	ControlPanel(OperatorInputs *inputs);
 	~ControlPanel();
@@ -42,6 +42,7 @@ protected:
 	ColorOptions GetColor();
 	bool SensorSanityCheck();
 	ColorOptions GetTargetColor();
+	void ChangeSpinnerState();
 
 private:
 	OperatorInputs *m_inputs;
@@ -55,8 +56,8 @@ private:
 	int m_blueCount;
 	SpinnerState m_spinnerstate;
 	int m_direction;
-	double m_startencodervalue;
-	double m_currentencodervalue;
+	int m_startencodervalue;
+	int m_currentencodervalue;
 	
 
 	ColorMatch m_colormatcher;

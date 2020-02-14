@@ -105,6 +105,23 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define CPL_MOTOR 2
 
 // ControlPanel
-#define COUNTS_PER_CW_REV 8.2
+#define COUNTS_PER_CW_REV (4096*32/4)
 #define COUNTS_PER_CW_SECTOR (COUNTS_PER_CW_REV/8)
+
+#define YELLOW_MINIMUM_HUE 80
+#define YELLOW_MAXIMUM_HUE 100
+#define RED_MINIMUM_HUE 20
+#define RED_MAXIMUM_HUE 45
+#define GREEN_MINIMUM_HUE 120
+#define GREEN_MAXIMUM_HUE 150
+#define BLUE_MINIMUM_HUE 180
+#define BLUE_MAXIMUM_HUE 210
+
+#define ROTATION_CONTROL_COUNT_LIMIT_RED 7
+#define ROTATION_CONTROL_COUNT_LIMIT_BLUE 7
+
+#define ROTATION_CONTROL_FAST 0.35
+#define POSITION_CONTROL_FAST 0.15
+#define POSITION_CONTROL_SLOW 0.1
+
 #endif /* SRC_CONST_H_ */
