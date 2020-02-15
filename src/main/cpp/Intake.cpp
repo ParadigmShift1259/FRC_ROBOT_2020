@@ -87,8 +87,6 @@ void Intake::Loop()
     
     CountBalls();
 
-    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        m_solenoid1->Set(true);
     if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         m_solenoid1->Set(false);
 
@@ -105,6 +103,7 @@ void Intake::Loop()
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_intakestate = kGather;
+            m_solenoid1->Set(true);
             m_motor1->Feed();
             m_motor2->Feed();
         }
@@ -162,6 +161,19 @@ void Intake::Loop()
     default: 
         break;
     }
+
+    if (m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+    {
+        m_motor1->Set(-INT_INTAKE_ROLLER_SPEED);
+        m_motor2->Set(-INT_INTAKE_WHEEL_SPEED);
+    }
+    else
+    if (m_inputs->xBoxRightTrigger(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+    {
+        m_motor1->Set(INT_INTAKE_ROLLER_SPEED);
+        m_motor2->Set(INT_INTAKE_WHEEL_SPEED);
+    }
+    //if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
 
 	Dashboard();
 }

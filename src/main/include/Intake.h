@@ -54,7 +54,6 @@ protected:
 	CDSensors *m_sensors;
 
     Solenoid *m_solenoid1;
-    Solenoid *m_solenoid2;
     Spark *m_motor1;
     Spark *m_motor2;
 	IntakeState m_intakestate;

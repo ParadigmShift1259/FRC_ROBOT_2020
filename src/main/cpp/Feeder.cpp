@@ -150,15 +150,6 @@ void Feeder::FeederStateMachine()
             m_motor->Set(0);
         }
         
-        // manual drives
-        if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        {
-            m_feederstate = kDriveWait;
-            m_intake->SetStuffingBecauseShooting();
-            m_timer.Reset();
-            m_timer.Start();
-            m_motor->Set(m_power * FDR_INVERTED);
-        }
         break;
     
     case kRefresh:

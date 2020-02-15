@@ -40,7 +40,7 @@ public:
      * Return -> rotates back to Idle position
      * This state machine will adjust the speed and angle of the shooter
      */
-    enum TurretState {kIdle, kHoming, kPreMove, kReady, kReturn};
+    enum TurretState {kIdle, kRampUp, kVision, kAllReady};
     /**
      * Modes
      * FireWhenReady -> When turret achieves ready state, fire immediately
@@ -49,7 +49,7 @@ public:
      * Off -> Nothing will activate shooter
      * This state machine will call for balls from the intake system
      */
-    enum FireMode {kHoldFire, kFireWhenReady, kManualFire, kOff};
+    enum FireMode {kForceShoot, kShootWhenReady, kHoldShoot};
     
     enum RampState {kMaintain, kIncrease, kDecrease};
 
@@ -66,6 +66,7 @@ protected:
     void FireModes();
     // Takes the distance from the target and returns the hood angle and flywheel speed
     void CalculateHoodFlywheel(double distance, double &hoodangle, double &flywheelspeed);
+    void CalculateAngleXBox();
     void CalculateAbsoluteAngle();
     bool VisionTurretAngle();
     void RampUpSetpoint();
@@ -110,6 +111,7 @@ private:
     RampState m_flywheelrampstate;
     RampState m_turretrampstate;
     bool m_readytofire;
+    bool m_firing;
 
     // Hood / Vision
     double m_distance;
