@@ -15,6 +15,7 @@
 #include "CDSensors.h"
 
 #include <rev\CANSparkMax.h>
+#include <frc/Timer.h>
 
 #include <units/units.h>
 

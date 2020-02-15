@@ -27,7 +27,7 @@ public:
 	 * kIdle ->
 	 * kGather ->
 	 */
-	enum IntakeState {kIdle, kGather, kEject};
+	enum IntakeState {kIdle, kGather, kStuff};
 
 	Intake(OperatorInputs *inputs, CDSensors *sensors);
 	~Intake();
@@ -37,8 +37,8 @@ public:
 
 	// Called by Feeder when Shooter requests shooting
 	// If there are no balls left, shooting will be set to false
-	void SetDrivingBecauseShooting() { m_drivingbecauseshooting = true;}
-	bool GetDrivingBecauseShooting() { return m_drivingbecauseshooting; }
+	void SetStuffingBecauseShooting() { m_stuffingbecauseshooting = true;}
+	bool GetStuffingBecauseShooting() { return m_stuffingbecauseshooting; }
 	void CountBalls();
 
 	bool LoadRefresh();
@@ -59,7 +59,7 @@ protected:
     Spark *m_motor2;
 	IntakeState m_intakestate;
 	int m_ballcount;
-	bool m_drivingbecauseshooting;
+	bool m_stuffingbecauseshooting;
 	
 };
 

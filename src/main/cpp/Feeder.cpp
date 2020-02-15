@@ -128,7 +128,7 @@ void Feeder::FeederStateMachine()
         // if shooter requests for shooting, ready for shooting
         if (m_shoot)
         {
-            m_intake->SetDrivingBecauseShooting();
+            m_intake->SetStuffingBecauseShooting();
             m_feederstate = kFire;
         }
         else
@@ -154,7 +154,7 @@ void Feeder::FeederStateMachine()
 
     case kFire:
         // If we are shooting and have a ball or the intake is still running balls in, refresh
-        if (m_sensors->BallPresent(FeederSensor) || m_intake->GetDrivingBecauseShooting())
+        if (m_sensors->BallPresent(FeederSensor) || m_intake->GetStuffingBecauseShooting())
         {
             m_feederstate = kRefresh;
         }

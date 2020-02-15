@@ -36,7 +36,7 @@ Intake::Intake(OperatorInputs *inputs, CDSensors *sensors)
     }
     
     m_ballcount = 0;
-    m_drivingbecauseshooting = false;
+    m_stuffingbecauseshooting = false;
 }
 
 
@@ -76,7 +76,7 @@ void Intake::Init()
     m_intakestate = kIdle;
     m_solenoid1->Set(false);
     m_ballcount = 0;
-    m_drivingbecauseshooting = false;
+    m_stuffingbecauseshooting = false;
 }
 
 // !!!!!!!!!!!!! Make sure the previous stage is acomplished to move on.
@@ -85,6 +85,8 @@ void Intake::Loop()
     if (!NullCheck())
         return;
     
+    CountBalls();
+
     if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         m_solenoid1->Set(true);
     if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
@@ -93,38 +95,68 @@ void Intake::Loop()
     switch (m_intakestate)
     {
     case kIdle: 
-        if (m_drivingbecauseshooting)
-            m_intakestate = kGather;
+        if (m_stuffingbecauseshooting)
+        {
+            m_intakestate = kStuff;
+            m_motor1->Feed();
+            m_motor2->Feed();
+        }
+        else
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        {
             m_intakestate = kGather;
-        //if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        //   m_intakestate = kEject;
-    
-        m_motor1->Set(0.0);
-        m_motor2->Set(0.0);
+            m_motor1->Feed();
+            m_motor2->Feed();
+        }
+        else
+        {
+            m_motor1->Set(0.0);
+            m_motor2->Set(0.0);
+        }
         break;
 
     case kGather: 
-        if ((m_ballcount == 0) && m_drivingbecauseshooting)
+        if ((m_ballcount >= 3))
         {
-            m_drivingbecauseshooting = false;
             m_intakestate = kIdle;
+            m_motor1->StopMotor();
+            m_motor2->StopMotor();
         }
-        if ((m_ballcount >= 3) && !m_drivingbecauseshooting)
-            m_intakestate = kIdle;
+        else
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        {
             m_intakestate = kIdle;
-
-        m_motor1->Set(-INT_INTAKE_ROLLER_SPEED);
-        m_motor2->Set(-INT_INTAKE_WHEEL_SPEED);
+            m_motor1->StopMotor();
+            m_motor2->StopMotor();
+        }
+        else
+        {
+            m_motor1->Set(-INT_INTAKE_ROLLER_SPEED);
+            m_motor2->Set(-INT_INTAKE_WHEEL_SPEED);
+        }
         break;
-    
-    case kEject:
-        if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+
+    // when shooting, intake will cycle between kStuff and kIdle until feeder decides it's done
+    case kStuff:
+        if ((m_ballcount == 0))
+        {
+            m_stuffingbecauseshooting = false;
             m_intakestate = kIdle;
-    
-        m_motor1->Set(INT_INTAKE_ROLLER_SPEED);
-        m_motor2->Set(INT_INTAKE_WHEEL_SPEED);   
+            m_motor1->Feed();
+            m_motor2->Feed();
+        }
+        else
+        if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        {
+            m_intakestate = kIdle;
+            m_motor1->Feed();
+            m_motor2->Feed();
+        }
+        else
+        {
+            m_motor1->Set(-INT_INTAKE_ROLLER_SPEED);
+            m_motor2->Set(-INT_INTAKE_WHEEL_SPEED);  
+        }
         break;
         
     default: 
@@ -132,7 +164,6 @@ void Intake::Loop()
     }
 
 	Dashboard();
-    CountBalls();
 }
 
 
@@ -169,5 +200,5 @@ void Intake::Dashboard()
 // Returns if the feeder should refresh
 bool Intake::LoadRefresh()
 {
-    return (m_ballcount >= 2 && !m_drivingbecauseshooting);
+    return (m_ballcount >= 2 && !m_stuffingbecauseshooting);
 }
