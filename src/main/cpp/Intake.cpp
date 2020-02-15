@@ -110,7 +110,7 @@ void Intake::Loop()
             m_drivingbecauseshooting = false;
             m_intakestate = kIdle;
         }
-        if ((m_ballcount >= 3) && !m_drivingbecauseshooting)
+        if ((m_ballcount >= 3) && m_sensors->BallPresent(FeederSensor) && !m_drivingbecauseshooting)
             m_intakestate = kIdle;
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             m_intakestate = kIdle;
@@ -169,5 +169,5 @@ void Intake::Dashboard()
 // Returns if the feeder should refresh
 bool Intake::LoadRefresh()
 {
-    return (m_ballcount >= 2 && !m_drivingbecauseshooting);
+    return (m_sensors->BallPresent(Chute1Sensor) && m_sensors->BallPresent(Chute2Sensor) && !m_drivingbecauseshooting);
 }

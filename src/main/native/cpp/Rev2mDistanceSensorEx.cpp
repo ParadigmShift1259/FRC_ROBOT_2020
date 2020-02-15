@@ -47,7 +47,7 @@
 #include <wpi/raw_ostream.h>
 #include <wpi/Format.h>
 
-//#define _DEBUG_
+#define _DEBUG_
 #define VALIDATE_I2C_SUCCESS    0
 #define VALIDATE_I2C_PARAM_ERR  1
 #define VALIDATE_I2C_HAL_ERR    2

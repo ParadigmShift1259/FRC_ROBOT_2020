@@ -23,16 +23,16 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake, CDSensors *sensors)
         DriverStation::ReportError("Feeder Not Enabled");
     }
 
-    m_constraints.maxVelocity = 10_m / 1_s;
-    m_constraints.maxAcceleration = 10_m / 1_s / 1_s;
-    m_tolerance = 1.5_m;
+    m_constraints.maxVelocity = 15_m / 1_s;
+    m_constraints.maxAcceleration = 15_m / 1_s / 1_s;
+    m_tolerance = 2.0_m;
     m_setpoint = 0_m;
     m_prevgoal = 0_m;
 
     // Configure these after testing to lock them into place
-    m_feederPIDvals[0] = 0.0795;
+    m_feederPIDvals[0] = 0.0995;
     m_feederPIDvals[1] = 0.005;
-    m_feederPIDvals[2] = 0.0001;
+    m_feederPIDvals[2] = 0.0005;
 
     m_feederPIDlowvals[0] = 0.00795;
     m_feederPIDlowvals[1] = 0;
@@ -78,6 +78,7 @@ void Feeder::Init()
     m_encoder->SetPosition(0);
 
     m_feederstate = kIdle;
+    m_shoot = false;
 
     SmartDashboard::PutNumber("FDRT1_P",             m_feederPIDvals[0]);
     SmartDashboard::PutNumber("FDRT2_I",             m_feederPIDvals[1]);
@@ -97,7 +98,18 @@ void Feeder::Loop()
      if (m_motor == nullptr)
         return;
     
-    FeederStateMachine();
+    if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_power <= 0.95)
+        m_power += 0.05;
+    else
+    if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_power >= -0.95)
+        m_power -= 0.05;
+    
+    if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
+        m_motor->Set(m_power);
+    else
+        m_motor->StopMotor();
+
+    //FeederStateMachine();
 
     SmartDashboard::PutNumber("FDR1_Feeder State", m_feederstate);
     SmartDashboard::PutNumber("FDR2_Calculated Set", m_power);
@@ -136,6 +148,9 @@ void Feeder::FeederStateMachine()
         if (!m_sensors->BallPresent(FeederSensor) && m_intake->LoadRefresh())
         {
             m_feederstate = kRefresh;
+            m_setpoint = FDR_REFRESH_DISTANCE * 1_m;
+            m_feederPID->SetGoal(m_setpoint + m_prevgoal);
+            m_encoder->SetPosition(m_prevgoal.to<double>() / FDR_WHEEL_SIZE / 3.1415926535);
         }
 
         m_motor->Set(0);
@@ -147,16 +162,20 @@ void Feeder::FeederStateMachine()
         if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_feederstate = kRefresh;
-            m_setpoint = feedersetpoint;
+            m_setpoint = FDR_REFRESH_DISTANCE * 1_m;
             m_feederPID->SetGoal(m_setpoint + m_prevgoal);
+            m_encoder->SetPosition(m_prevgoal.to<double>() / FDR_WHEEL_SIZE / 3.1415926535);
         }
         break;
 
     case kFire:
         // If we are shooting and have a ball or the intake is still running balls in, refresh
-        if (m_sensors->BallPresent(FeederSensor) || m_intake->GetDrivingBecauseShooting())
+        if (m_sensors->BallPresent(FeederSensor) || m_sensors->BallPresent(Chute1Sensor) || m_intake->GetDrivingBecauseShooting())
         {
             m_feederstate = kRefresh;
+            m_setpoint = FDR_REFRESH_DISTANCE * 1_m;
+            m_feederPID->SetGoal(m_setpoint + m_prevgoal);
+            m_encoder->SetPosition(m_prevgoal.to<double>() / FDR_WHEEL_SIZE / 3.1415926535);
         }
         // if not, consider shooting done and return to idle
         else 

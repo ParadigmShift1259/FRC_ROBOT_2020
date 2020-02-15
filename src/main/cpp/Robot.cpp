@@ -60,7 +60,7 @@ void Robot::TeleopInit()
 {
 	m_gyrodrive->Init();
 	m_pneumatics->Init();
-	//m_sensors->Init();
+	m_sensors->Init();
 	m_vision->Init();
 	m_intake->Init();
 	m_feeder->Init();
@@ -73,7 +73,7 @@ void Robot::TeleopPeriodic()
 {
 	m_gyrodrive->Loop();
 	m_pneumatics->Loop();
-	//m_sensors->Loop();
+	m_sensors->Loop();
 	m_vision->Loop();
 	m_intake->Loop();
 	m_feeder->Loop();
@@ -87,7 +87,7 @@ void Robot::DisabledInit()
 {
 	m_gyrodrive->Stop();
 	m_pneumatics->Stop();
-	//m_sensors->Stop();
+	m_sensors->Stop();
 	m_vision->Stop();
 	m_intake->Stop();
 	m_feeder->Stop();
