@@ -168,12 +168,13 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define FDR_I 
 #define FDR_D 
 // Refresh distance in inches
-#define FDR_REFRESH_DISTANCE 27.531
+#define FDR_REFRESH_DISTANCE 25.531
 // Max percent output that feeder can apply
-#define FDR_MAX_POWER 0.7
+#define FDR_MAX_POWER 0.4
 #define FDR_TIMEOUT_TIME 6
 #define FDR_DRIVE_TIME 6
-
+#define FDR_GEAR_RATIO 4.167
+#define FDR_INVERTED 1.0
 
 // Climber ---------------------------------------
 #define CLM_ENABLED 0           // set to 1 to enable intake motor
@@ -228,6 +229,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_TURRET_SPINNER 29.845
 #define REV_TO_TURRET_REV (TUR_PULLEY / TUR_TURRET_SPINNER) 
 #define TURRET_REV_TO_DEGREES 360
+#define TURRET_DEGREE_STOP_RANGE 1
 
 // Vision ---------------------------------------
 #define VIS_MOUNTING_ANGLE 10.8     // degrees

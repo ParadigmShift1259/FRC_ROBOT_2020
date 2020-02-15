@@ -32,7 +32,7 @@ CDSensors::CDSensors()
 
    using ds = rev::Rev2mDistanceSensorEx;
 
-    m_ballpresent1 = 7.0;
+    m_ballpresent1 = 9.0;
     m_ballpresent2 = 4.0;
     m_ballpresent3 = 4.0;
     m_ballpresent4 = 7.0;

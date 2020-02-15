@@ -98,7 +98,7 @@ private:
     DualGyro *m_robotgyro;
     double m_turretangle;
     double m_turretrampedangle;
-    double m_stopPID;
+    bool m_stopPID;
     
     double m_turretinitialfeedforward;
 

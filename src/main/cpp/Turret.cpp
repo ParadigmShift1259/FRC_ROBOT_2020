@@ -123,6 +123,7 @@ void Turret::Init()
     m_robotangle = 0;
     m_turretangle = 135;      // Change these when starting orientation is different
     m_turretrampedangle = 135;
+    m_stopPID = false;
     
     SmartDashboard::PutNumber("Robot Setup Angle", m_robotangle);
     SmartDashboard::PutNumber("Absolute Setup Angle", m_absoluteangle);
@@ -208,6 +209,22 @@ void Turret::TurretStates()
             m_readytofire = false;
             // run flywheel at idle RPM
             m_flywheelsetpoint = TUR_SHOOTER_IDLE_STATE_RPM;
+            if (fabs(m_inputs->xBoxRightX(1 * INP_DUAL)) > 0.8 || fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.8)
+            {
+                // Prevent divide by 0 errors
+                if (m_inputs->xBoxRightY(1 * INP_DUAL) == 0)
+                {
+                    m_absoluteangle = m_inputs->xBoxRightX(1 * INP_DUAL) > 0 ? 90 : 270;
+                }
+                else
+                {
+                    double radians = atan(m_inputs->xBoxRightX(1 * INP_DUAL) / m_inputs->xBoxRightY(1 * INP_DUAL)); // only between +- pi/2
+                    double degrees = radians / 2 / 3.1415926535 * 360;   // 90 -> -90
+                    m_absoluteangle = m_inputs->xBoxRightY(1 * INP_DUAL) > 0 ? degrees : degrees + 180;   // -90 -> 270
+                    m_absoluteangle = m_absoluteangle < 0 ? m_absoluteangle + 360 : m_absoluteangle;   // 0 -> 360
+                    m_absoluteangle = fmod(m_absoluteangle, 360);   // just for safety
+                }
+            }
             // maintain flywheel at last absolute angle
             CalculateAbsoluteAngle();
             // if a button is pressed, allow second driver to change absolute angle and shoot
@@ -252,12 +269,12 @@ void Turret::TurretStates()
                 m_flywheelsetpoint += 100;
             else if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && (m_flywheelsetpoint >= 100))
                 m_flywheelsetpoint -= 100;
-
+            /*
             // if turret is only off by a small amount with its error and its flywheel is up to speed, progress
             if (TicksToDegrees(m_turretmotor->GetClosedLoopError()) <= TUR_TURRET_ERROR &&
                 m_flywheelsetpoint == m_flywheelrampedsetpoint)
                 m_turretstate = kReady;
-
+            */
             if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))       // forced ready
                 m_turretstate = kReady;
             break;
@@ -387,7 +404,7 @@ bool Turret::VisionTurretAngle()
     if (!m_vision->GetActive())
         return false;
     
-    m_turretangle = TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()) + m_vision->GetAngle();      // Change +/- when testing
+    m_turretangle = TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()) - m_vision->GetAngle();      // Change +/- when testing
     m_distance = m_vision->GetDistance();
     return true;
 }
@@ -490,8 +507,15 @@ void Turret::RampUpAngle()
             {
                 m_turretrampstate = kDecrease;
             }
-            
+            else
+            {
+                if (fabs(TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()) < TURRET_DEGREE_STOP_RANGE))
+                    m_stopPID = true;
+                else
+                    m_stopPID = false;
+            }
             break;
+    
         case kIncrease:
             // Provided that the angle hasn't been reached and the ramping has already reached halfway
             if ((m_turretangle > m_turretrampedangle) && 
@@ -516,6 +540,7 @@ void Turret::RampUpAngle()
                 m_turretrampstate = kMaintain;
             }
             break;
+
         case kDecrease:
             // Provided that the angle hasn't been reached and the ramping has already reached halfway
             if ((m_turretangle < m_turretrampedangle) && 
@@ -550,9 +575,9 @@ void Turret::RampUpAngle()
     {
         m_turretinitialfeedforward = -1 * TUR_TURRET_KS_FORWARDS / 12;
     }
-    
-    m_turretmotor->Set(ControlMode::Position, DegreesToTicks(m_turretrampedangle), 
-                        DemandType::DemandType_ArbitraryFeedForward, m_turretinitialfeedforward);
+    if (!m_stopPID)
+        m_turretmotor->Set(ControlMode::Position, DegreesToTicks(m_turretrampedangle), 
+                            DemandType::DemandType_ArbitraryFeedForward, m_turretinitialfeedforward);
 }
 
 

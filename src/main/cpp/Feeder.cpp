@@ -30,7 +30,7 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake, CDSensors *sensors)
     m_prevgoal = 0_m;
 
     // Configure these after testing to lock them into place
-    m_feederPIDvals[0] = 0.0995;
+    m_feederPIDvals[0] = 0.0595;
     m_feederPIDvals[1] = 0.005;
     m_feederPIDvals[2] = 0.0005;
 
@@ -40,7 +40,9 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake, CDSensors *sensors)
 
     m_motor = new CANSparkMax(FDR_MOTOR, CANSparkMax::MotorType::kBrushless);
     m_motor->SetIdleMode(CANSparkMax::IdleMode::kBrake);
+    m_motor->SetInverted(true);
     m_encoder = new CANEncoder(*m_motor);
+    //m_encoder->SetInverted(true);
     m_feederPID = new ProfiledPIDController<units::meters>(
         m_feederPIDvals[0],
         m_feederPIDvals[1], 
@@ -129,7 +131,7 @@ void Feeder::FeederStateMachine()
         {
             m_intake->SetStuffingBecauseShooting();
             m_feederstate = kDrive;
-            //m_motor->Set(0);
+            m_motor->Set(m_power * FDR_INVERTED);
         }
         else
         // if we don't have a ball yet and we can refresh, then refresh
@@ -138,10 +140,10 @@ void Feeder::FeederStateMachine()
             m_feederstate = kRefresh;
             m_setpoint = FDR_REFRESH_DISTANCE * 1_m;
             m_feederPID->SetGoal(m_setpoint + m_prevgoal);
-            m_encoder->SetPosition(m_prevgoal.to<double>() / FDR_WHEEL_SIZE / 3.1415926535);
+            m_encoder->SetPosition(m_prevgoal.to<double>() / FDR_WHEEL_SIZE / 3.1415926535 * FDR_GEAR_RATIO);
             m_timer.Reset();
             m_timer.Start();
-            //m_motor->Set(0);
+            m_motor->Set(0);
         }
         else
         {
@@ -151,19 +153,17 @@ void Feeder::FeederStateMachine()
         // manual drives
         if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
-            m_feederstate = kRefresh;
-            m_setpoint = FDR_REFRESH_DISTANCE * 1_m;
-            m_feederPID->SetGoal(m_setpoint + m_prevgoal);
-            m_encoder->SetPosition(m_prevgoal.to<double>() / FDR_WHEEL_SIZE / 3.1415926535);
+            m_feederstate = kDriveWait;
+            m_intake->SetStuffingBecauseShooting();
             m_timer.Reset();
             m_timer.Start();
-            //motor->Set(0);
+            m_motor->Set(m_power * FDR_INVERTED);
         }
         break;
     
     case kRefresh:
-        distance = m_encoder->GetPosition() * FDR_WHEEL_SIZE * 3.1415926535;
-        power = m_feederPID->Calculate(units::meter_t{distance});
+        distance = m_encoder->GetPosition() * FDR_WHEEL_SIZE * 3.1415926535 / FDR_GEAR_RATIO;
+        power = fabs(m_feederPID->Calculate(units::meter_t{distance}));
         feedforward = (FDR_FEED_FORWARD / 12);
         // Constraining maximum and minimum outputs
         if (power < 0)
@@ -171,7 +171,7 @@ void Feeder::FeederStateMachine()
         if (power > FDR_MAX_POWER)
             power = FDR_MAX_POWER;
 
-        m_motor->Set(power + feedforward);
+        m_motor->Set((power + feedforward) * FDR_INVERTED);
 
         // If goal is reached or timeout timer hits, idle
         if (m_feederPID->AtGoal() || m_timer.Get() > FDR_TIMEOUT_TIME)
@@ -189,14 +189,14 @@ void Feeder::FeederStateMachine()
             m_intake->SetStuffingBecauseShooting();
             m_timer.Reset();
             m_timer.Start();
-            m_motor->Set(m_power);
+            m_motor->Set(m_power * FDR_INVERTED);
         }
         // if not, consider shooting done and return to idle
         else 
         {
             m_shoot = false;
             m_feederstate = kIdle;
-            //m_motor->Set(0);
+            m_motor->Set(m_power * FDR_INVERTED);
         }
         break;
 
@@ -205,12 +205,12 @@ void Feeder::FeederStateMachine()
         if (m_timer.Get() > FDR_DRIVE_TIME)
         {
             m_feederstate = kDrive;
-            //m_motor->Set(0);
+            m_motor->Set(m_power * FDR_INVERTED);
         }
         else
         {
-            m_motor->Set(m_power);
-            m_motor->Set(m_power);
+            m_motor->Set(m_power * FDR_INVERTED);
+            m_motor->Set(m_power * FDR_INVERTED);
         }
         
         break;
