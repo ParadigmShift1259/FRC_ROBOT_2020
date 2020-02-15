@@ -73,6 +73,7 @@ void ControlPanel::Init()
 	m_direction = 0;
 	m_spinnerstate = kOff;
 	m_stop = true;
+	m_startencodervalue = 0;
 
 	m_spinner->SetNeutralMode(NeutralMode::Brake);
 	m_spinner->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0);
@@ -154,6 +155,7 @@ void ControlPanel::ControlPanelStates()
 			// Once stopped, use A button to restart. (TO DO: Move reading user inputs to a higher level robot class)
 			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
 			{
+
 				m_stop = false;
 				m_redCount = 0;
 				m_blueCount = 0;
@@ -231,6 +233,7 @@ void ControlPanel::ControlPanelStates()
 				// If A button is pressed, clear the target color and set m_stop=false to initiate Position Control 
 				m_stop = false;
 				m_targetcolor = kNone;
+				m_startencodervalue = 0;
 			}
 		}
 		else
