@@ -116,7 +116,7 @@ void Intake::Loop()
         break;
 
     case kGather: 
-        if ((m_ballcount >= 3))
+        if ((m_ballcount >= 3) && m_sensors->BallPresent(FeederSensor))
         {
             m_intakestate = kIdle;
             m_motor1->StopMotor();
@@ -200,5 +200,5 @@ void Intake::Dashboard()
 // Returns if the feeder should refresh
 bool Intake::LoadRefresh()
 {
-    return (m_ballcount >= 2 && !m_stuffingbecauseshooting);
+    return (m_sensors->BallPresent(Chute1Sensor) && m_sensors->BallPresent(Chute2Sensor) && !m_stuffingbecauseshooting);
 }

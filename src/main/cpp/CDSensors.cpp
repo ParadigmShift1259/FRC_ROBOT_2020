@@ -65,7 +65,7 @@ CDSensors::CDSensors()
     // Connect all ports on the I2C bus                                          
     MuxSelectAll();
 
-    m_colorsensor = new ColorSensorV3(I2C::kOnboard);
+    //m_colorsensor = new ColorSensorV3(I2C::kOnboard);
 }
 
 
@@ -90,16 +90,16 @@ void CDSensors::Init()
 void CDSensors::Loop()
 {
     //double IR = m_colorsensor->GetIR();
-    Color detectedColor = m_colorsensor->GetColor();
+    //Color detectedColor = m_colorsensor->GetColor();
 
-    frc::SmartDashboard::PutNumber("Color R", detectedColor.red);
-    frc::SmartDashboard::PutNumber("Color G", detectedColor.green);
-    frc::SmartDashboard::PutNumber("Color B", detectedColor.blue);
+    //frc::SmartDashboard::PutNumber("Color R", detectedColor.red);
+    //frc::SmartDashboard::PutNumber("Color G", detectedColor.green);
+    //frc::SmartDashboard::PutNumber("Color B", detectedColor.blue);
 
-    frc::SmartDashboard::PutBoolean("Roller Ball Present", BallPresent(RollerSensor));
-    frc::SmartDashboard::PutBoolean("Chute 1 Ball Present", BallPresent(Chute1Sensor));
-    frc::SmartDashboard::PutBoolean("Chute 2 Ball Present", BallPresent(Chute2Sensor));
-    frc::SmartDashboard::PutBoolean("Feeder Ball Present", BallPresent(FeederSensor));
+    frc::SmartDashboard::PutBoolean("CDS5_Roller Ball Present", BallPresent(RollerSensor));
+    frc::SmartDashboard::PutBoolean("CDS6_Chute 1 Ball Present", BallPresent(Chute1Sensor));
+    frc::SmartDashboard::PutBoolean("CDS7_Chute 2 Ball Present", BallPresent(Chute2Sensor));
+    frc::SmartDashboard::PutBoolean("CDS8_Feeder Ball Present", BallPresent(FeederSensor));
 
     Dashboard();
 }
@@ -125,24 +125,28 @@ bool CDSensors::BallPresent(int sensornum)
       dist = ReadDistance(*m_distsensor1, sensornum);
       if (dist <= m_ballpresent1)
         ballpresent = true;
+      frc::SmartDashboard::PutNumber("CDS1_Roller Dist", dist);
       break;
 
     case Chute2Sensor:
       dist = ReadDistance(*m_distsensor2, sensornum);
       if (dist <= m_ballpresent2)
-        ballpresent = true;    
+        ballpresent = true;  
+      frc::SmartDashboard::PutNumber("CDS2_Chute2 Dist", dist);  
       break;
 
     case Chute1Sensor:
       dist = ReadDistance(*m_distsensor3, sensornum);
       if (dist <= m_ballpresent3)
-        ballpresent = true;    
+        ballpresent = true;   
+      frc::SmartDashboard::PutNumber("CDS3_Chute1 Dist", dist); 
       break;
 
     case FeederSensor:
       dist = ReadDistance(*m_distsensor4, sensornum);
       if (dist <= m_ballpresent4)
         ballpresent = true;    
+      frc::SmartDashboard::PutNumber("CDS4_Feeder Dist", dist);
       break;
 
     default:
@@ -159,23 +163,13 @@ double CDSensors::ReadDistance(Rev2mDistanceSensorEx& distSensor, int sensorNum)
   double dist = 100.0;
   bool isValid = distSensor.IsRangeValid();
 
-  char buf[100];
-  sprintf(buf, "Data %d Valid", sensorNum);
-  frc::SmartDashboard::PutBoolean(buf, isValid);
-  //printf(buf, "Data %d Valid %d\n", sensorNum, isValid);
-  //frc::DriverStation::ReportError(buf);
-  
   if (isValid)
   {
     /**
      * The current measured range is returned from GetRange(). By default
      * this range is returned in inches.
      */
-    sprintf(buf, "Distance %d (in)", sensorNum);
     dist = distSensor.GetRange();
-    frc::SmartDashboard::PutNumber(buf, dist);
-    //printf("Distance %d (in) %.3f\n", sensorNum, dist);
-    //frc::DriverStation::ReportError(buf);
   }
 
   return dist;

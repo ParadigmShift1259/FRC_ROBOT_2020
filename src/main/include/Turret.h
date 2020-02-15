@@ -16,6 +16,7 @@
 #include <frc\controller\SimpleMotorFeedforward.h>
 #include <units/units.h>
 #include <ctre/Phoenix.h>
+#include <frc/Servo.h>
 
 #include "OperatorInputs.h"
 #include "Vision.h"
@@ -100,6 +101,8 @@ private:
     
     double m_turretinitialfeedforward;
 
+    // Hood
+    Servo *m_hoodservo;
 
     TurretState m_turretstate;
     FireMode m_firemode;

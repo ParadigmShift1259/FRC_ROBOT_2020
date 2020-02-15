@@ -157,7 +157,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 // Feeder ---------------------------------------
 #define FDR_ENABLED 1           // set to 1 to enable feeder motor
-#define FDR_MOTOR ENABLED(FDR_ENABLED, 15)
+#define FDR_MOTOR ENABLED(FDR_ENABLED, 9)
 #define FDR_REFRESH_SPEED_LOAD 0.2
 #define FDR_REFRESH_SPEED_FIRE 0.5
 #define FDR_HIGH_NUMBER 10000
@@ -172,9 +172,9 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define FDR_LOW_I 
 #define FDR_LOW_D 
 // Refresh distance in inches
-#define FDR_REFRESH_DISTNACE 27.531
+#define FDR_REFRESH_DISTANCE 27.531
 // Max percent output that feeder can apply
-#define FDR_MAX_POWER 0.4
+#define FDR_MAX_POWER 0.7
 
 
 // Climber ---------------------------------------
@@ -182,7 +182,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define CLM_MOTOR ENABLED(CLM_ENABLED, 10)
 
 //  Turret ---------------------------------------
-#define TUR_ENABLED 0
+#define TUR_ENABLED 1
 #define TUR_SHOOTER_ID ENABLED(TUR_ENABLED, 1)
 #define TUR_TURRET_ID ENABLED(TUR_ENABLED, 7)
 #define TUR_TIMEOUT_MS 30
