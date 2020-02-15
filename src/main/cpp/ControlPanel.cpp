@@ -172,9 +172,8 @@ void ControlPanel::ControlPanelStates()
 			if(m_targetcolor != kNone)
 				{
 				//determine the shortest path to spin the wheel
-				m_colordelta = m_targetcolor - m_currentcolor;
-				cout<< "ColorDelta:"<< m_colordelta << endl;
-				if (m_colordelta == 1 || m_colordelta == -3)
+				int colordelta = m_targetcolor - m_currentcolor;
+				if (colordelta == 1 || colordelta == -3)
 					m_direction = -1;	
 				else
 					m_direction = 1;

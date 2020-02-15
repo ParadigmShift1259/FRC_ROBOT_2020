@@ -38,17 +38,17 @@ public:
 	
 	
 protected:
+	//Should these be public???
 	void ControlPanelStates();
-	ColorOptions GetColor();
-	bool SensorSanityCheck();
-	ColorOptions GetTargetColor();
 	void ChangeSpinnerState();
 	void ChangeSpinnerState(SpinnerState);
 
 private:
+	ColorOptions GetColor();
+	ColorOptions GetTargetColor();
+
 	OperatorInputs *m_inputs;
 	ColorOptions m_targetcolor;
-	int m_colordelta;
 	TalonSRX *m_spinner;
 	ColorSensorV3 *m_colorsensor;
 	Timer *m_timer;
@@ -59,15 +59,9 @@ private:
 	int m_startencodervalue;
 	int m_currentencodervalue;
 	
-
-	ColorMatch m_colormatcher;
-	double m_confidence;
-
-	ColorOptions m_currentcolor,m_previouscolor;
- //1 = red,  2 = blue
+	ColorOptions m_currentcolor, m_previouscolor;
 	bool m_stop;
 
-	double m_spinnerstatehelper;
 	double m_spinnerPIDvals[7];
 	double m_spinnersetpoint;
 };
