@@ -28,6 +28,7 @@ public:
 	 * kGather ->
 	 */
 	enum IntakeState {kIdle, kGather, kStuff};
+	enum IntakePosition {kDown, kBringingUp, kUp};
 
 	Intake(OperatorInputs *inputs, CDSensors *sensors);
 	~Intake();
@@ -42,6 +43,7 @@ public:
 	void CountBalls();
 
 	bool LoadRefresh();
+	bool BringingIntakeUp(bool ready = false);
 
 	void Dashboard();
 
@@ -57,8 +59,10 @@ protected:
     Spark *m_motor1;
     Spark *m_motor2;
 	IntakeState m_intakestate;
+	IntakePosition m_intakeposition;
 	int m_ballcount;
 	bool m_stuffingbecauseshooting;
+	bool m_intakeup;
 	
 };
 

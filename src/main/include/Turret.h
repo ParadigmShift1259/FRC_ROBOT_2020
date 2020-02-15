@@ -54,7 +54,7 @@ public:
     enum RampState {kMaintain, kIncrease, kDecrease};
 
     // Will add Drivetrain, Intake, PID, and Vision classes as pass pointers
-    Turret(OperatorInputs *inputs, Feeder *feeder, Vision *vision, GyroDrive *gyrodrive);
+    Turret(OperatorInputs *inputs, Intake *intake, Feeder *feeder, Vision *vision, GyroDrive *gyrodrive);
     ~Turret();
     void Init();
     void Loop();
@@ -76,6 +76,7 @@ protected:
 
 private:
     OperatorInputs *m_inputs;
+    Intake *m_intake;
     Feeder *m_feeder;
     Vision *m_vision;
 

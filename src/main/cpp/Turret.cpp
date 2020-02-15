@@ -14,7 +14,7 @@
 using namespace std;
 
 
-Turret::Turret(OperatorInputs *inputs, Feeder *feeder, Vision *vision, GyroDrive *gyrodrive)
+Turret::Turret(OperatorInputs *inputs, Intake *intake, Feeder *feeder, Vision *vision, GyroDrive *gyrodrive)
 {
     if (!NullCheck())
     {
@@ -24,6 +24,7 @@ Turret::Turret(OperatorInputs *inputs, Feeder *feeder, Vision *vision, GyroDrive
 
     m_inputs = inputs;
     m_vision = vision;
+    m_intake = intake;
     m_feeder = feeder;
 
     // Flywheel
@@ -170,7 +171,13 @@ void Turret::Loop()
         m_turretstate = kRampUp;
         m_readytofire = false;
     }
+
+    if (m_intake->BringingIntakeUp())
+    {
+        m_absoluteangle = 180;
+    }
     
+
     m_hoodservo->SetPosition(fabs(m_inputs->xBoxLeftY(1 * INP_DUAL)));
 
     TurretStates();

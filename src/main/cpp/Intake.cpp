@@ -74,9 +74,11 @@ void Intake::Init()
         return;
 
     m_intakestate = kIdle;
-    m_solenoid1->Set(false);
+    m_intakeposition = kDown;
+    m_solenoid1->Set(true);
     m_ballcount = 0;
     m_stuffingbecauseshooting = false;
+    m_intakeup = false;
 }
 
 // !!!!!!!!!!!!! Make sure the previous stage is acomplished to move on.
@@ -88,7 +90,10 @@ void Intake::Loop()
     CountBalls();
 
     if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+    {
         m_solenoid1->Set(false);
+        m_intakeup = false;
+    }
 
     switch (m_intakestate)
     {
@@ -173,7 +178,6 @@ void Intake::Loop()
         m_motor1->Set(INT_INTAKE_ROLLER_SPEED);
         m_motor2->Set(INT_INTAKE_WHEEL_SPEED);
     }
-    //if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
 
 	Dashboard();
 }
@@ -197,6 +201,33 @@ void Intake::CountBalls()
         m_ballcount++;
     if (m_sensors->BallPresent(Chute1Sensor))
         m_ballcount++;
+}
+
+
+bool Intake::BringingIntakeUp(bool ready)
+{
+    bool returnVal = false;
+
+    switch (m_intakeposition)
+    {
+        case kDown:
+            if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+            {
+                returnVal = true;
+                m_intakeposition = kBringingUp
+            }
+            break;
+        
+        case kBringingUp:
+            returnVal = true;
+
+            break;
+        
+        case kUp:
+            break;
+    }
+
+    return returnVal;
 }
 
 
