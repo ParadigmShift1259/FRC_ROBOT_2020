@@ -32,7 +32,7 @@ class Feeder
 {
 public:
 	
-	enum FeederState {kIdle, kFire, kRefresh, kReverse};
+	enum FeederState {kIdle, kRefresh, kDrive, kDriveWait};
 	
 	Feeder(OperatorInputs *inputs, Intake *intake, CDSensors *sensors);
 	~Feeder();
@@ -52,6 +52,7 @@ protected:
     OperatorInputs *m_inputs;
     Intake *m_intake;
 	CDSensors *m_sensors;
+	Timer m_timer;
 
     CANSparkMax *m_motor;
 	CANEncoder *m_encoder;
@@ -61,7 +62,6 @@ protected:
 
     ProfiledPIDController<units::meters> *m_feederPID;
     double m_feederPIDvals[3];
-	double m_feederPIDlowvals[3];
 	units::meter_t m_setpoint;
 	units::meter_t m_prevgoal;
 

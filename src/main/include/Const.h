@@ -167,14 +167,12 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define FDR_P 
 #define FDR_I 
 #define FDR_D 
-// PID values for just air
-#define FDR_LOW_P 
-#define FDR_LOW_I 
-#define FDR_LOW_D 
 // Refresh distance in inches
 #define FDR_REFRESH_DISTANCE 27.531
 // Max percent output that feeder can apply
 #define FDR_MAX_POWER 0.7
+#define FDR_TIMEOUT_TIME 6
+#define FDR_DRIVE_TIME 6
 
 
 // Climber ---------------------------------------

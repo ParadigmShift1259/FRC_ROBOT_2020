@@ -296,11 +296,6 @@ void Turret::FireModes()
             {
                 m_feeder->StartFire();
             }
-            else
-            if (!m_feeder->GetFinished())
-            {
-                    m_turretstate = kReturn;
-            }
 
             // forced manual
             if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
@@ -314,14 +309,7 @@ void Turret::FireModes()
                 m_feeder->StartFire();
                 m_readytofire = false;
             }
-            /*
-            else
-            if (!m_feeder->GetFinished())
-            {
-                    m_turretstate = kReturn;
-            }
-            */
-            // forced manual
+
             if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
                 m_turretstate = kReturn;
             break;
@@ -332,13 +320,7 @@ void Turret::FireModes()
                 m_feeder->StartFire();
                 m_readytofire = false;
             }
-            /*
-            if (!m_feeder->GetFinished())
-            
-            {
-                    m_turretstate = kReturn;
-            }
-            */
+
             if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
                 m_turretstate = kReturn;
             break;

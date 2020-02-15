@@ -23,7 +23,7 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake, CDSensors *sensors)
         DriverStation::ReportError("Feeder Not Enabled");
     }
 
-    m_constraints.maxVelocity = 15_m / 1_s;
+    m_constraints.maxVelocity = 20_m / 1_s;
     m_constraints.maxAcceleration = 15_m / 1_s / 1_s;
     m_tolerance = 2.0_m;
     m_setpoint = 0_m;
@@ -33,10 +33,6 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake, CDSensors *sensors)
     m_feederPIDvals[0] = 0.0995;
     m_feederPIDvals[1] = 0.005;
     m_feederPIDvals[2] = 0.0005;
-
-    m_feederPIDlowvals[0] = 0.00795;
-    m_feederPIDlowvals[1] = 0;
-    m_feederPIDlowvals[2] = 0.00001;
 
     m_inputs = inputs;
     m_intake = intake;
@@ -83,10 +79,6 @@ void Feeder::Init()
     SmartDashboard::PutNumber("FDRT1_P",             m_feederPIDvals[0]);
     SmartDashboard::PutNumber("FDRT2_I",             m_feederPIDvals[1]);
     SmartDashboard::PutNumber("FDRT3_D",             m_feederPIDvals[2]);
-    SmartDashboard::PutNumber("FDRT4_LOWP",             m_feederPIDlowvals[0]);
-    SmartDashboard::PutNumber("FDRT5_LOWI",             m_feederPIDlowvals[1]);
-    SmartDashboard::PutNumber("FDRT6_LOWD",             m_feederPIDlowvals[2]);
-    SmartDashboard::PutNumber("FDRT7_Setpoint", m_setpoint.to<double>());
     SmartDashboard::PutNumber("FDRT8_Max Velocity",       m_constraints.maxVelocity.to<double>());
     SmartDashboard::PutNumber("FDRT9_Max Acceleration",   m_constraints.maxAcceleration.to<double>());
     SmartDashboard::PutNumber("FDRT10_Goal Tolerance",     m_tolerance.to<double>());
@@ -103,13 +95,8 @@ void Feeder::Loop()
     else
     if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_power >= -0.95)
         m_power -= 0.05;
-    
-    if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
-        m_motor->Set(m_power);
-    else
-        m_motor->StopMotor();
 
-    //FeederStateMachine();
+    FeederStateMachine();
 
     SmartDashboard::PutNumber("FDR1_Feeder State", m_feederstate);
     SmartDashboard::PutNumber("FDR2_Calculated Set", m_power);
@@ -130,18 +117,19 @@ void Feeder::Stop()
 
 void Feeder::FeederStateMachine()
 {
-    units::meter_t feedersetpoint = units::meter_t{ SmartDashboard::GetNumber("FDRT7_Setpoint", 0)};
     double feedforward;
     double distance;
+    double power;
     
     switch (m_feederstate)
     {
     case kIdle:
-        // if shooter requests for shooting, ready for shooting
+        // if shooter requests for shooting, ready for driving 
         if (m_shoot)
         {
             m_intake->SetStuffingBecauseShooting();
-            m_feederstate = kFire;
+            m_feederstate = kDrive;
+            //m_motor->Set(0);
         }
         else
         // if we don't have a ball yet and we can refresh, then refresh
@@ -151,62 +139,80 @@ void Feeder::FeederStateMachine()
             m_setpoint = FDR_REFRESH_DISTANCE * 1_m;
             m_feederPID->SetGoal(m_setpoint + m_prevgoal);
             m_encoder->SetPosition(m_prevgoal.to<double>() / FDR_WHEEL_SIZE / 3.1415926535);
+            m_timer.Reset();
+            m_timer.Start();
+            //m_motor->Set(0);
         }
-
-        m_motor->Set(0);
+        else
+        {
+            m_motor->Set(0);
+        }
         
         // manual drives
-        //if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
-        //    m_motor->Set(FDR_REFRESH_SPEED_LOAD);
-        //else
         if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_feederstate = kRefresh;
             m_setpoint = FDR_REFRESH_DISTANCE * 1_m;
             m_feederPID->SetGoal(m_setpoint + m_prevgoal);
             m_encoder->SetPosition(m_prevgoal.to<double>() / FDR_WHEEL_SIZE / 3.1415926535);
+            m_timer.Reset();
+            m_timer.Start();
+            //motor->Set(0);
         }
-        break;
-
-    case kFire:
-        // If we are shooting and have a ball or the intake is still running balls in, refresh
-        if (m_sensors->BallPresent(FeederSensor) || m_sensors->BallPresent(Chute1Sensor) || m_intake->GetStuffingBecauseShooting())
-        {
-            m_feederstate = kRefresh;
-            m_setpoint = FDR_REFRESH_DISTANCE * 1_m;
-            m_feederPID->SetGoal(m_setpoint + m_prevgoal);
-            m_encoder->SetPosition(m_prevgoal.to<double>() / FDR_WHEEL_SIZE / 3.1415926535);
-        }
-        // if not, consider shooting done and return to idle
-        else 
-        {
-            m_shoot = false;
-            m_feederstate = kIdle;
-        }
-        
-        m_motor->Set(0);
         break;
     
     case kRefresh:
         distance = m_encoder->GetPosition() * FDR_WHEEL_SIZE * 3.1415926535;
-        m_power = m_feederPID->Calculate(units::meter_t{distance});
+        power = m_feederPID->Calculate(units::meter_t{distance});
         feedforward = (FDR_FEED_FORWARD / 12);
         // Constraining maximum and minimum outputs
-        if (m_power < 0)
-            m_power = 0;
-        if (m_power > FDR_MAX_POWER)
-            m_power = FDR_MAX_POWER;
+        if (power < 0)
+            power = 0;
+        if (power > FDR_MAX_POWER)
+            power = FDR_MAX_POWER;
 
-        m_motor->Set(m_power + feedforward);
+        m_motor->Set(power + feedforward);
 
-        if (m_feederPID->AtGoal())
+        // If goal is reached or timeout timer hits, idle
+        if (m_feederPID->AtGoal() || m_timer.Get() > FDR_TIMEOUT_TIME)
         {
             m_prevgoal += m_setpoint;
             m_feederstate = kIdle;
         }
         break;
 
-    case kReverse:
+    case kDrive:
+        // If we are shooting and have a ball or the intake is still running balls in, start driving
+        if (m_sensors->BallPresent(FeederSensor) || m_sensors->BallPresent(Chute1Sensor) || m_intake->GetStuffingBecauseShooting())
+        {
+            m_feederstate = kDriveWait;
+            m_intake->SetStuffingBecauseShooting();
+            m_timer.Reset();
+            m_timer.Start();
+            m_motor->Set(m_power);
+        }
+        // if not, consider shooting done and return to idle
+        else 
+        {
+            m_shoot = false;
+            m_feederstate = kIdle;
+            //m_motor->Set(0);
+        }
+        break;
+
+    case kDriveWait:
+        // if the timer has been reached, go back to drive for feedback
+        if (m_timer.Get() > FDR_DRIVE_TIME)
+        {
+            m_feederstate = kDrive;
+            //m_motor->Set(0);
+        }
+        else
+        {
+            m_motor->Set(m_power);
+            m_motor->Set(m_power);
+        }
+        
         break;
     }; 
 }
@@ -255,16 +261,4 @@ void Feeder::ConfigurePID()
         m_tolerance = t;
         m_feederPID->SetTolerance(m_tolerance, FDR_HIGH_NUMBER * 1_m / 1_s);
     }
-}
-
-
-void Feeder::ConfigureLowPID()
-{
-    double p = SmartDashboard::GetNumber("FDRT4_LOWP", 0);
-    double i = SmartDashboard::GetNumber("FDRT5_LOWI", 0);
-    double d = SmartDashboard::GetNumber("FDRT6_LOWD", 0);
-
-    if((p != m_feederPIDlowvals[0])) { m_feederPIDlowvals[0] = p; }
-    if((i != m_feederPIDlowvals[1])) { m_feederPIDlowvals[1] = i; }
-    if((d != m_feederPIDlowvals[2])) { m_feederPIDlowvals[2] = d; }
 }
