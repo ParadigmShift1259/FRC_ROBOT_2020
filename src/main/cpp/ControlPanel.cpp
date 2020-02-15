@@ -153,13 +153,7 @@ void ControlPanel::ControlPanelStates()
 		if (m_stop)
 		{
 			// Once stopped, use A button to restart. (TO DO: Move reading user inputs to a higher level robot class)
-			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
-			{
-
-				m_stop = false;
-				m_redCount = 0;
-				m_blueCount = 0;
-			}
+			
 			m_spinner->Set(ControlMode::Velocity, 0);
 		}
 		else
@@ -228,13 +222,7 @@ void ControlPanel::ControlPanelStates()
 		{
 			m_spinner->Set(ControlMode::Velocity, 0);
 			// (TO DO: Move reading user inputs to a higher level robot class)
-			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
-			{
-				// If A button is pressed, clear the target color and set m_stop=false to initiate Position Control 
-				m_stop = false;
-				m_targetcolor = kNone;
-				m_startencodervalue = 0;
-			}
+		
 		}
 		else
 		{
@@ -315,14 +303,19 @@ ControlPanel::ColorOptions ControlPanel::GetTargetColor()
 void ControlPanel::ChangeSpinnerState()
 {
 	//TODO: Move reading of operator inputs to higher level class
-	if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0))
+	if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 	{
 		m_spinnerstate = kRotationControl;
+		m_stop = false;
+		m_redCount = 0;
+		m_blueCount = 0;
 	}
-		
-	if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0))
+	if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 	{
 		m_spinnerstate = kPositionControl;
+		m_stop = false;
+		m_targetcolor = kNone;
+		m_startencodervalue = 0;
 	}
 }
 
