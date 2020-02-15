@@ -89,12 +89,6 @@ void Intake::Loop()
     
     CountBalls();
 
-    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-    {
-        m_solenoid1->Set(false);
-        m_intakeup = false;
-    }
-
     switch (m_intakestate)
     {
     case kIdle: 
@@ -109,6 +103,7 @@ void Intake::Loop()
         {
             m_intakestate = kGather;
             m_solenoid1->Set(true);
+            m_intakeposition = kDown;
             m_motor1->Feed();
             m_motor2->Feed();
         }
@@ -214,16 +209,22 @@ bool Intake::BringingIntakeUp(bool ready)
             if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             {
                 returnVal = true;
-                m_intakeposition = kBringingUp
+                m_intakeposition = kBringingUp;
             }
             break;
         
         case kBringingUp:
             returnVal = true;
-
+            if (ready)
+            {
+                m_solenoid1->Set(false);
+                returnVal = false;
+                m_intakeposition = kUp;
+            }
             break;
         
         case kUp:
+
             break;
     }
 
