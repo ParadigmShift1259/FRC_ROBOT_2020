@@ -18,11 +18,12 @@ using namespace std;
 
 ControlPanel::ControlPanel(OperatorInputs *inputs)
 {
-	static constexpr auto i2cPort = I2C::Port::kOnboard;
+	static constexpr auto i2cPort = I2C::Port::kOnboard;  // To Do: Move to higher level robot class
 
 	m_inputs = inputs;
 	
 	m_spinner = nullptr;
+
 	if (CPL_MOTOR != -1)
 		m_spinner = new TalonSRX(CPL_MOTOR);
 
@@ -51,12 +52,14 @@ ControlPanel::~ControlPanel()
 		delete m_colorsensor;
 	if (m_spinner != nullptr)
 		delete m_spinner;
+	if (m_timer != nullptr)
+		delete m_timer;
 }
 
 
 void ControlPanel::Init()
 {
-	if (m_spinner == nullptr)
+	if (m_spinner == nullptr || m_colorsensor == nullptr)
 		return;
 
 	m_colorsensor->ConfigureColorSensor(rev::ColorSensorV3::ColorResolution::k13bit, rev::ColorSensorV3::ColorMeasurementRate::k25ms);
@@ -64,28 +67,25 @@ void ControlPanel::Init()
 	m_redCount = 0;
 	m_blueCount = 0;
 	m_currentcolor = kNone;
-	m_stop = true;
 	m_previouscolor = kNone;
 	m_targetcolor = kNone;
 	m_direction = 0;
 	m_spinnerstate = kOff;
-	m_spinnerstatehelper = 1.0;
+	m_stop = true;
 
 	m_spinner->SetNeutralMode(NeutralMode::Brake);
 	m_spinner->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0);
-	m_spinner->SetSensorPhase(true);
-	m_spinner->SetInverted(true);
+	m_spinner->SetSensorPhase(true); // What does this do / is this needed?
+	m_spinner->SetInverted(true); // What does this do / is this needed?
 	m_spinner->ConfigPeakOutputForward(1);
 	m_spinner->ConfigPeakOutputReverse(-1);
 	
-	SmartDashboard::PutNumber("CPIN3_TargetColor", m_targetcolor);
-	SmartDashboard::PutNumber("CPIN4_SpinnerState", m_spinnerstatehelper);
 }
 
 
 void ControlPanel::Loop()
 {
-	if (m_spinner == nullptr)
+	if (m_spinner == nullptr || m_colorsensor == nullptr)
 		return;
 
 	ChangeSpinnerState();
@@ -95,15 +95,13 @@ void ControlPanel::Loop()
 	SmartDashboard::PutNumber("CPM11_Encoder_Position in Revolutions", m_spinner->GetSelectedSensorPosition(0) / COUNTS_PER_CW_REV);
 	SmartDashboard::PutNumber("CPM12_Encoder_Velocity in RPM", m_spinner->GetSelectedSensorVelocity(0) / MINUTES_TO_HUNDRED_MS / COUNTS_PER_CW_REV);
 	SmartDashboard::PutNumber("CPM15_Motor Voltage", m_spinner->GetMotorOutputVoltage());
-	SmartDashboard::PutNumber("CPIN4_SpinnerState", m_spinnerstatehelper);
+	SmartDashboard::PutNumber("CPVER3_Registered Red Count", m_redCount);
+	SmartDashboard::PutNumber("CPVER5_Registered Blue Count", m_blueCount);
 }
 
 
 void ControlPanel::Stop()
 {
-	if (m_spinner == nullptr)
-		return;
-
 	m_spinnerstate = kOff;
 }
 
@@ -111,12 +109,12 @@ void ControlPanel::Stop()
 
 void ControlPanel::ControlPanelStates()
 {
-	//m_spinnerstate = (SpinnerState) SmartDashboard::GetNumber("CPIN4_SpinnerState", 0);
 
 	switch (m_spinnerstate)
 	{
 	case kOff:
 		m_spinner->Set(ControlMode::PercentOutput, 0);
+		m_stop = true;
 		break;
 
 	case kRotationControl:
@@ -125,20 +123,20 @@ void ControlPanel::ControlPanelStates()
 			if (m_currentcolor == kRed && m_previouscolor != kRed)
 			{
 				SmartDashboard::PutString("CPVER1_TrueColor", "Red");
-				m_redCount ++ ;
+				m_redCount++;
 			}
 			else if (m_currentcolor == kBlue &&  m_previouscolor != kBlue )
 			{
 				SmartDashboard::PutString("CPVER1_TrueColor", "Blue");
-				m_blueCount ++ ;
+				m_blueCount++;
 			}	
 
 		if (m_blueCount == ROTATION_CONTROL_COUNT_LIMIT_BLUE || m_redCount == ROTATION_CONTROL_COUNT_LIMIT_RED )
 			m_stop = true;
 		
-		// Once stopped, use A button to restart. If not, set the speed to spinpower
 		if (m_stop)
 		{
+			// Once stopped, use A button to restart. (TO DO: Move reading user inputs to a higher level robot class)
 			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
 			{
 				m_stop = false;
@@ -149,13 +147,15 @@ void ControlPanel::ControlPanelStates()
 		}
 		else
 		{
-			m_currentencodervalue = m_spinner->GetSelectedSensorPosition(0);
+			//Command motor to spin at a given speed
 			m_spinnersetpoint = ROTATION_CONTROL_FAST;
 			m_spinner->Set(ControlMode::PercentOutput, m_spinnersetpoint); 
-			std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
+			m_currentencodervalue = m_spinner->GetSelectedSensorPosition(0);
+			//std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
 		}
 
-		if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
+		// (TO DO: Move reading user inputs to a higher level robot class)
+		if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0)) 
 			m_stop = true;
 		
 		m_previouscolor = m_currentcolor;
@@ -164,35 +164,44 @@ void ControlPanel::ControlPanelStates()
 	case kPositionControl:
 		m_currentcolor = GetColor();
 		m_currentencodervalue = m_spinner->GetSelectedSensorPosition(0);
+		
 		if (m_targetcolor == kNone)
 			{
-				m_targetcolor = GetTargetColor();
+			//If we don't know what the target color is, read the target color from FMS and 
+			m_targetcolor = GetTargetColor();
+			if(m_targetcolor != kNone)
+				{
+				//determine the shortest path to spin the wheel
 				m_colordelta = m_targetcolor - m_currentcolor;
 				cout<< "ColorDelta:"<< m_colordelta << endl;
 				if (m_colordelta == 1 || m_colordelta == -3)
 					m_direction = -1;	
 				else
-					m_direction = 1;	
+					m_direction = 1;
+				//Set motor speed	
 				m_spinnersetpoint = POSITION_CONTROL_FAST;
+				}
 			}
 		
 		if(m_currentcolor == m_targetcolor)
 			{
+			m_spinnersetpoint = POSITION_CONTROL_SLOW;
 			if (m_startencodervalue == 0)
 				{
-				cout << "found target color!" << endl;
+				//cout << "found target color!" << endl;
+				//Record the current encoder value
 				m_startencodervalue = m_spinner->GetSelectedSensorPosition(0);
 				}
 			else if (abs(m_currentencodervalue - m_startencodervalue) >= COUNTS_PER_CW_SECTOR/2 )
 				{
 				//cout << "done!" << endl;
+				//if the wheel has spun half a sector, then stop the motor
 				m_stop = true;
 				}
-			m_spinnersetpoint = POSITION_CONTROL_SLOW;
 			}
 		else
 			{
-
+			//If not over the target color, spin fast and clear any encoder value that we recorded
 			m_startencodervalue = 0;
 			m_spinnersetpoint = POSITION_CONTROL_FAST;
 			}
@@ -200,33 +209,30 @@ void ControlPanel::ControlPanelStates()
 		
 		if (m_stop)
 		{
+			m_spinner->Set(ControlMode::PercentOutput, 0);
+			// (TO DO: Move reading user inputs to a higher level robot class)
 			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
 			{
+				// If A button is pressed, clear the target color and set m_stop=false to initiate Position Control 
 				m_stop = false;
 				m_targetcolor = kNone;
 			}
-			m_spinner->Set(ControlMode::PercentOutput, 0);
 		}
 		else
 		{
+			//If not stopped command motor according to setpoint and direction
 			m_spinner->Set(ControlMode::PercentOutput, m_spinnersetpoint * m_direction); 
 			std::cout << m_currentcolor << ", " << m_targetcolor << ", " << m_direction << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << ", " << m_startencodervalue << endl;
 		}
 		
 		break;
 	}
-
-	// Displays the total registered color count of each color
-	//SmartDashboard::PutNumber("CPVER2_Registered Yellow Count", m_colorregisteredcount[0]);
-	SmartDashboard::PutNumber("CPVER3_Registered Red Count", m_redCount);
-	//SmartDashboard::PutNumber("CPVER4_Registered Green Count", m_colorregisteredcount[2]);
-	SmartDashboard::PutNumber("CPVER5_Registered Blue Count", m_blueCount);
 }
 
 
 ControlPanel::ColorOptions ControlPanel::GetColor()
 {
-	//Color detectedcolor = m_colorsensor->GetColor();
+	ColorOptions color;
 	
 	ColorSensorV3::RawColor rawcolor = m_colorsensor->GetRawColor();
 	
@@ -237,36 +243,20 @@ ControlPanel::ColorOptions ControlPanel::GetColor()
 	double hue = fmod(((180/3.14 * atan2(sqrt(3) / 2 * (g - b), r - .5*g - .5*b)) + 360), 360);
 	double M = fmax(fmax(r, g),b);
 	double sat = (M - fmin(fmin(r, g),b)) / M;
+	double val = (M/pow(2, 13));
 
-
-	m_color = kNone;
+	color = kNone;
 
 	if (hue > YELLOW_MINIMUM_HUE && hue < YELLOW_MAXIMUM_HUE)
-		m_color = kYellow;
+		color = kYellow;
 	else if (hue > RED_MINIMUM_HUE && hue < RED_MAXIMUM_HUE)
-		m_color = kRed;
-	else
-	if (hue > GREEN_MINIMUM_HUE && hue < GREEN_MAXIMUM_HUE)
-		m_color = kGreen;
-	else
-	if (hue > BLUE_MINIMUM_HUE && hue < BLUE_MAXIMUM_HUE)
-		m_color = kBlue;
+		color = kRed;
+	else if (hue > GREEN_MINIMUM_HUE && hue < GREEN_MAXIMUM_HUE)
+		color = kGreen;
+	else if (hue > BLUE_MINIMUM_HUE && hue < BLUE_MAXIMUM_HUE)
+		color = kBlue;
 
-	SmartDashboard::PutNumber("CPSIMP1_R", r);
-	SmartDashboard::PutNumber("CPSIMP2_G", g);
-	SmartDashboard::PutNumber("CPSIMP3_B", b);
-	SmartDashboard::PutNumber("CPSIMP4_Color", m_color);
-	SmartDashboard::PutNumber("CPSIMP5_Hue", hue);
-	SmartDashboard::PutNumber("CPSIMP6_Saturation", sat);
-
-
-	if(!m_stop)
-		{
-		//std::cout << m_timer->GetFPGATimestamp()<< ", " << rawcolor.red << ", " << rawcolor.green << ", " << rawcolor.blue << ", " << hue << ", " << sat << ", ";
-		}
-
-
-	return m_color;
+	return color;
 }
 
 ControlPanel::ColorOptions ControlPanel::GetTargetColor()
@@ -297,16 +287,19 @@ ControlPanel::ColorOptions ControlPanel::GetTargetColor()
 
 void ControlPanel::ChangeSpinnerState()
 {
+	//TODO: Move reading of operator inputs to higher level class
 	if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0))
 	{
 		m_spinnerstate = kRotationControl;
-		cout<<"spinnerState =" << m_spinnerstate << endl;
 	}
 		
 	if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0))
 	{
 		m_spinnerstate = kPositionControl;
-		cout<<"spinnerState =" << m_spinnerstate << endl;
 	}
+}
 
+void ControlPanel::ChangeSpinnerState(SpinnerState state)
+{
+	m_spinnerstate = state;
 }

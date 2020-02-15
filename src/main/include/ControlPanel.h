@@ -43,10 +43,10 @@ protected:
 	bool SensorSanityCheck();
 	ColorOptions GetTargetColor();
 	void ChangeSpinnerState();
+	void ChangeSpinnerState(SpinnerState);
 
 private:
 	OperatorInputs *m_inputs;
-	ColorOptions m_color;
 	ColorOptions m_targetcolor;
 	int m_colordelta;
 	TalonSRX *m_spinner;
