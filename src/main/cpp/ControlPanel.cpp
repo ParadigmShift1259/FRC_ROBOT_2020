@@ -2,6 +2,7 @@
  *  ControlPanel.cpp
  *  Date: 1/7/2020
  *  Last Edited By: Jival Chandrashekar
+ *  Nicholas Seidl
  */
 
 
@@ -41,7 +42,7 @@ ControlPanel::ControlPanel(OperatorInputs *inputs)
 	m_spinnerPIDvals[4] = 0;
 	m_spinnerPIDvals[5] = 0;
 	m_spinnerPIDvals[6] = 1;
-	
+
 	m_spinnersetpoint = 0;
 }
 
@@ -80,6 +81,14 @@ void ControlPanel::Init()
 	m_spinner->ConfigPeakOutputForward(1);
 	m_spinner->ConfigPeakOutputReverse(-1);
 	
+	m_spinner->Config_kF(0, 0.0);
+	m_spinner->Config_kP(0, 0.1);
+	m_spinner->Config_kI(0, 0.0);
+	m_spinner->Config_kD(0, 0.0);
+
+	SmartDashboard::PutNumber("PID_P", 0.300000);
+	SmartDashboard::PutNumber("PID_I", 0.000020);
+	SmartDashboard::PutNumber("PID_F", 0.0850000);
 }
 
 
@@ -97,6 +106,12 @@ void ControlPanel::Loop()
 	SmartDashboard::PutNumber("CPM15_Motor Voltage", m_spinner->GetMotorOutputVoltage());
 	SmartDashboard::PutNumber("CPVER3_Registered Red Count", m_redCount);
 	SmartDashboard::PutNumber("CPVER5_Registered Blue Count", m_blueCount);
+	double PID_p = SmartDashboard::GetNumber("PID_P", 0.0);
+	double PID_I = SmartDashboard::GetNumber("PID_I", 0.0);
+	double PID_F = SmartDashboard::GetNumber("PID_F", 0.0);
+	m_spinner->Config_kP(0, PID_p);
+	m_spinner->Config_kI(0, PID_I);
+	m_spinner->Config_kF(0, PID_F);
 }
 
 
@@ -143,13 +158,13 @@ void ControlPanel::ControlPanelStates()
 				m_redCount = 0;
 				m_blueCount = 0;
 			}
-			m_spinner->Set(ControlMode::PercentOutput, 0);
+			m_spinner->Set(ControlMode::Velocity, 0);
 		}
 		else
 		{
 			//Command motor to spin at a given speed
 			m_spinnersetpoint = ROTATION_CONTROL_FAST;
-			m_spinner->Set(ControlMode::PercentOutput, m_spinnersetpoint); 
+			m_spinner->Set(ControlMode::Velocity, m_spinnersetpoint); 
 			m_currentencodervalue = m_spinner->GetSelectedSensorPosition(0);
 			//std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
 		}
@@ -179,6 +194,7 @@ void ControlPanel::ControlPanelStates()
 					m_direction = 1;
 				//Set motor speed	
 				m_spinnersetpoint = POSITION_CONTROL_FAST;
+				cout<< "Target Color =" << m_targetcolor <<endl;
 				}
 			}
 		
@@ -187,7 +203,7 @@ void ControlPanel::ControlPanelStates()
 			m_spinnersetpoint = POSITION_CONTROL_SLOW;
 			if (m_startencodervalue == 0)
 				{
-				//cout << "found target color!" << endl;
+				cout << "found target color!" << endl;
 				//Record the current encoder value
 				m_startencodervalue = m_spinner->GetSelectedSensorPosition(0);
 				}
@@ -198,7 +214,7 @@ void ControlPanel::ControlPanelStates()
 				m_stop = true;
 				}
 			}
-		else
+		else if(m_currentcolor != kNone) //Ensures a valid color reading
 			{
 			//If not over the target color, spin fast and clear any encoder value that we recorded
 			m_startencodervalue = 0;
@@ -208,7 +224,7 @@ void ControlPanel::ControlPanelStates()
 		
 		if (m_stop)
 		{
-			m_spinner->Set(ControlMode::PercentOutput, 0);
+			m_spinner->Set(ControlMode::Velocity, 0);
 			// (TO DO: Move reading user inputs to a higher level robot class)
 			if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
 			{
@@ -220,8 +236,9 @@ void ControlPanel::ControlPanelStates()
 		else
 		{
 			//If not stopped command motor according to setpoint and direction
-			m_spinner->Set(ControlMode::PercentOutput, m_spinnersetpoint * m_direction); 
-			std::cout << m_currentcolor << ", " << m_targetcolor << ", " << m_direction << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << ", " << m_startencodervalue << endl;
+			m_spinner->Set(ControlMode::Velocity, m_spinnersetpoint * m_direction); 
+			int encoderdelta = abs(m_currentencodervalue - m_startencodervalue);
+			std::cout << m_currentcolor << ", " << m_targetcolor << ", " << m_direction << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << ", " << m_startencodervalue << "," << COUNTS_PER_CW_SECTOR/2 - encoderdelta << endl;
 		}
 		
 		break;
@@ -233,7 +250,14 @@ ControlPanel::ColorOptions ControlPanel::GetColor()
 {
 	ColorOptions color;
 	
-	ColorSensorV3::RawColor rawcolor = m_colorsensor->GetRawColor();
+	ColorSensorV3::RawColor rawcolor = ColorSensorV3::RawColor(0, 0, 0, 0);
+
+	int retries = 3;
+	while (retries > 0 && rawcolor.red == 0 && rawcolor.green == 0 && rawcolor.blue == 0)
+	{
+		rawcolor = m_colorsensor->GetRawColor();
+		retries--;
+	}
 	
 	double r = static_cast<double>(rawcolor.red);
     double g = static_cast<double>(rawcolor.green);
@@ -246,6 +270,7 @@ ControlPanel::ColorOptions ControlPanel::GetColor()
 
 	color = kNone;
 
+	// TO DO: use val and sat to help catch anomolous raw readings
 	if (hue > YELLOW_MINIMUM_HUE && hue < YELLOW_MAXIMUM_HUE)
 		color = kYellow;
 	else if (hue > RED_MINIMUM_HUE && hue < RED_MAXIMUM_HUE)

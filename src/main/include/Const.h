@@ -107,6 +107,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // ControlPanel
 #define COUNTS_PER_CW_REV (4096*32/4)
 #define COUNTS_PER_CW_SECTOR (COUNTS_PER_CW_REV/8)
+#define ONE_CW_RPM (COUNTS_PER_CW_REV/600) /* 100ms Timebase for TalonSRX PID */
 
 #define YELLOW_MINIMUM_HUE 80
 #define YELLOW_MAXIMUM_HUE 100
@@ -120,8 +121,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define ROTATION_CONTROL_COUNT_LIMIT_RED 7
 #define ROTATION_CONTROL_COUNT_LIMIT_BLUE 7
 
-#define ROTATION_CONTROL_FAST 0.35
-#define POSITION_CONTROL_FAST 0.15
-#define POSITION_CONTROL_SLOW 0.1
+#define ROTATION_CONTROL_FAST (55*ONE_CW_RPM)
+#define POSITION_CONTROL_FAST (15*ONE_CW_RPM)
+#define POSITION_CONTROL_SLOW (5*ONE_CW_RPM)
 
 #endif /* SRC_CONST_H_ */
