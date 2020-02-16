@@ -225,8 +225,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Turret Spinning
 #define TUR_TURRET_RAMPING_RATE 5           // in degrees
 // kS, kV, kA values turned using frc-characterization 2/8/20 for the Metal V2 Shooter Flywheel by Geoffrey
-#define TUR_TURRET_KS_FORWARDS 0.76
-#define TUR_TURRET_KS_BACKWARDS 0.86
+#define TUR_TURRET_KS_FORWARDS 0.71
+#define TUR_TURRET_KS_BACKWARDS 0.81
 // Turret turning PID values
 #define TUR_TURRET_P 0.13114
 #define TUR_TURRET_I 0

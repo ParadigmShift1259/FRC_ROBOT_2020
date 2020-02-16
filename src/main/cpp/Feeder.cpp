@@ -40,8 +40,8 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake, CDSensors *sensors)
 
     m_motor = new CANSparkMax(FDR_MOTOR, CANSparkMax::MotorType::kBrushless);
     m_motor->SetIdleMode(CANSparkMax::IdleMode::kBrake);
-    m_motor->SetInverted(true);
     m_encoder = new CANEncoder(*m_motor);
+    m_motor->SetInverted(true);
     //m_encoder->SetInverted(true);
     m_feederPID = new ProfiledPIDController<units::meters>(
         m_feederPIDvals[0],
@@ -133,9 +133,12 @@ void Feeder::FeederStateMachine()
         if ((!m_sensors->BallPresent(FeederSensor) && m_intake->LoadRefresh()) || m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_feederstate = kRefresh;
+            
             m_setpoint = FDR_REFRESH_DISTANCE * 1_m;
             m_feederPID->SetGoal(m_setpoint + m_prevgoal);
             m_encoder->SetPosition(m_prevgoal.to<double>() / FDR_WHEEL_SIZE / 3.1415926535 * FDR_GEAR_RATIO);
+            //m_feederPID->SetGoal(m_prevgoal);
+            //m_encoder->SetPosition((m_prevgoal.to<double>() + m_setpoint.to<double>()) / FDR_WHEEL_SIZE / 3.1415926535 * FDR_GEAR_RATIO);
             m_timer.Reset();
             m_timer.Start();
             m_motor->Set(0);
@@ -203,6 +206,8 @@ void Feeder::FeederStateMachine()
         
         break;
     }; 
+    SmartDashboard::PutNumber("!!!!Power from FDR", power);
+    SmartDashboard::PutNumber("!!!!Distance from FDR", distance);
 }
 
 void Feeder::StartFire()
