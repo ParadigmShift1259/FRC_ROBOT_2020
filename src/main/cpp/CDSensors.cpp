@@ -63,9 +63,11 @@ CDSensors::CDSensors()
                                             , 0x5A); 
 
     // Connect all ports on the I2C bus                                          
-    MuxSelectAll();
+    // MuxSelectAll();
+    
+	MuxSelectMask(0x0F);
 
-    //m_colorsensor = new ColorSensorV3(I2C::kOnboard);
+    m_colorsensor = new ColorSensorV3(I2C::kOnboard);
 }
 
 
@@ -192,6 +194,20 @@ void CDSensors::MuxSelect(uint8_t muxPort)
   sprintf(buf, "Mux select %d bXferAborted = %d", muxPort, bXferAborted);
   frc::DriverStation::ReportError(buf);
 }
+
+
+void CDSensors::MuxSelectMask(uint8_t mask)
+{ 
+  uint8_t muxPortBit[2];
+  muxPortBit[0] = mask;
+  muxPortBit[1] = 0;
+  bool bXferAborted = m_mux.WriteBulk(&muxPortBit[0], 1);
+
+  char buf[100];
+  sprintf(buf, "Mux select %d bXferAborted = %d", mask, bXferAborted);
+  frc::DriverStation::ReportError(buf);
+}
+
 
 void CDSensors::MuxSelectAll()
 {

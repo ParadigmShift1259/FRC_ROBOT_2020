@@ -144,7 +144,7 @@ void ControlPanel::ControlPanelStates()
 			m_spinnersetpoint = CPL_ROTATION_CONTROL_FAST;
 			m_spinner->Set(ControlMode::Velocity, m_spinnersetpoint); 
 			m_currentencodervalue = m_spinner->GetSelectedSensorPosition(0);
-			//std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
+			std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
 		}
 
 		// (TO DO: Move reading user inputs to a higher level robot class)
@@ -172,7 +172,7 @@ void ControlPanel::ControlPanelStates()
 					m_direction = 1;
 				// Set motor speed	
 				m_spinnersetpoint = CPL_POSITION_CONTROL_FAST;
-				//cout<< "Target Color =" << m_targetcolor <<endl;
+				cout<< "Target Color =" << m_targetcolor <<endl;
 				}
 			}
 		
@@ -181,13 +181,13 @@ void ControlPanel::ControlPanelStates()
 			m_spinnersetpoint = CPL_POSITION_CONTROL_SLOW;
 			if (m_startencodervalue == 0)
 				{
-				//cout << "found target color!" << endl;
+				cout << "found target color!" << endl;
 				// Record the current encoder value
 				m_startencodervalue = m_spinner->GetSelectedSensorPosition(0);
 				}
 			else if (abs(m_currentencodervalue - m_startencodervalue) >= CPL_COUNTS_PER_CW_SECTOR/2 )
 				{
-				//cout << "done!" << endl;
+				cout << "done!" << endl;
 				// if the wheel has spun half a sector, then stop the motor
 				m_stop = true;
 				}
@@ -211,7 +211,7 @@ void ControlPanel::ControlPanelStates()
 			//If not stopped command motor according to setpoint and direction
 			m_spinner->Set(ControlMode::Velocity, m_spinnersetpoint * m_direction); 
 			int encoderdelta = abs(m_currentencodervalue - m_startencodervalue);
-			//std::cout << m_currentcolor << ", " << m_targetcolor << ", " << m_direction << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << ", " << m_startencodervalue << "," << CPL_COUNTS_PER_CW_SECTOR/2 - encoderdelta << endl;
+			std::cout << m_currentcolor << ", " << m_targetcolor << ", " << m_direction << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << ", " << m_startencodervalue << "," << CPL_COUNTS_PER_CW_SECTOR/2 - encoderdelta << endl;
 		}
 		
 		break;

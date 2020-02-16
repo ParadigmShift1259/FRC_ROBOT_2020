@@ -463,7 +463,7 @@ double DriveTrainFX::Ramp(double previous, double desired)
 
 		// if changing direction always use ramp down rates
 		// compare signs of prev and desired to determine direction change
-		if ((previous / abs(previous)) != (desired / abs(desired)))
+		if (previous != 0 && desired != 0 && (signbit(previous) != signbit(desired)))
 		{
 			rampmax = RAMPING_RATE_DOWN_MAX / m_battery;
 			rampmin = RAMPING_RATE_DOWN_MIN / m_battery;
@@ -489,7 +489,7 @@ double DriveTrainFX::Ramp(double previous, double desired)
 			newpow += max((delta * rampmax), rampmin);
 		else
 		if (previous > desired)
-			newpow -= max((delta * rampmin), rampmin);
+			newpow -= max((delta * rampmax), rampmin);
 	}
 	return newpow;
 }

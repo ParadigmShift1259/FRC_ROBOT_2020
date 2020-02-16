@@ -197,13 +197,6 @@ void Turret::Loop()
 
     //m_hoodservo->SetPosition(fabs(m_inputs->xBoxLeftY(1 * INP_DUAL)));
 
-    // currently only manual work for now
-    if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        m_flywheelsetpoint += 100;
-    else 
-    if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && (m_flywheelsetpoint >= 100))
-        m_flywheelsetpoint -= 100;
-
 
     TurretStates();
     FireModes();
@@ -291,6 +284,7 @@ void Turret::TurretStates()
             break;
 
         case kVision:
+            m_flywheelsetpoint = TUR_SHOOTER_PREMOVE_STATE_RPM;
             m_readytofire = false;
             // Loop vision but also check if valid
             if (!VisionTurretAngle())
@@ -305,13 +299,16 @@ void Turret::TurretStates()
             // if turret is only off by a small amount with its error and its flywheel is up to speed, progress
             if (TicksToDegrees(m_turretmotor->GetClosedLoopError()) <= TUR_TURRET_ERROR &&
                 m_flywheelsetpoint == m_flywheelrampedsetpoint)
+            {
                 m_turretstate = kAllReady;
+                m_readytofire = true;
+            }
             
             break;
     
         case kAllReady:
+            m_flywheelsetpoint = TUR_SHOOTER_PREMOVE_STATE_RPM;
             VisionTurretAngle();
-            m_readytofire = true;
 
             // If driver wants to adjust turret angle, go back to rampUp
             if (fabs(m_inputs->xBoxRightX(1 * INP_DUAL)) > 0.8 || fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.8)
@@ -336,7 +333,7 @@ void Turret::FireModes()
     switch (m_firemode)
     {
         case kForceShoot:
-            if (m_feeder->GetFinished())
+            if (!m_feeder->GetFinished())
             {
                 m_turretstate = kIdle;
                 m_firemode = kHoldShoot;
@@ -359,7 +356,7 @@ void Turret::FireModes()
                 m_firemode = kForceShoot;
             }
 
-            if (m_firing && m_feeder->GetFinished())
+            if (m_firing && !m_feeder->GetFinished())
             {
                 m_firing = false;
                 m_turretstate = kIdle;

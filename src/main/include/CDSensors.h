@@ -43,6 +43,7 @@ public:
 
 private:
     void MuxSelect(uint8_t i);
+    void MuxSelectMask(uint8_t mask);
     void MuxSelectAll();
     double ReadDistance(Rev2mDistanceSensorEx& distSensor, int sensorNum); 
 

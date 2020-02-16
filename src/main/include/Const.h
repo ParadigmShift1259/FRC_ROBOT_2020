@@ -86,14 +86,14 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define RAMPING_RATE_UP_MIN 0.6
 #define RAMPING_RATE_UP_MAX 4.0
 #define RAMPING_RATE_DOWN_MIN 0.6
-#define RAMPING_RATE_DOWN_MAX 5.0
+#define RAMPING_RATE_DOWN_MAX 4.0
 //   Scaling
 #define JOYSTICK_SCALING_X 0.5
 #define JOYSTICK_SCALING_Y 1.0
 #define MOTOR_SCALING_LEFT 1.0
 #define MOTOR_SCALING_RIGHT 1.0
-#define LOWSPEED_MODIFIER_X 0.50
-#define LOWSPEED_MODIFIER_Y 0.50
+#define LOWSPEED_MODIFIER_X 0.25
+#define LOWSPEED_MODIFIER_Y 0.25
 //   Encoders
 #define ENC_PRESENT_1 true
 #define ENC_TYPE_1 FeedbackDevice::IntegratedSensor
@@ -134,7 +134,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 // ControlPanel ---------------------------------------
-#define CPL_ENABLED 0           // set to 1 to enable control panel motor
+#define CPL_ENABLED 1           // set to 1 to enable control panel motor
 #define CPL_MOTOR ENABLED(CPL_ENABLED, 11)
 #define CPL_SOLENOID ENABLED(CPL_ENABLED, 1)
 // ControlPanel
@@ -184,9 +184,9 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define FDR_I 
 #define FDR_D 
 // Refresh distance in inches
-#define FDR_REFRESH_DISTANCE 25.531
+#define FDR_REFRESH_DISTANCE 26.531
 // Max percent output that feeder can apply
-#define FDR_MAX_POWER 0.4
+#define FDR_MAX_POWER 0.3
 #define FDR_TIMEOUT_TIME 6
 #define FDR_DRIVE_TIME 6
 #define FDR_GEAR_RATIO 4.167
@@ -206,7 +206,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Shooter / Flywheel
 #define TUR_SHOOTER_RAMPING_RATE 100       // in rpm
 #define TUR_SHOOTER_IDLE_STATE_RPM 2000
-#define TUR_SHOOTER_PREMOVE_STATE_RPM 2500
+#define TUR_SHOOTER_PREMOVE_STATE_RPM 3200
 // kS, kV, kA values tuned using frc-characterization 2/1/20 for the Metal V2 Shooter Flywheel by Geoffrey
 #define TUR_SHOOTER_KS 0.0868
 #define TUR_SHOOTER_KV 0.126    // was actually 0.128, but we'll see
@@ -225,8 +225,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Turret Spinning
 #define TUR_TURRET_RAMPING_RATE 5           // in degrees
 // kS, kV, kA values turned using frc-characterization 2/8/20 for the Metal V2 Shooter Flywheel by Geoffrey
-#define TUR_TURRET_KS_FORWARDS 0.69
-#define TUR_TURRET_KS_BACKWARDS 0.79
+#define TUR_TURRET_KS_FORWARDS 0.76
+#define TUR_TURRET_KS_BACKWARDS 0.86
 // Turret turning PID values
 #define TUR_TURRET_P 0.13114
 #define TUR_TURRET_I 0

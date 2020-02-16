@@ -92,12 +92,6 @@ void Feeder::Loop()
 {
      if (m_motor == nullptr)
         return;
-    
-    if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_power <= 0.95)
-        m_power += 0.05;
-    else
-    if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && m_power >= -0.95)
-        m_power -= 0.05;
 
     FeederStateMachine();
 
@@ -136,7 +130,7 @@ void Feeder::FeederStateMachine()
         }
         else
         // if we don't have a ball yet and we can refresh, then refresh
-        if (!m_sensors->BallPresent(FeederSensor) && m_intake->LoadRefresh())
+        if ((!m_sensors->BallPresent(FeederSensor) && m_intake->LoadRefresh()) || m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_feederstate = kRefresh;
             m_setpoint = FDR_REFRESH_DISTANCE * 1_m;
@@ -166,7 +160,7 @@ void Feeder::FeederStateMachine()
         m_motor->Set((power + feedforward) * FDR_INVERTED);
 
         // If goal is reached or timeout timer hits, idle
-        if (m_feederPID->AtGoal() || m_timer.Get() > FDR_TIMEOUT_TIME)
+        if (m_feederPID->AtGoal() || m_timer.Get() > FDR_TIMEOUT_TIME || m_sensors->BallPresent(FeederSensor))
         {
             m_prevgoal += m_setpoint;
             m_feederstate = kIdle;
@@ -199,6 +193,7 @@ void Feeder::FeederStateMachine()
         {
             m_feederstate = kDrive;
             m_motor->Set(m_power * FDR_INVERTED);
+            m_shoot = false;
         }
         else
         {
