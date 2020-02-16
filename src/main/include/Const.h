@@ -187,8 +187,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define FDR_REFRESH_DISTANCE 26.531
 // Max percent output that feeder can apply
 #define FDR_MAX_POWER 0.3
-#define FDR_TIMEOUT_TIME 6
-#define FDR_DRIVE_TIME 6
+#define FDR_TIMEOUT_TIME 6.0
+#define FDR_DRIVE_TIME 6.0
 #define FDR_GEAR_RATIO 4.167
 #define FDR_INVERTED 1.0
 
@@ -206,7 +206,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Shooter / Flywheel
 #define TUR_SHOOTER_RAMPING_RATE 100       // in rpm
 #define TUR_SHOOTER_IDLE_STATE_RPM 2000
-#define TUR_SHOOTER_PREMOVE_STATE_RPM 3200
+#define TUR_SHOOTER_PREMOVE_STATE_RPM 3000
 // kS, kV, kA values tuned using frc-characterization 2/1/20 for the Metal V2 Shooter Flywheel by Geoffrey
 #define TUR_SHOOTER_KS 0.0868
 #define TUR_SHOOTER_KV 0.126    // was actually 0.128, but we'll see

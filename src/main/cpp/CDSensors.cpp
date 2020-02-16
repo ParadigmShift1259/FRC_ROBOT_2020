@@ -67,7 +67,7 @@ CDSensors::CDSensors()
     
 	MuxSelectMask(0x0F);
 
-    m_colorsensor = new ColorSensorV3(I2C::kOnboard);
+    //m_colorsensor = new ColorSensorV3(I2C::kOnboard);
 }
 
 

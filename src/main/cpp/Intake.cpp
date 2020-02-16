@@ -94,6 +94,8 @@ void Intake::Loop()
     case kIdle: 
         if (m_stuffingbecauseshooting)
         {
+            if (m_ballcount == 0)
+                m_stuffingbecauseshooting = false;
             m_intakestate = kStuff;
             m_motor1->Feed();
             m_motor2->Feed();
