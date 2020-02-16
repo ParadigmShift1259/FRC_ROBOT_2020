@@ -66,7 +66,7 @@ Turret::Turret(OperatorInputs *inputs, Intake *intake, Feeder *feeder, Vision *v
 
     
     m_turretstate = kIdle;
-    m_firemode = kHoldFire;
+    m_firemode = kHoldShoot;
     m_flywheelrampstate = kMaintain;
     m_turretrampstate = kMaintain;
     m_readytofire = false;
@@ -119,6 +119,7 @@ void Turret::Init()
     m_turretmotor->ConfigPeakOutputForward(TUR_TURRET_MAXOUT, TUR_TIMEOUT_MS);
     m_turretmotor->ConfigPeakOutputReverse(-1 * TUR_TURRET_MAXOUT, TUR_TIMEOUT_MS);
     m_turretmotor->SetSelectedSensorPosition(DegreesToTicks(135), 0, TUR_TIMEOUT_MS);
+    m_turretmotor->ConfigAllowableClosedloopError(0, DegreesToTicks(TURRET_DEGREE_STOP_RANGE));
     
     m_absoluteangle = 180;
     m_robotangle = 0;
@@ -160,28 +161,58 @@ void Turret::Loop()
         m_readytofire = false;
     }
     else
-    if (m_inputs->xBoxLeftY(1 * INP_DUAL) > 0.7)
+    if (m_inputs->xBoxLeftY(1 * INP_DUAL) < -0.7)
     {
         m_turretstate = kVision;
         m_readytofire = false;
     }
     else
-    if (m_inputs->xBoxLeftY(1 * INP_DUAL) < 0.7)
+    if (m_inputs->xBoxLeftY(1 * INP_DUAL) > 0.7 && (m_turretstate == kVision || m_turretstate == kAllReady))
     {
         m_turretstate = kRampUp;
         m_readytofire = false;
     }
 
-    if (m_intake->BringingIntakeUp())
+    if (m_intake->BringingIntakeUp() == Intake::kBringingUp && m_absoluteangle == 180)
+    {
+        if (m_turretangle == m_turretrampedangle)
+        {
+            m_intake->BringingIntakeUp(true);
+            m_intakeup = true;
+        }
+        
+    }
+    else
+    if (m_intake->BringingIntakeUp() == Intake::kBringingUp)
     {
         m_absoluteangle = 180;
+        m_turretstate = kIdle;
+    }
+    else
+    if (m_intake->BringingIntakeUp() == Intake::kDown)
+    {
+        m_intakeup = false;
     }
     
 
-    m_hoodservo->SetPosition(fabs(m_inputs->xBoxLeftY(1 * INP_DUAL)));
+    //m_hoodservo->SetPosition(fabs(m_inputs->xBoxLeftY(1 * INP_DUAL)));
+
+    // currently only manual work for now
+    if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        m_flywheelsetpoint += 100;
+    else 
+    if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && (m_flywheelsetpoint >= 100))
+        m_flywheelsetpoint -= 100;
+
 
     TurretStates();
     FireModes();
+
+    if (m_intakeup)
+    {
+        if (m_turretangle < 120)
+            m_turretangle = 120;
+    }
 
     RampUpSetpoint();
     RampUpAngle();
@@ -200,7 +231,10 @@ void Turret::Loop()
     SmartDashboard::PutNumber("TUR8_Turret Degrees", TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()));
     SmartDashboard::PutNumber("TUR9_Setpoint Angle", m_turretmotor->GetClosedLoopTarget(0));
     SmartDashboard::PutNumber("TUR10_Flywheel Ramp State", m_flywheelrampstate);
-    SmartDashboard::PutNumber("TUR11_Turret State", m_turretstate);
+    SmartDashboard::PutNumber("TUR11_Turret Angle", m_turretangle);
+    SmartDashboard::PutNumber("TUR12_Turret Ramp Goal", m_turretrampedangle);
+    SmartDashboard::PutNumber("TUR13_Turret State", m_turretstate);
+    SmartDashboard::PutNumber("TUR14_Intake Up", m_intakeup);
 }
 
 
@@ -263,11 +297,6 @@ void Turret::TurretStates()
                 m_turretstate = kRampUp;
 
             // CalculateHoodFlywheel(distance, m_hoodangle, m_setpoint);
-            // currently only manual work for now
-            if (m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-                m_flywheelsetpoint += 100;
-            else if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && (m_flywheelsetpoint >= 100))
-                m_flywheelsetpoint -= 100;
             
             // If driver wants to adjust turret angle, go back to rampUp
             if (fabs(m_inputs->xBoxRightX(1 * INP_DUAL)) > 0.8 || fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.8)
@@ -289,7 +318,9 @@ void Turret::TurretStates()
                 m_turretstate = kRampUp;
     
             // If the turret is suddenly off by a large amount (hit by robot, robot turned, etc), return to homing
-            if (TicksToDegrees(m_turretmotor->GetClosedLoopError()) >= TUR_TURRET_MAX_ERROR)
+            if (TicksToDegrees(m_turretmotor->GetClosedLoopError()) >= TUR_TURRET_MAX_ERROR ||
+                !m_vision->GetActive() ||
+                m_flywheelsetpoint != m_flywheelrampedsetpoint)
             {
                 m_readytofire = false;
                 m_turretstate = kVision;
@@ -430,7 +461,13 @@ bool Turret::VisionTurretAngle()
     if (!m_vision->GetActive())
         return false;
     
-    m_turretangle = TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()) - m_vision->GetAngle();      // Change +/- when testing
+    m_turretangle = TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()) + m_vision->GetAngle();      // Change +/- when testing
+    
+    if (m_turretangle > 270)
+        m_turretangle = 270;
+    if (m_turretangle < 0)
+        m_turretangle = 0;
+    
     m_distance = m_vision->GetDistance();
     return true;
 }
@@ -533,13 +570,6 @@ void Turret::RampUpAngle()
             {
                 m_turretrampstate = kDecrease;
             }
-            else
-            {
-                if (fabs(TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()) < TURRET_DEGREE_STOP_RANGE))
-                    m_stopPID = true;
-                else
-                    m_stopPID = false;
-            }
             break;
     
         case kIncrease:
@@ -601,9 +631,9 @@ void Turret::RampUpAngle()
     {
         m_turretinitialfeedforward = -1 * TUR_TURRET_KS_FORWARDS / 12;
     }
-    if (!m_stopPID)
-        m_turretmotor->Set(ControlMode::Position, DegreesToTicks(m_turretrampedangle), 
-                            DemandType::DemandType_ArbitraryFeedForward, m_turretinitialfeedforward);
+
+    m_turretmotor->Set(ControlMode::Position, DegreesToTicks(m_turretrampedangle), 
+                        DemandType::DemandType_ArbitraryFeedForward, m_turretinitialfeedforward);
 }
 
 

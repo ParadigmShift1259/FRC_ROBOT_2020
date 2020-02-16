@@ -77,6 +77,7 @@ void Feeder::Init()
 
     m_feederstate = kIdle;
     m_shoot = false;
+    m_power = 0.7;
 
     SmartDashboard::PutNumber("FDRT1_P",             m_feederPIDvals[0]);
     SmartDashboard::PutNumber("FDRT2_I",             m_feederPIDvals[1]);
@@ -177,6 +178,7 @@ void Feeder::FeederStateMachine()
         if (m_sensors->BallPresent(FeederSensor) || m_sensors->BallPresent(Chute1Sensor) || m_intake->GetStuffingBecauseShooting())
         {
             m_feederstate = kDriveWait;
+            m_shoot = true;
             m_intake->SetStuffingBecauseShooting();
             m_timer.Reset();
             m_timer.Start();

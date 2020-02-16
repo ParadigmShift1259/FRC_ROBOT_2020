@@ -199,26 +199,22 @@ void Intake::CountBalls()
 }
 
 
-bool Intake::BringingIntakeUp(bool ready)
+Intake::IntakePosition Intake::BringingIntakeUp(bool ready)
 {
-    bool returnVal = false;
 
     switch (m_intakeposition)
     {
         case kDown:
             if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             {
-                returnVal = true;
                 m_intakeposition = kBringingUp;
             }
             break;
         
         case kBringingUp:
-            returnVal = true;
             if (ready)
             {
                 m_solenoid1->Set(false);
-                returnVal = false;
                 m_intakeposition = kUp;
             }
             break;
@@ -228,7 +224,7 @@ bool Intake::BringingIntakeUp(bool ready)
             break;
     }
 
-    return returnVal;
+    return m_intakeposition;
 }
 
 

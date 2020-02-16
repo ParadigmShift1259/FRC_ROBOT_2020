@@ -11,12 +11,12 @@
 
 #include "OperatorInputs.h"
 #include "CDSensors.h"
-
-#include <rev/ColorSensorV3.h>
-#include <rev/ColorMatch.h>
-#include <ctre/Phoenix.h>
+#include "GyroDrive.h"
+#include "rev/ColorSensorV3.h"
+#include "rev/ColorMatch.h"
 #include <frc/Solenoid.h>
-
+#include <ctre/Phoenix.h>
+#include <frc/DriverStation.h>
 
 using namespace frc;
 using namespace rev;
@@ -31,44 +31,42 @@ public:
 	 * BlindSpin - Attempts to spin the control panel from three to five times 
 	 * ColorSpin - Attempts to spin the control panel to a specific color
 	 */
-	enum SpinnerState {kOff, kBlindSpin, kColorSpin};
-
-	ControlPanel(OperatorInputs *inputs, CDSensors *sensors);
+	enum SpinnerState {kOff, kRotationControl, kPositionControl};
+	enum ColorOptions {kNone, kYellow, kRed, kGreen, kBlue};
+	ControlPanel(OperatorInputs *inputs, CDSensors *sensors, GyroDrive *gyrodrive);
 	~ControlPanel();
 	void Init();
 	void Loop();
 	void Stop();
 	
+	
 protected:
+	//Should these be public???
 	void ControlPanelStates();
-	int GetColor();
-	bool SensorSanityCheck();
-
+	void ChangeSpinnerState();
+	void ChangeSpinnerState(SpinnerState);
 
 private:
+	ColorOptions GetColor();
+	ColorOptions GetTargetColor();
+
 	OperatorInputs *m_inputs;
-	CDSensors *m_sensors;
-
-	Solenoid *m_solenoid;
-
+	GyroDrive *m_gyrodrive;
+	ColorOptions m_targetcolor;
 	TalonSRX *m_spinner;
+	Solenoid *m_solenoid;
 	ColorSensorV3 *m_colorsensor;
-
+	Timer *m_timer;
+	int m_redCount;
+	int m_blueCount;
 	SpinnerState m_spinnerstate;
-
-	ColorMatch m_colormatcher;
-	double m_confidence;
-
-	double m_currentcolor;
-	double m_previouscolor;
-	double m_registeredcolor;
-	double m_colorbouncecount;
-	double m_colorregisteredcount[4];
+	int m_direction;
+	int m_startencodervalue;
+	int m_currentencodervalue;
+	
+	ColorOptions m_currentcolor, m_previouscolor;
 	bool m_stop;
 
-	double m_targetcolor;
-
-	double m_spinnerPIDvals[3];
 	double m_spinnersetpoint;
 };
 

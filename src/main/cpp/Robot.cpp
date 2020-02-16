@@ -27,7 +27,7 @@ void Robot::RobotInit()
 	m_intake = new Intake(m_operatorinputs, m_sensors);
 	m_feeder = new Feeder(m_operatorinputs, m_intake, m_sensors);
 	m_turret = new Turret(m_operatorinputs, m_intake, m_feeder, m_vision, m_gyrodrive);
-	m_controlpanel = new ControlPanel(m_operatorinputs, m_sensors);
+	//m_controlpanel = new ControlPanel(m_operatorinputs, m_sensors, m_gyrodrive);
 }
 
 

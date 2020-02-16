@@ -49,7 +49,7 @@ void GyroDrive::Init()
 {
 	m_drivetrain->Init(DriveTrainFX::DriveMode::kFollower);
 	// disable change direction in drivetrain
-	m_drivetrain->SetChangeDirButton(-1);		
+	m_drivetrain->SetChangeDirButton(A_BUTTON);		
 
 	m_gyro->Init();
 	m_drivestate = kInit;

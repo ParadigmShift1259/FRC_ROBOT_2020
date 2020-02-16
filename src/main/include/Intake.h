@@ -43,7 +43,7 @@ public:
 	void CountBalls();
 
 	bool LoadRefresh();
-	bool BringingIntakeUp(bool ready = false);
+	IntakePosition BringingIntakeUp(bool ready = false);
 
 	void Dashboard();
 

@@ -136,15 +136,31 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // ControlPanel ---------------------------------------
 #define CPL_ENABLED 0           // set to 1 to enable control panel motor
 #define CPL_MOTOR ENABLED(CPL_ENABLED, 11)
-#define CPL_SOLENOID ENABLED(CPL_ENABLED, 2)
-#define CPL_KS
-#define CPL_KV
-#define CPL_P
-#define CPL_I
-#define CPL_D
-#define CPL_MIN 0
-#define CPL_MAX 0.5
+#define CPL_SOLENOID ENABLED(CPL_ENABLED, 1)
+// ControlPanel
+#define CPL_COUNTS_PER_CW_REV (4096 * 32 / 4)
+#define CPL_COUNTS_PER_CW_SECTOR (CPL_COUNTS_PER_CW_REV / 8)
+#define CPL_ONE_CW_RPM (CPL_COUNTS_PER_CW_REV / 600) /* 100ms Timebase for TalonSRX PID */
 
+#define CPL_YELLOW_MINIMUM_HUE 80
+#define CPL_YELLOW_MAXIMUM_HUE 100
+#define CPL_RED_MINIMUM_HUE 20
+#define CPL_RED_MAXIMUM_HUE 45
+#define CPL_GREEN_MINIMUM_HUE 120
+#define CPL_GREEN_MAXIMUM_HUE 150
+#define CPL_BLUE_MINIMUM_HUE 180
+#define CPL_BLUE_MAXIMUM_HUE 210
+
+#define CPL_ROTATION_CONTROL_COUNT_LIMIT_RED 7
+#define CPL_ROTATION_CONTROL_COUNT_LIMIT_BLUE 7
+
+#define CPL_ROTATION_CONTROL_FAST (55 * CPL_ONE_CW_RPM)
+#define CPL_POSITION_CONTROL_FAST (15 * CPL_ONE_CW_RPM)
+#define CPL_POSITION_CONTROL_SLOW (5 * CPL_ONE_CW_RPM)
+
+#define CPL_P 0.3
+#define CPL_I 0.00002
+#define CPL_F 0.085
 
 // Intake ---------------------------------------
 #define INT_ENABLED 1           // set to 1 to enable intake motors
@@ -209,8 +225,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Turret Spinning
 #define TUR_TURRET_RAMPING_RATE 5           // in degrees
 // kS, kV, kA values turned using frc-characterization 2/8/20 for the Metal V2 Shooter Flywheel by Geoffrey
-#define TUR_TURRET_KS_FORWARDS 0.76
-#define TUR_TURRET_KS_BACKWARDS 0.86
+#define TUR_TURRET_KS_FORWARDS 0.69
+#define TUR_TURRET_KS_BACKWARDS 0.79
 // Turret turning PID values
 #define TUR_TURRET_P 0.13114
 #define TUR_TURRET_I 0
@@ -232,8 +248,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TURRET_DEGREE_STOP_RANGE 1
 
 // Vision ---------------------------------------
-#define VIS_MOUNTING_ANGLE 10.8     // degrees
-#define VIS_MOUNTING_HEIGHT 20      // inches
+#define VIS_MOUNTING_ANGLE 20.6     // degrees
+#define VIS_MOUNTING_HEIGHT 19.5      // inches
 #define VIS_TARGET_HEIGHT 98.25     // inches
 #define VIS_TARGET_SIZE 15          // inches
 

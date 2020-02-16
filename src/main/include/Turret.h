@@ -101,6 +101,7 @@ private:
     double m_turretangle;
     double m_turretrampedangle;
     bool m_stopPID;
+    bool m_intakeup;
     
     double m_turretinitialfeedforward;
 
