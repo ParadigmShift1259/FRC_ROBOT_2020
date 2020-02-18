@@ -14,10 +14,10 @@
 using namespace std;
 
 
-GyroDrive::GyroDrive(OperatorInputs *inputs)
+GyroDrive::GyroDrive(OperatorInputs *inputs, Vision *vision)
 {
 	m_inputs = inputs;
-	m_drivetrain = new DriveTrainFX(inputs);
+	m_drivetrain = new DriveTrainFX(inputs, vision);
 	m_gyro = new DualGyro(CAN_GYRO1, CAN_GYRO2);
 	m_drivepid = new DrivePID(m_drivetrain, m_gyro, m_inputs);
 

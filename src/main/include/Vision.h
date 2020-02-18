@@ -32,6 +32,7 @@ public:
     bool GetActive();
     double GetDistance();
     double GetAngle();
+    void ChangeCamera() { m_camerachoice = !m_camerachoice; }
 
 protected:
     double DegreesToRadians(double degrees);

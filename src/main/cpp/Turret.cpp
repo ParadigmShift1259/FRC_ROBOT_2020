@@ -228,6 +228,8 @@ void Turret::Loop()
     SmartDashboard::PutNumber("TUR12_Turret Ramp Goal", m_turretrampedangle);
     SmartDashboard::PutNumber("TUR13_Turret State", m_turretstate);
     SmartDashboard::PutNumber("TUR14_Intake Up", m_intakeup);
+    SmartDashboard::PutNumber("TUR15_Firing", m_firing);
+    SmartDashboard::PutNumber("TUR16_Ready to Fire", m_readytofire);
 }
 
 
@@ -264,7 +266,7 @@ void Turret::TurretStates()
             // maintain flywheel at last absolute angle
             CalculateAbsoluteAngle();
     
-            if (m_flywheelsetpoint == m_flywheelrampedsetpoint)
+            if (m_flywheelsetpoint == m_flywheelrampedsetpoint && !m_firing)
                 m_readytofire = true;
             else
                 m_readytofire = false;
@@ -277,7 +279,7 @@ void Turret::TurretStates()
             // maintain flywheel at last absolute angle
             CalculateAbsoluteAngle();
         
-            if (m_flywheelsetpoint == m_flywheelrampedsetpoint)
+            if (m_flywheelsetpoint == m_flywheelrampedsetpoint && !m_firing)
                 m_readytofire = true;
             else
                 m_readytofire = false;
@@ -298,7 +300,8 @@ void Turret::TurretStates()
     
             // if turret is only off by a small amount with its error and its flywheel is up to speed, progress
             if (TicksToDegrees(m_turretmotor->GetClosedLoopError()) <= TUR_TURRET_ERROR &&
-                m_flywheelsetpoint == m_flywheelrampedsetpoint)
+                m_flywheelsetpoint == m_flywheelrampedsetpoint &&
+                !m_firing)
             {
                 m_turretstate = kAllReady;
                 m_readytofire = true;
@@ -343,7 +346,7 @@ void Turret::FireModes()
 
         case kShootWhenReady:
             // if ready to fire, fire all when A button is pressed
-            if (m_readytofire)
+            if (m_readytofire && !m_firing)
             {
                 m_feeder->StartFire();
                 m_readytofire = false;
@@ -354,6 +357,7 @@ void Turret::FireModes()
             {
                 m_feeder->StartFire();
                 m_firemode = kForceShoot;
+                m_firing = false;
             }
 
             if (m_firing && !m_feeder->GetFinished())

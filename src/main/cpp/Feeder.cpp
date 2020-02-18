@@ -102,6 +102,7 @@ void Feeder::Loop()
     SmartDashboard::PutNumber("FDR5_Encoder Position", m_encoder->GetPosition() * FDR_WHEEL_SIZE * 3.1415926535);
     SmartDashboard::PutBoolean("FDR6_Refresh Finished", !(m_feederstate == kRefresh));
     SmartDashboard::PutNumber("FDR7_Previous Goal", m_prevgoal.to<double>());
+    SmartDashboard::PutNumber("FDR8_Timer Seconds", m_timer.Get());
 }
 
 
@@ -125,7 +126,10 @@ void Feeder::FeederStateMachine()
         if (m_shoot)
         {
             m_intake->SetStuffingBecauseShooting();
-            m_feederstate = kDrive;
+            m_timer.Reset();
+            m_timer.Start();
+            m_feederstate = kDriveWait;
+            m_shoot = true;
             m_motor->Set(m_power * FDR_INVERTED);
         }
         else
@@ -133,14 +137,16 @@ void Feeder::FeederStateMachine()
         if ((!m_sensors->BallPresent(FeederSensor) && m_intake->LoadRefresh()) || m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         {
             m_feederstate = kRefresh;
-            
+
             m_setpoint = FDR_REFRESH_DISTANCE * 1_m;
-            m_feederPID->SetGoal(m_setpoint + m_prevgoal);
-            m_encoder->SetPosition(m_prevgoal.to<double>() / FDR_WHEEL_SIZE / 3.1415926535 * FDR_GEAR_RATIO);
+            //m_feederPID->Reset(m_prevgoal);
+            m_encoder->SetPosition(0); //m_prevgoal.to<double>() / FDR_WHEEL_SIZE / 3.1415926535 * FDR_GEAR_RATIO);
+            m_feederPID->Reset(0_m, 0_m);
+            m_feederPID->SetGoal(m_setpoint);
             //m_feederPID->SetGoal(m_prevgoal);
             //m_encoder->SetPosition((m_prevgoal.to<double>() + m_setpoint.to<double>()) / FDR_WHEEL_SIZE / 3.1415926535 * FDR_GEAR_RATIO);
             m_timer.Reset();
-            m_timer.Start();
+            //m_timer.Start();
             m_motor->Set(0);
         }
         else
@@ -170,31 +176,11 @@ void Feeder::FeederStateMachine()
         }
         break;
 
-    case kDrive:
-        // If we are shooting and have a ball or the intake is still running balls in, start driving
-        if (m_sensors->BallPresent(FeederSensor) || m_sensors->BallPresent(Chute1Sensor) || m_intake->GetStuffingBecauseShooting())
-        {
-            m_feederstate = kDriveWait;
-            m_shoot = true;
-            m_intake->SetStuffingBecauseShooting();
-            m_timer.Reset();
-            m_timer.Start();
-            m_motor->Set(m_power * FDR_INVERTED);
-        }
-        // if not, consider shooting done and return to idle
-        else 
-        {
-            m_shoot = false;
-            m_feederstate = kIdle;
-            m_motor->Set(m_power * FDR_INVERTED);
-        }
-        break;
-
     case kDriveWait:
         // if the timer has been reached, go back to drive for feedback
-        if (m_timer.Get() > FDR_DRIVE_TIME)
+        if (m_timer.Get() > FDR_DRIVE_TIME || m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
         {
-            m_feederstate = kDrive;
+            m_feederstate = kIdle;
             m_motor->Set(m_power * FDR_INVERTED);
             m_shoot = false;
         }
@@ -206,8 +192,8 @@ void Feeder::FeederStateMachine()
         
         break;
     }; 
-    SmartDashboard::PutNumber("!!!!Power from FDR", power);
-    SmartDashboard::PutNumber("!!!!Distance from FDR", distance);
+    //SmartDashboard::PutNumber("!!!!Power from FDR", power);
+    //SmartDashboard::PutNumber("!!!!Distance from FDR", distance);
 }
 
 void Feeder::StartFire()

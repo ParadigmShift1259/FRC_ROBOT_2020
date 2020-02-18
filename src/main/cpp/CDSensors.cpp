@@ -85,6 +85,7 @@ void CDSensors::Init()
 
     // Only need to tell one of the sensors to use automatic mode
     m_distsensor1->SetAutomaticMode(true);
+    m_broken = false;
 }
 
 
@@ -97,6 +98,12 @@ void CDSensors::Loop()
     //frc::SmartDashboard::PutNumber("Color R", detectedColor.red);
     //frc::SmartDashboard::PutNumber("Color G", detectedColor.green);
     //frc::SmartDashboard::PutNumber("Color B", detectedColor.blue);
+
+    if (ReadDistance(*m_distsensor1, RollerSensor) != 100.0 &&
+        ReadDistance(*m_distsensor2, Chute2Sensor) != 100.0 &&
+        ReadDistance(*m_distsensor2, Chute1Sensor) != 100.0 &&
+        ReadDistance(*m_distsensor3, FeederSensor) != 100.0)
+        m_broken = false;
 
     frc::SmartDashboard::PutBoolean("CDS5_Roller Ball Present", BallPresent(RollerSensor));
     frc::SmartDashboard::PutBoolean("CDS6_Chute 1 Ball Present", BallPresent(Chute1Sensor));
@@ -125,6 +132,10 @@ bool CDSensors::BallPresent(int sensornum)
   {
     case RollerSensor:
       dist = ReadDistance(*m_distsensor1, sensornum);
+      if (dist == 100.00)
+        m_broken = true;
+      if (m_broken)
+        dist = 100.0;
       if (dist <= m_ballpresent1)
         ballpresent = true;
       frc::SmartDashboard::PutNumber("CDS1_Roller Dist", dist);
@@ -132,6 +143,10 @@ bool CDSensors::BallPresent(int sensornum)
 
     case Chute2Sensor:
       dist = ReadDistance(*m_distsensor2, sensornum);
+      if (dist == 100.00)
+        m_broken = true;
+      if (m_broken)
+        dist = 100.0;
       if (dist <= m_ballpresent2)
         ballpresent = true;  
       frc::SmartDashboard::PutNumber("CDS2_Chute2 Dist", dist);  
@@ -139,6 +154,10 @@ bool CDSensors::BallPresent(int sensornum)
 
     case Chute1Sensor:
       dist = ReadDistance(*m_distsensor3, sensornum);
+      if (dist == 100.00)
+        m_broken = true;
+      if (m_broken)
+        dist = 100.0;
       if (dist <= m_ballpresent3)
         ballpresent = true;   
       frc::SmartDashboard::PutNumber("CDS3_Chute1 Dist", dist); 
@@ -146,6 +165,10 @@ bool CDSensors::BallPresent(int sensornum)
 
     case FeederSensor:
       dist = ReadDistance(*m_distsensor4, sensornum);
+      if (dist == 100.00)
+        m_broken = true;
+      if (m_broken)
+        dist = 100.0;
       if (dist <= m_ballpresent4)
         ballpresent = true;    
       frc::SmartDashboard::PutNumber("CDS4_Feeder Dist", dist);

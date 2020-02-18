@@ -13,6 +13,7 @@
 #include <frc\drive\DifferentialDrive.h>
 #include <ctre\Phoenix.h>
 #include "OperatorInputs.h"
+#include "Vision.h"
 
 
 using namespace frc;
@@ -24,7 +25,7 @@ public:
 	// Drivetrain modes
 	enum DriveMode { kNone, kFollower, kDiscrete, kTank, kArcade, kCurvature };
 
-	DriveTrainFX(OperatorInputs *inputs, WPI_TalonFX *left1 = nullptr, WPI_TalonFX *left2 = nullptr, WPI_TalonFX *left3 = nullptr, WPI_TalonFX *right1 = nullptr, WPI_TalonFX *right2 = nullptr, WPI_TalonFX *right3 = nullptr);
+	DriveTrainFX(OperatorInputs *inputs, Vision *vision, WPI_TalonFX *left1 = nullptr, WPI_TalonFX *left2 = nullptr, WPI_TalonFX *left3 = nullptr, WPI_TalonFX *right1 = nullptr, WPI_TalonFX *right2 = nullptr, WPI_TalonFX *right3 = nullptr);
 	~DriveTrainFX();
 	void Init(DriveMode mode = kFollower);
 	void Loop();
@@ -66,6 +67,7 @@ public:
 protected:
 	DriveMode m_mode;
 	OperatorInputs *m_inputs;
+	Vision *m_vision;
 	WPI_TalonFX *m_left1;
 	WPI_TalonFX *m_left2;
 	WPI_TalonFX *m_left3;

@@ -60,6 +60,8 @@ private:
     Rev2mDistanceSensorEx* m_distsensor4;
     ColorSensorV3* m_colorsensor;
 
+    bool m_broken;
+    
     double m_ballpresent1;
     double m_ballpresent2;
     double m_ballpresent3;

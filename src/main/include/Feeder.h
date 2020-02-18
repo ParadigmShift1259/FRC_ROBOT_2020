@@ -32,7 +32,7 @@ class Feeder
 {
 public:
 	
-	enum FeederState {kIdle, kRefresh, kDrive, kDriveWait};
+	enum FeederState {kIdle, kRefresh, kDriveWait};
 	
 	Feeder(OperatorInputs *inputs, Intake *intake, CDSensors *sensors);
 	~Feeder();

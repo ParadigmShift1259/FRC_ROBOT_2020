@@ -223,17 +223,17 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_SHOOTER_MINOUT 0.0
 #define TUR_SHOOTER_MAXOUT 1.0
 // Turret Spinning
-#define TUR_TURRET_RAMPING_RATE 5           // in degrees
+#define TUR_TURRET_RAMPING_RATE 7           // in degrees
 // kS, kV, kA values turned using frc-characterization 2/8/20 for the Metal V2 Shooter Flywheel by Geoffrey
-#define TUR_TURRET_KS_FORWARDS 0.71
-#define TUR_TURRET_KS_BACKWARDS 0.81
+#define TUR_TURRET_KS_FORWARDS 0.75
+#define TUR_TURRET_KS_BACKWARDS 0.85
 // Turret turning PID values
 #define TUR_TURRET_P 0.13114
 #define TUR_TURRET_I 0
 #define TUR_TURRET_D 0.0975
 // Maximum percent output that PID loop can output
 #define TUR_TURRET_MINOUT 0.0
-#define TUR_TURRET_MAXOUT 0.25
+#define TUR_TURRET_MAXOUT 0.2
 // Allowable error before shooting
 #define TUR_TURRET_ERROR 1
 #define TUR_TURRET_MAX_ERROR 5

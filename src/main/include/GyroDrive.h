@@ -14,6 +14,7 @@
 #include "DriveTrainFX.h"
 #include "DrivePID.h"
 #include "Gyro.h"
+#include "Vision.h"
 
 
 using namespace frc;
@@ -25,7 +26,7 @@ public:
 	enum DriveState { kInit, kDrive };
 	enum DriveMode { kManual };
 
-	GyroDrive(OperatorInputs *inputs);
+	GyroDrive(OperatorInputs *inputs, Vision *vision);
 	~GyroDrive();
 	void Init();
 	void Loop();

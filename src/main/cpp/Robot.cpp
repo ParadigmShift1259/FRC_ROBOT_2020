@@ -20,10 +20,10 @@ bool Debug = true;
 void Robot::RobotInit()
 {
 	m_operatorinputs = new OperatorInputs();
-	m_gyrodrive = new GyroDrive(m_operatorinputs);
+	m_vision = new Vision(m_operatorinputs);
+	m_gyrodrive = new GyroDrive(m_operatorinputs, m_vision);
 	m_pneumatics = new Pneumatics();
 	m_sensors = new CDSensors();
-	m_vision = new Vision(m_operatorinputs);
 	m_intake = new Intake(m_operatorinputs, m_sensors);
 	m_feeder = new Feeder(m_operatorinputs, m_intake, m_sensors);
 	m_turret = new Turret(m_operatorinputs, m_intake, m_feeder, m_vision, m_gyrodrive);

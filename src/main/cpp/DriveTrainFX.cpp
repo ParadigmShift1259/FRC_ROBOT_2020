@@ -15,9 +15,10 @@
 using namespace std;
 
 
-DriveTrainFX::DriveTrainFX(OperatorInputs *inputs, WPI_TalonFX *left1, WPI_TalonFX *left2, WPI_TalonFX *left3, WPI_TalonFX *right1, WPI_TalonFX *right2, WPI_TalonFX *right3)
+DriveTrainFX::DriveTrainFX(OperatorInputs *inputs, Vision *vision, WPI_TalonFX *left1, WPI_TalonFX *left2, WPI_TalonFX *left3, WPI_TalonFX *right1, WPI_TalonFX *right2, WPI_TalonFX *right3)
 {
 	m_inputs = inputs;
+	m_vision = vision;
 
 	m_mode = kFollower;
 
@@ -286,7 +287,10 @@ void DriveTrainFX::Loop()
 	double y;
 
 	if (m_inputs->xBox(m_changedirbutton, OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+	{
 		ChangeDirection();
+		m_vision->ChangeCamera();
+	}
 
 	if (m_lowspeedbuttonoff != m_lowspeedbuttonon)
 	{

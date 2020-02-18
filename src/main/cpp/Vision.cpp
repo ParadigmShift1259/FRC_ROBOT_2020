@@ -36,9 +36,6 @@ void Vision::Init()
 
 void Vision::Loop()
 {
-    if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-        m_camerachoice = abs(m_camerachoice - 1);       // Toggles between 0 and 1
-    
     m_camera->PutNumber("cameraFeed", m_camerachoice);
 
     m_active = m_networktable->GetNumber("tv", 0);
