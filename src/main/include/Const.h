@@ -212,8 +212,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_SHOOTER_IDLE_STATE_RPM 2000
 #define TUR_SHOOTER_PREMOVE_STATE_RPM 3000
 // kS, kV, kA values tuned using frc-characterization 2/1/20 for the Metal V2 Shooter Flywheel by Geoffrey
-#define TUR_SHOOTER_KS 0.0868
-#define TUR_SHOOTER_KV 0.126    // was actually 0.128, but we'll see
+#define TUR_SHOOTER_KS 0.0705
+#define TUR_SHOOTER_KV 0.124    // was actually 0.128, but we'll see
 #define TUR_SHOOTER_KA 0   // 0.0152, but probably 0
 // Increasing/Decreasing PID values tuned manually 1/27/20 for the V1 Shooter Flywheel by Geoffrey
 #define TUR_SHOOTER_P 0.000632
@@ -225,21 +225,21 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_SHOOTER_MD 0.008110
 // Maximum percent output that PID loop can output
 #define TUR_SHOOTER_MINOUT 0.0
-#define TUR_SHOOTER_MAXOUT 1.0
+#define TUR_SHOOTER_MAXOUT 0.4
 // Turret Spinning
 #define TUR_TURRET_RAMPING_RATE 7           // in degrees
 // kS, kV, kA values turned using frc-characterization 2/8/20 for the Metal V2 Shooter Flywheel by Geoffrey
-#define TUR_TURRET_KS_FORWARDS 0.75
-#define TUR_TURRET_KS_BACKWARDS 0.85
+#define TUR_TURRET_KS_FORWARDS 0.0
+#define TUR_TURRET_KS_BACKWARDS 0.0
 // Turret turning PID values
 #define TUR_TURRET_P 0.13114
-#define TUR_TURRET_I 0
+#define TUR_TURRET_I 0.0001
 #define TUR_TURRET_D 0.0975
 // Maximum percent output that PID loop can output
 #define TUR_TURRET_MINOUT 0.0
 #define TUR_TURRET_MAXOUT 0.2
 // Allowable error before shooting
-#define TUR_TURRET_ERROR 1
+#define TUR_TURRET_ERROR 0.5
 #define TUR_TURRET_MAX_ERROR 5
 // Miscellaneous Values for Turret
 #define TUR_WHEEL_DIAMETER 0.1524    // in meters
