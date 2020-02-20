@@ -1,25 +1,23 @@
 /**
  *  Turret.cpp
- *  Date: 2/9/20
+ *  Date: 2/20/2020
  *  Last Edited By: Geoffrey Xue
  */
 
 
 #include "Turret.h"
 #include "Const.h"
-
-#include "frc/DriverStation.h"
-
+#include <frc/smartdashboard/SmartDashboard.h>
+#include <frc/DriverStation.h>
 
 using namespace std;
 
 
 Turret::Turret(OperatorInputs *inputs, Intake *intake, Feeder *feeder, Vision *vision, GyroDrive *gyrodrive)
 {
-    if (!NullCheck())
+    if (TUR_ENABLED != 1)
     {
         DriverStation::ReportError("Turret Not Enabled");
-        return;
     }
 
     m_inputs = inputs;
@@ -27,44 +25,17 @@ Turret::Turret(OperatorInputs *inputs, Intake *intake, Feeder *feeder, Vision *v
     m_intake = intake;
     m_feeder = feeder;
 
-    // Flywheel
-    m_flywheelmotor = new CANSparkMax(TUR_SHOOTER_ID, CANSparkMax::MotorType::kBrushless);
-    m_flywheelPID = new CANPIDController(*m_flywheelmotor);
-    m_flywheelencoder = new CANEncoder(*m_flywheelmotor);
+    m_flywheelmotor = nullptr;
+    m_flywheelPID = nullptr;
+    m_flywheelencoder = nullptr;
 
-    m_flywheelmotor->SetInverted(true);
-    m_flywheelmotor->SetIdleMode(CANSparkMax::IdleMode::kCoast);
+    m_turretmotor = nullptr;
+
+    m_hoodservo = nullptr;
     
-    m_PIDslot = 0;
-    m_flywheelsetpoint = 0;
-    m_flywheelrampedsetpoint = 0;
-
-    m_flywheelsimplemotorfeedforward = new SimpleMotorFeedforward<units::meters>(
-                            units::volt_t{TUR_SHOOTER_KS}, 
-                            TUR_SHOOTER_KV * 1_V * 1_s / 1_m, 
-                            TUR_SHOOTER_KA * 1_V * 1_s * 1_s / 1_m);
-    m_flywheelinitialfeedforward = 0;
-
-    // Turret
-    m_turretmotor = new WPI_TalonSRX(TUR_TURRET_ID);
-    m_turretmotor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, TUR_TIMEOUT_MS);
-    m_turretmotor->SetNeutralMode(NeutralMode::Brake);
-    m_turretmotor->SetSensorPhase(true);
-    m_turretmotor->SetInverted(true);
-    
-    // Hood
-    m_hoodservo = new Servo(0);
-
-    m_absoluteangle = 0;
-    m_robotangle = 0;
     m_robotgyro = gyrodrive->GetGyro();
     m_robotgyro->ZeroHeading();
-    m_turretangle = 0;      // Change these when starting orientation is different
-    m_turretrampedangle = 0;
 
-    m_turretinitialfeedforward = 0;
-
-    
     m_turretstate = kIdle;
     m_firemode = kHoldShoot;
     m_flywheelrampstate = kMaintain;
@@ -84,9 +55,38 @@ Turret::~Turret()
 
 void Turret::Init()
 {
-    if (!NullCheck())
-        return;
-        
+    // Flywheel
+    if ((TUR_SHOOTER_ID != -1) && (m_flywheelmotor == nullptr))
+    {
+        m_flywheelmotor = new CANSparkMax(TUR_SHOOTER_ID, CANSparkMax::MotorType::kBrushless);
+        m_flywheelPID = new CANPIDController(*m_flywheelmotor);
+        m_flywheelencoder = new CANEncoder(*m_flywheelmotor);
+        m_flywheelmotor->SetInverted(true);
+        m_flywheelmotor->SetIdleMode(CANSparkMax::IdleMode::kCoast);
+    }
+    
+    if (m_flywheelsimplemotorfeedforward == nullptr)
+    {
+        m_flywheelsimplemotorfeedforward = new SimpleMotorFeedforward<units::meters>(
+                                units::volt_t{TUR_SHOOTER_KS}, 
+                                TUR_SHOOTER_KV * 1_V * 1_s / 1_m, 
+                                TUR_SHOOTER_KA * 1_V * 1_s * 1_s / 1_m);
+    }
+
+    // Turret
+    if ((TUR_TURRET_ID != -1) && (m_turretmotor == nullptr))
+    {
+        m_turretmotor = new WPI_TalonSRX(TUR_TURRET_ID);
+        m_turretmotor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, TUR_TIMEOUT_MS);
+        m_turretmotor->SetNeutralMode(NeutralMode::Brake);
+        m_turretmotor->SetSensorPhase(true);
+        m_turretmotor->SetInverted(true);
+    }
+    
+    // Hood
+    if ((TUR_HOOD_ID != -1) && (m_hoodservo == nullptr))
+        m_hoodservo = new Servo(0);
+
     // Flywheel
     // set increase and decrease PID gains on slot 0
     m_flywheelPID->SetP(TUR_SHOOTER_P, 0);
@@ -120,18 +120,16 @@ void Turret::Init()
     m_turretmotor->ConfigPeakOutputReverse(-1 * TUR_TURRET_MAXOUT, TUR_TIMEOUT_MS);
     m_turretmotor->SetSelectedSensorPosition(DegreesToTicks(135), 0, TUR_TIMEOUT_MS);
     m_turretmotor->ConfigAllowableClosedloopError(0, DegreesToTicks(TURRET_DEGREE_STOP_RANGE));
-    
-    m_absoluteangle = 180;
+
+    m_fieldangle = 180;
     m_robotangle = 0;
     m_turretangle = 135;      // Change these when starting orientation is different
     m_turretrampedangle = 135;
-    m_stopPID = false;
     
     SmartDashboard::PutNumber("Robot Setup Angle", m_robotangle);
-    SmartDashboard::PutNumber("Absolute Setup Angle", m_absoluteangle);
+    SmartDashboard::PutNumber("Absolute Setup Angle", m_fieldangle);
 
     m_turretinitialfeedforward = 0;
-
 
     m_turretstate = kIdle;
     m_firemode = kHoldShoot;
@@ -177,7 +175,7 @@ void Turret::Loop()
     if (m_intake->IntakeUp())
     {
         m_intakeup = true;
-        m_absoluteangle = 180;
+        m_fieldangle = 180;
 
     }
     else
@@ -199,8 +197,8 @@ void Turret::Loop()
             m_turretangle = 120;
     }
 
-    RampUpSetpoint();
-    RampUpAngle();
+    RampUpFlywheel();
+    RampUpTurret();
 
     SmartDashboard::PutNumber("TUR0_Setpoint", m_flywheelsetpoint);
     SmartDashboard::PutNumber("TUR1_Encoder_Position in Native units", m_flywheelencoder->GetPosition());
@@ -238,10 +236,13 @@ void Turret::Stop()
 // If it doesn't pass, return false
 bool Turret::NullCheck()
 {
-    if (TUR_SHOOTER_ID == -1)
+    if (m_flywheelmotor == nullptr)
         return false;
-    if (TUR_TURRET_ID == -1)
+    if (m_turretmotor == nullptr)
         return false;
+    if (m_hoodservo == nullptr)
+        return false;
+
     return true;
 }
 
@@ -254,22 +255,17 @@ void Turret::TurretStates()
             // run flywheel at idle RPM
             m_flywheelsetpoint = TUR_SHOOTER_IDLE_STATE_RPM;
             // Check xBox for abs angle
-            CalculateAngleXBox();
+            FindFieldXBox();
             // maintain flywheel at last absolute angle
-            CalculateAbsoluteAngle();
-    
-            if (m_flywheelsetpoint == m_flywheelrampedsetpoint && !m_firing)
-                m_readytofire = true;
-            else
-                m_readytofire = false;
+            CalculateTurretFromField();
             break;
 
         case kRampUp:
             m_flywheelsetpoint = TUR_SHOOTER_PREMOVE_STATE_RPM;
             // Check xBox for abs angle
-            CalculateAngleXBox();
+            FindFieldXBox();
             // maintain flywheel at last absolute angle
-            CalculateAbsoluteAngle();
+            CalculateTurretFromField();
         
             if (m_flywheelsetpoint == m_flywheelrampedsetpoint && !m_firing)
                 m_readytofire = true;
@@ -281,13 +277,13 @@ void Turret::TurretStates()
             m_flywheelsetpoint = TUR_SHOOTER_PREMOVE_STATE_RPM;
             m_readytofire = false;
             // Loop vision but also check if valid
-            if (!VisionTurretAngle())
+            if (!VisionFieldAngle())
                 m_turretstate = kRampUp;
 
             // CalculateHoodFlywheel(distance, m_hoodangle, m_setpoint);
             
             // If driver wants to adjust turret angle, go back to rampUp
-            if (fabs(m_inputs->xBoxRightX(1 * INP_DUAL)) > 0.8 || fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.8)
+            if (fabs(m_inputs->xBoxRightX(1 * INP_DUAL)) > 0.7 || fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.7)
                 m_turretstate = kRampUp;
     
             // if turret is only off by a small amount with its error and its flywheel is up to speed, progress
@@ -303,7 +299,7 @@ void Turret::TurretStates()
     
         case kAllReady:
             m_flywheelsetpoint = TUR_SHOOTER_PREMOVE_STATE_RPM;
-            VisionTurretAngle();
+            VisionFieldAngle();
 
             // If driver wants to adjust turret angle, go back to rampUp
             if (fabs(m_inputs->xBoxRightX(1 * INP_DUAL)) > 0.8 || fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.8)
@@ -374,33 +370,32 @@ void Turret::FireModes()
 }
 
 
-void Turret::CalculateAngleXBox()
+void Turret::FindFieldXBox()
 {
     // allow for manual movement of absolute angle to find vision target
     // X and Y are flipped due to angles in tangent starting between Quad I and IV, not Quad II and I
-    // theoretical, not tested
     if (fabs(m_inputs->xBoxRightX(1 * INP_DUAL)) > 0.8 || fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.8)
     {
         // Prevent divide by 0 errors
         if (m_inputs->xBoxRightY(1 * INP_DUAL) == 0)
         {
-            m_absoluteangle = m_inputs->xBoxRightX(1 * INP_DUAL) > 0 ? 90 : 270;
+            m_fieldangle = m_inputs->xBoxRightX(1 * INP_DUAL) > 0 ? 90 : 270;
         }
         else
         {
             double radians = atan(m_inputs->xBoxRightX(1 * INP_DUAL) / m_inputs->xBoxRightY(1 * INP_DUAL)); // only between +- pi/2
             double degrees = radians / 2 / 3.1415926535 * 360;   // 90 -> -90
-            m_absoluteangle = m_inputs->xBoxRightY(1 * INP_DUAL) > 0 ? degrees : degrees + 180;   // -90 -> 270
-            m_absoluteangle = m_absoluteangle < 0 ? m_absoluteangle + 360 : m_absoluteangle;   // 0 -> 360
-            m_absoluteangle = fmod(m_absoluteangle, 360);   // just for safety
+            m_fieldangle = m_inputs->xBoxRightY(1 * INP_DUAL) > 0 ? degrees : degrees + 180;   // -90 -> 270
+            m_fieldangle = m_fieldangle < 0 ? m_fieldangle + 360 : m_fieldangle;   // 0 -> 360
+            m_fieldangle = fmod(m_fieldangle, 360);   // just for safety
         }
-        SmartDashboard::PutNumber("TUR11_Absolute Angle", m_absoluteangle);
+        SmartDashboard::PutNumber("TUR11_Absolute Angle", m_fieldangle);
     }
 }
 
 
 // Calculates the angle of the turret given an angle relative to the field and the robot gyro 
-void Turret::CalculateAbsoluteAngle()
+void Turret::CalculateTurretFromField()
 {
     double heading;
     m_robotgyro->GetHeading(heading);
@@ -413,15 +408,12 @@ void Turret::CalculateAbsoluteAngle()
     // In between border of 0 - 360
     if (fmax(filter1, filter2) > (fmin(filter1, filter2) + 90))
     {
-        if (m_absoluteangle > fmax(filter1, filter2) || m_absoluteangle < fmin(filter1, filter2))
-            SmartDashboard::PutBoolean("Robot Angle Ignored", true);
+        if (m_fieldangle > fmax(filter1, filter2) || m_fieldangle < fmin(filter1, filter2)) {}
         else
         {
-            SmartDashboard::PutBoolean("Robot Angle Ignored", false);
-            double mirrorangle = 112.5 + m_absoluteangle / 2;
+            double mirrorangle = 112.5 + m_fieldangle / 2;
             double reflect = m_robotangle - mirrorangle;
             m_turretangle = mirrorangle - reflect;
-            SmartDashboard::PutNumber("Turret Pre-Remainder Angle", m_turretangle);
             m_turretangle = fmod(m_turretangle, 360.0);
             m_turretangle = 270 - m_turretangle;
             m_turretangle = fmod(m_turretangle, 360.0);
@@ -429,27 +421,20 @@ void Turret::CalculateAbsoluteAngle()
     }
     else
     // In between zone not on border of 0 - 360
-    if (m_absoluteangle < fmax(filter1, filter2) && m_absoluteangle > fmin(filter1, filter2))
-    {
-        SmartDashboard::PutBoolean("Robot Angle Ignored", true);
-    }
+    if (m_fieldangle < fmax(filter1, filter2) && m_fieldangle > fmin(filter1, filter2)) {}
     else
     {
-        SmartDashboard::PutBoolean("Robot Angle Ignored", false);
-        double mirrorangle = 112.5 + m_absoluteangle / 2;
+        double mirrorangle = 112.5 + m_fieldangle / 2;
         double reflect = m_robotangle - mirrorangle;
         m_turretangle = mirrorangle - reflect;
         m_turretangle = fmod(m_turretangle, 360.0); // safety
         m_turretangle = 270 - m_turretangle;        // flipped because values were originally calculated wrong
         m_turretangle = fmod(m_turretangle, 360.0); // safety
-
-        SmartDashboard::PutNumber("Mirror Setup Angle", mirrorangle);
-        SmartDashboard::PutNumber("Reflect Setup Angle", reflect);
     }
 }
 
 // Uses vision input and calculates angle, adds it to the current angle and sets turretangle
-bool Turret::VisionTurretAngle()
+bool Turret::VisionFieldAngle()
 {
     if (!m_vision->GetActive())
         return false;
@@ -472,7 +457,7 @@ void Turret::CalculateHoodFlywheel(double distance, double &hoodangle, double &f
 }
 
 
-void Turret::RampUpSetpoint()
+void Turret::RampUpFlywheel()
 {
 
     switch (m_flywheelrampstate)
@@ -548,7 +533,7 @@ void Turret::RampUpSetpoint()
 }
 
 
-void Turret::RampUpAngle()
+void Turret::RampUpTurret()
 {
 
     switch (m_turretrampstate)

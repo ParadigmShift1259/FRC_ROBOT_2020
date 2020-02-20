@@ -1,20 +1,25 @@
 /**
  *  Intake.cpp
- *  Date:
- *  Last Edited By:
- *  Jival.C
+ *  Date: 2/20/2020
+ *  Last Edited By: Geoffrey Xue
  */
 
 
 #include "Intake.h"
 #include "Const.h"
 #include <frc/SmartDashboard/SmartDashboard.h>
+#include <frc/DriverStation.h>
 
 using namespace std;
 
 
 Intake::Intake(OperatorInputs *inputs)
 {
+    if (INT_ENABLED != 1)
+    {
+        DriverStation::ReportError("Intake Not Enabled");
+    }
+
 	m_inputs = inputs;
     
     m_solenoid = nullptr;

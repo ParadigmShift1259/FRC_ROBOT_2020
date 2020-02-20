@@ -203,6 +203,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_ENABLED 1
 #define TUR_SHOOTER_ID ENABLED(TUR_ENABLED, 1)
 #define TUR_TURRET_ID ENABLED(TUR_ENABLED, 7)
+#define TUR_HOOD_ID ENABLED(TUR_ENABLED, 0)
 #define TUR_TIMEOUT_MS 30
 #define ENCODER_TICKS_PER_REV 4096.00
 #define MINUTES_TO_HUNDRED_MS 0.00166666

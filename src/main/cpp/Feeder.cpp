@@ -1,7 +1,7 @@
 /**
  *  Feeder.cpp
- *  Date:
- *  Last Edited By:
+ *  Date: 2/20/2020
+ *  Last Edited By: Geoffrey Xue
  * 
  */
 
@@ -9,17 +9,26 @@
 #include "Feeder.h"
 #include "Const.h"
 #include <frc/SmartDashboard/SmartDashboard.h>
-
+#include <frc/DriverStation.h>
 
 using namespace std;
 
 
 Feeder::Feeder(OperatorInputs *inputs, Intake *intake)
-{	
+{
+    if (FDR_ENABLED != 1)
+    {
+        DriverStation::ReportError("Feeder Not Enabled");
+    }
+
     m_inputs = inputs;
     m_intake = intake;
 
     m_motor = nullptr;
+    m_feederPID = nullptr;
+
+    m_loaded = false;
+    m_stuffing = false;
 }
 
 

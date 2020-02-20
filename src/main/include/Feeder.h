@@ -1,8 +1,7 @@
 /**
  *  Feeder.h
- *  Date:
- *  Last Edited By:
- * Jival.C
+ *  Date: 2/20/2020
+ *  Last Edited By: Geoffrey Xue
  */
 
 
@@ -12,16 +11,15 @@
 
 #include "OperatorInputs.h" 
 #include "Intake.h"
+
 #include <ctre/Phoenix.h>
 
 #include <units/units.h>
-
 #include <frc/controller/ProfiledPIDController.h>
 #include <frc/trajectory/TrapezoidProfile.h>
 
-using namespace frc;
-using namespace std;
 
+using namespace frc;
 
 class Feeder
 {

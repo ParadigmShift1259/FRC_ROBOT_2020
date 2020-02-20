@@ -1,8 +1,7 @@
 /**
  *  Intake.h
- *  Date:
- *  Last Edited By:
- *   Jival.C
+ *  Date: 2/20/2020
+ *  Last Edited By: Geoffrey Xue
  */
 
 
@@ -12,6 +11,7 @@
 
 #include "OperatorInputs.h"
 #include "Const.h"
+
 #include <frc\Solenoid.h>
 #include <frc\Spark.h>
 #include <frc\DigitalInput.h>
@@ -22,11 +22,6 @@ using namespace frc;
 class Intake
 {
 public:
-
-	/**
-	 * kIdle ->
-	 * kGather ->
-	 */
 	enum IntakeState {kIdle, kGather, kStuff};
 	enum IntakePosition {kDown, kUp};
 	enum BallState {kZero, kTwoCheck, kTwo, kThree};
@@ -37,12 +32,11 @@ public:
 	void Loop();
 	void Stop();
 
-	// Called by Feeder when Shooter requests shooting
-	// If there are no balls left, shooting will be set to false
 	void SetStuffing(bool stuff = true);
 	bool IsStuffing();
 
 	bool CanRefresh();
+
 	void IntakePositionLoop();
 	bool IntakeUp();
 
