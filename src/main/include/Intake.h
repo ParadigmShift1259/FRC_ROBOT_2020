@@ -55,9 +55,9 @@ private:
 protected:
     OperatorInputs *m_inputs;
 
-    Solenoid *m_solenoid1;
-    Spark *m_motor1;
-    Spark *m_motor2;
+    Solenoid *m_solenoid;
+    Spark *m_rollermotor;
+    Spark *m_wheelmotor;
 	DigitalInput *m_rollersensor;
 	DigitalInput *m_chutesensor;
 

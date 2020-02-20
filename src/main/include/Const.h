@@ -167,8 +167,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define INT_SOLENOID ENABLED(INT_ENABLED, 0)
 #define INT_MOTOR1 ENABLED(INT_ENABLED, 7)
 #define INT_MOTOR2 ENABLED(INT_ENABLED, 8)
-#define INT_ROLLER_SENSOR 1
-#define INT_CHUTE_SENSOR 0
+#define INT_ROLLER_SENSOR ENABLED(INT_ENABLED, 1)
+#define INT_CHUTE_SENSOR ENABLED(INT_ENABLED, 0)
 #define INT_STUFF_TIME 4.0
 #define INT_INTAKE_WHEEL_SPEED -0.5
 #define INT_INTAKE_ROLLER_SPEED -0.6

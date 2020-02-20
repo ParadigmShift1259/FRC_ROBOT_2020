@@ -17,54 +17,49 @@ Intake::Intake(OperatorInputs *inputs)
 {
 	m_inputs = inputs;
     
-    m_solenoid1 = nullptr;
-    if (INT_SOLENOID != -1)
-        m_solenoid1 = new Solenoid(INT_SOLENOID);
-
-    m_motor1 = nullptr;
-    if (INT_MOTOR1 != -1)
-    {
-        m_motor1 = new Spark(INT_MOTOR1);
-    }
-
-    m_motor2 = nullptr;
-    if (INT_MOTOR2 != -1)
-    {
-        m_motor2 = new Spark(INT_MOTOR2);
-    }
+    m_solenoid = nullptr;
+    m_rollermotor = nullptr;
+    m_wheelmotor = nullptr;
     
-    m_rollersensor = new DigitalInput(INT_ROLLER_SENSOR);
-    m_chutesensor = new DigitalInput(INT_CHUTE_SENSOR);
+    m_rollersensor = nullptr;
+    m_chutesensor = nullptr;
 
     m_ballcount = 0;
     m_stuffing = false;
+    m_gathering = false;
 }
 
 
 Intake::~Intake()
 {
-    if (m_solenoid1 != nullptr)
-        delete m_solenoid1;
+    if (m_solenoid != nullptr)
+        delete m_solenoid;
 
-    if (m_motor1 != nullptr)
-        delete m_motor1;
+    if (m_rollermotor != nullptr)
+        delete m_rollermotor;
 
-    if (m_motor2 != nullptr)
-        delete m_motor2;	  
+    if (m_wheelmotor != nullptr)
+        delete m_wheelmotor;	  
 }
 
 
 bool Intake::NullCheck()
 {
-    if (m_solenoid1 == nullptr)
+    if (m_solenoid == nullptr)
         return false;
     
-    if (m_motor1 == nullptr)
+    if (m_rollermotor == nullptr)
         return false;
 
-    if (m_motor2 == nullptr)
+    if (m_wheelmotor == nullptr)
         return false;	
     
+    if (m_rollersensor == nullptr)
+        return false;
+    
+    if (m_chutesensor == nullptr)
+        return false;
+
     return true;
 }
 
@@ -74,10 +69,21 @@ void Intake::Init()
     if (!NullCheck())
         return;
 
+    if ((INT_SOLENOID != -1) && (m_solenoid == nullptr))
+        m_solenoid = new Solenoid(INT_SOLENOID);
+    if ((INT_MOTOR1 != -1) && (m_rollermotor == nullptr))
+        m_rollermotor = new Spark(INT_MOTOR1);
+    if ((INT_MOTOR2 != -1) && (m_wheelmotor == nullptr))
+        m_wheelmotor = new Spark(INT_MOTOR2);
+    if ((INT_ROLLER_SENSOR != -1) && (m_rollersensor == nullptr))
+        m_rollersensor = new DigitalInput(INT_ROLLER_SENSOR);
+    if ((INT_CHUTE_SENSOR != -1) && (m_chutesensor == nullptr))
+        m_chutesensor = new DigitalInput(INT_CHUTE_SENSOR);
+
     m_intakestate = kIdle;
     m_intakeposition = kDown;
     m_ballstate = kZero;
-    m_solenoid1->Set(true);
+    m_solenoid->Set(true);
     m_ballcount = 0;
     m_stuffing = false;
     m_gathering = false;
@@ -93,7 +99,7 @@ void Intake::Loop()
     if (!NullCheck())
         return;
     
-    IntakePosition();
+    IntakePositionLoop();
     CountBalls();
 
     switch (m_intakestate)
@@ -103,8 +109,8 @@ void Intake::Loop()
         if (m_stuffing)
         {
             m_timer.Reset();
-            m_motor1->Feed();
-            m_motor2->Feed();
+            m_rollermotor->Feed();
+            m_wheelmotor->Feed();
             m_intakestate = kStuff;
         }
         else
@@ -114,26 +120,26 @@ void Intake::Loop()
         {
             m_gathering = true;
             m_intakestate = kGather;
-            m_solenoid1->Set(true);
+            m_solenoid->Set(true);
             m_intakeposition = kDown;
-            m_motor1->Feed();
-            m_motor2->Feed();
+            m_rollermotor->Feed();
+            m_wheelmotor->Feed();
         }
         else
         // If previously gathering and less balls, go back to gathering
         if (m_gathering && (m_ballcount < 3))
         {
             m_intakestate = kGather;
-            m_solenoid1->Set(true);
+            m_solenoid->Set(true);
             m_intakeposition = kDown;
-            m_motor1->Feed();
-            m_motor2->Feed();
+            m_rollermotor->Feed();
+            m_wheelmotor->Feed();
         }
         // Otherwise, stop all motors
         else
         {
-            m_motor1->Set(0);
-            m_motor2->Set(0);
+            m_rollermotor->Set(0);
+            m_wheelmotor->Set(0);
         }
         break;
 
@@ -142,8 +148,8 @@ void Intake::Loop()
         if (m_ballcount >= 3)
         {
             m_intakestate = kIdle;
-            m_motor1->Set(0);
-            m_motor2->Set(0);
+            m_rollermotor->Set(0);
+            m_wheelmotor->Set(0);
         }
         else
         // manual override to stop gathering
@@ -152,14 +158,14 @@ void Intake::Loop()
         {
             m_gathering = false;
             m_intakestate = kIdle;
-            m_motor1->Set(0);
-            m_motor2->Set(0);
+            m_rollermotor->Set(0);
+            m_wheelmotor->Set(0);
         }
         // Otherwise, gather the balls
         else
         {
-            m_motor1->Set(INT_INTAKE_ROLLER_SPEED);
-            m_motor2->Set(INT_INTAKE_WHEEL_SPEED);
+            m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED);
+            m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED);
         }
         break;
 
@@ -167,16 +173,16 @@ void Intake::Loop()
         // If a timer reaches a certain period, stop stuffing
         if (m_timer.Get() > INT_STUFF_TIME)
         {
-            m_motor1->Set(0);
-            m_motor2->Set(0);
+            m_rollermotor->Set(0);
+            m_wheelmotor->Set(0);
             m_stuffing = false;
             m_intakestate = kIdle;
         }
         // Otherwise, continue stuffing balls out
         else
         {
-            m_motor1->Set(INT_INTAKE_ROLLER_SPEED);
-            m_motor2->Set(INT_INTAKE_WHEEL_SPEED);
+            m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED);
+            m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED);
         }
         break;
         
@@ -188,16 +194,16 @@ void Intake::Loop()
     if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
         m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
     {
-        m_motor1->Set(INT_INTAKE_ROLLER_SPEED);
-        m_motor2->Set(INT_INTAKE_WHEEL_SPEED);
+        m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED);
+        m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED);
     }
     else
     // manual override reverse
     if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
         m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
     {
-        m_motor1->Set(-1.0 * INT_INTAKE_ROLLER_SPEED);
-        m_motor2->Set(-1.0 * INT_INTAKE_WHEEL_SPEED);
+        m_rollermotor->Set(-1.0 * INT_INTAKE_ROLLER_SPEED);
+        m_wheelmotor->Set(-1.0 * INT_INTAKE_WHEEL_SPEED);
     }
 
 	Dashboard();
@@ -211,8 +217,9 @@ void Intake::Stop()
     
     m_intakestate = kIdle;
     m_ballstate = kZero;
-    m_motor1->Set(0);
-    m_motor2->Set(0);
+    m_intakeposition = kUp;
+    m_rollermotor->Set(0);
+    m_wheelmotor->Set(0);
     m_ballcount = 0;
     m_stuffing = false;
     m_gathering = false;
@@ -303,7 +310,7 @@ void Intake::IntakePositionLoop()
             if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             {
                 m_intakeposition = kUp;
-                m_solenoid1->Set(false);
+                m_solenoid->Set(false);
             }
             break;
         
@@ -311,7 +318,7 @@ void Intake::IntakePositionLoop()
             if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             {
                 m_intakeposition = kDown;
-                m_solenoid1->Set(true);
+                m_solenoid->Set(true);
             }
             break;
     }
