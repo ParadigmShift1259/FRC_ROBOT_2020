@@ -101,7 +101,9 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define MOTOR_SUPPLY_THRESHOLD_CURRENT 0
 #define MOTOR_SUPPLY_THRESHOLD_TIME 0.1
 
+// Recalculate these before testing
 #define INITIAL_FEEDFORWARD_DRIVE (0.393 / 12)
+#define VELOCITY_FEEDFORWARD_DRIVE (1 / 12)
 #define INITIAL_FEEDFORWARD_TURN (0.451 / 12)
 
 //   Encoders

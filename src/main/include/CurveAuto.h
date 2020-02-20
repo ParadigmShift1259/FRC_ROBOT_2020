@@ -15,6 +15,7 @@
 
 #include <frc/controller/ProfiledPIDController.h>
 #include <frc/trajectory/TrapezoidProfile.h>
+#include <frc/controller/SimpleMotorFeedforward.h>
 
 
 using namespace std;
@@ -35,16 +36,19 @@ public:
     void ConfigureProfiles();
     void ConfigureGyroPID();
     void ConfigureEncoderPID();
+    void StartMotion(double distance, double angle, double targetvelocity, double maxvelocity, double maxacceleration);
     bool IsFinished() { return m_finished; }
 
 protected:
 	OperatorInputs *m_inputs;
     Drivetrain *m_drivetrain;
 
+    SimpleMotorFeedforward<units::meters> *m_encoderfeedforward;
     ProfiledPIDController<units::meters> *m_encoderPIDController;
     TrapezoidProfile<units::meters>::Constraints m_encoderconstraints;
     units::meter_t m_encodertolerance;
     double m_encoderPIDvals[3];
+    units::meters_per_second_t m_prevvelocity;
 
     ProfiledPIDController<units::meters> *m_gyroPIDController;
     TrapezoidProfile<units::meters>::Constraints m_gyroconstraints;
@@ -53,11 +57,9 @@ protected:
 
     units::meter_t m_setpoint;
     units::degree_t m_setpointangle;
-    units::meter_t m_encoderprevgoal;
-    units::degree_t m_gyroprevgoal;
-    int m_turns;
 
     bool m_finished;
+    bool m_start;
 
     AutoState m_autostate;
 };

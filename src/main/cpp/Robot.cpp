@@ -130,10 +130,14 @@ void Robot::TeleopPeriodic()
             SmartDashboard::PutBoolean("Finished", m_ramsetecontrol->IsFinished());
             break;
         case kCurveAuto:
-            m_curveauto->ConfigureGyroPID();
-            m_curveauto->ConfigureEncoderPID();
-            m_curveauto->ConfigureProfiles();
+            //m_curveauto->ConfigureGyroPID();
+            //m_curveauto->ConfigureEncoderPID();
+            //m_curveauto->ConfigureProfiles();
             m_curveauto->Loop();
+            if (m_operatorinputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
+            {
+                m_curveauto->StartMotion(5, 45, 0, 3, 1.5);
+            }
             SmartDashboard::PutBoolean("Finished", m_curveauto->IsFinished());
     }
 }
@@ -162,7 +166,7 @@ void Robot::ReadChooser()
      * TurnAngleDegrees - Runs Gyro PID, 1 set of PID vals
      * TurnAngleProfiled - Runs Profiled Gyro PID, 1 set of PID vals + Profile setup
      * RamseteController - Runs Ramsete Controller, 2 sets of PID vals + Profile setup
-     * CurveAuto - Runs a Profiled encoder PID and a Profiled Gyro PID with 2 turns
+     * CurveAuto - Runs a Profiled encoder PID and a Profiled Gyro PID
      */
     m_selector = kDrivetrain;
     if (driveselected == scDrivetrain)

@@ -31,7 +31,7 @@ public:
      * TurnAngleDegrees - Runs Gyro PID, 1 set of PID vals
      * TurnAngleProfiled - Runs Profiled Gyro PID, 1 set of PID vals + Profile setup
      * RamseteController - Runs Ramsete Controller, 2 sets of PID vals + Profile setup
-	 * CurveAuto - Runs a Profiled encoder PID and a Profiled Gyro PID with 2 turns
+	 * CurveAuto - Runs a Profiled encoder PID and a Profiled Gyro PID
      */
 	enum TestTypes {kDrivetrain, kDriveStraight, kDriveStraightDouble, kTurnAngleDegrees, kTurnAngleProfiled, kRamseteController, kCurveAuto};
 
