@@ -12,9 +12,9 @@
 
 #include "OperatorInputs.h"
 #include "Const.h"
-#include "CDSensors.h"
 #include <frc\Solenoid.h>
 #include <frc\Spark.h>
+#include <frc\DigitalInput.h>
 
 
 using namespace frc;
@@ -28,9 +28,10 @@ public:
 	 * kGather ->
 	 */
 	enum IntakeState {kIdle, kGather, kStuff};
-	enum IntakePosition {kDown, kBringingUp, kUp};
+	enum IntakePosition {kDown, kUp};
+	enum BallState {kZero, kTwoCheck, kTwo, kThree};
 
-	Intake(OperatorInputs *inputs, CDSensors *sensors);
+	Intake(OperatorInputs *inputs);
 	~Intake();
 	void Init();
 	void Loop();
@@ -38,32 +39,38 @@ public:
 
 	// Called by Feeder when Shooter requests shooting
 	// If there are no balls left, shooting will be set to false
-	void SetStuffingBecauseShooting() { m_stuffingbecauseshooting = true;}
-	bool GetStuffingBecauseShooting() { return m_stuffingbecauseshooting; }
-	void CountBalls();
+	void SetStuffing(bool stuff = true);
+	bool IsStuffing();
 
-	bool LoadRefresh();
-	IntakePosition BringingIntakeUp(bool ready = false);
+	bool CanRefresh();
+	void IntakePositionLoop();
+	bool IntakeUp();
 
 	void Dashboard();
 
 private:
 	bool NullCheck();
-	
+	void CountBalls();
 
 protected:
     OperatorInputs *m_inputs;
-	CDSensors *m_sensors;
 
     Solenoid *m_solenoid1;
     Spark *m_motor1;
     Spark *m_motor2;
+	DigitalInput *m_rollersensor;
+	DigitalInput *m_chutesensor;
+
+	Timer m_timer;
+	Timer m_balltimer;
+
 	IntakeState m_intakestate;
 	IntakePosition m_intakeposition;
+	BallState m_ballstate;
+
 	int m_ballcount;
-	bool m_stuffingbecauseshooting;
-	bool m_intakeup;
-	
+	bool m_stuffing;
+	bool m_gathering;
 };
 
 

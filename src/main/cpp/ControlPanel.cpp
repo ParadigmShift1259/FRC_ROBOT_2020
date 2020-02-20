@@ -17,7 +17,7 @@
 using namespace std;
 
 
-ControlPanel::ControlPanel(OperatorInputs *inputs, CDSensors *sensors, GyroDrive *gyrodrive)
+ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive)
 {
 	m_inputs = inputs;
 	m_gyrodrive = gyrodrive;
@@ -30,7 +30,8 @@ ControlPanel::ControlPanel(OperatorInputs *inputs, CDSensors *sensors, GyroDrive
 	if (CPL_SOLENOID != -1)
 		m_solenoid = new Solenoid(CPL_SOLENOID);
 
-	m_colorsensor = sensors->GetColorSensor();
+	// Integrate color sensor TAG
+	m_colorsensor = nullptr;
 	m_timer = new Timer();
 
 	m_stop = false;

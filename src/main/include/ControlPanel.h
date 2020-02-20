@@ -10,7 +10,6 @@
 
 
 #include "OperatorInputs.h"
-#include "CDSensors.h"
 #include "GyroDrive.h"
 #include "rev/ColorSensorV3.h"
 #include "rev/ColorMatch.h"
@@ -33,7 +32,7 @@ public:
 	 */
 	enum SpinnerState {kOff, kRotationControl, kPositionControl};
 	enum ColorOptions {kNone, kYellow, kRed, kGreen, kBlue};
-	ControlPanel(OperatorInputs *inputs, CDSensors *sensors, GyroDrive *gyrodrive);
+	ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive);
 	~ControlPanel();
 	void Init();
 	void Loop();

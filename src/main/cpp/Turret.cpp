@@ -173,23 +173,15 @@ void Turret::Loop()
         m_readytofire = false;
     }
 
-    if (m_intake->BringingIntakeUp() == Intake::kBringingUp && m_absoluteangle == 180)
+    // TAG change this
+    if (m_intake->IntakeUp())
     {
-        if (m_turretangle == m_turretrampedangle)
-        {
-            m_intake->BringingIntakeUp(true);
-            m_intakeup = true;
-        }
-        
-    }
-    else
-    if (m_intake->BringingIntakeUp() == Intake::kBringingUp)
-    {
+        m_intakeup = true;
         m_absoluteangle = 180;
-        m_turretstate = kIdle;
+
     }
     else
-    if (m_intake->BringingIntakeUp() == Intake::kDown)
+    if (!m_intake->IntakeUp())
     {
         m_intakeup = false;
     }
@@ -336,7 +328,7 @@ void Turret::FireModes()
     switch (m_firemode)
     {
         case kForceShoot:
-            if (!m_feeder->GetFinished())
+            if (!m_feeder->IsStuffing())
             {
                 m_turretstate = kIdle;
                 m_firemode = kHoldShoot;
@@ -348,19 +340,19 @@ void Turret::FireModes()
             // if ready to fire, fire all when A button is pressed
             if (m_readytofire && !m_firing)
             {
-                m_feeder->StartFire();
+                m_feeder->SetStuffing();
                 m_readytofire = false;
                 m_firing = true;
             }
             else
             if (m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             {
-                m_feeder->StartFire();
+                m_feeder->SetStuffing();
                 m_firemode = kForceShoot;
                 m_firing = false;
             }
 
-            if (m_firing && !m_feeder->GetFinished())
+            if (m_firing && !m_feeder->IsStuffing())
             {
                 m_firing = false;
                 m_turretstate = kIdle;
@@ -371,7 +363,7 @@ void Turret::FireModes()
         case kHoldShoot:
             if (m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             {
-                m_feeder->StartFire();
+                m_feeder->SetStuffing();
                 m_firemode = kForceShoot;
             }
             else

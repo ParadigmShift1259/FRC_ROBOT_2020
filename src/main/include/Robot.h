@@ -8,7 +8,6 @@
 #include "GyroDrive.h"
 #include "Pneumatics.h"
 #include "Turret.h"
-#include "CDSensors.h"
 #include "ControlPanel.h"
 #include "Intake.h"
 #include "Feeder.h"
@@ -37,7 +36,6 @@ protected:
 	OperatorInputs *m_operatorinputs;
 	GyroDrive *m_gyrodrive;
 	Pneumatics *m_pneumatics;
-	CDSensors *m_sensors;
 	Vision *m_vision;
 	Intake *m_intake;
 	Feeder *m_feeder;

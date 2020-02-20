@@ -167,28 +167,31 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define INT_SOLENOID ENABLED(INT_ENABLED, 0)
 #define INT_MOTOR1 ENABLED(INT_ENABLED, 7)
 #define INT_MOTOR2 ENABLED(INT_ENABLED, 8)
-#define INT_INTAKE_WHEEL_SPEED 0.5
-#define INT_INTAKE_ROLLER_SPEED .6
+#define INT_ROLLER_SENSOR 1
+#define INT_CHUTE_SENSOR 0
+#define INT_STUFF_TIME 4.0
+#define INT_INTAKE_WHEEL_SPEED -0.5
+#define INT_INTAKE_ROLLER_SPEED -0.6
+#define INT_BALL_CHECK_TIME 0.5
 
 
 // Feeder ---------------------------------------
 #define FDR_ENABLED 1           // set to 1 to enable feeder motor
 #define FDR_MOTOR ENABLED(FDR_ENABLED, 9)
-#define FDR_REFRESH_SPEED_LOAD 0.2
-#define FDR_REFRESH_SPEED_FIRE 0.5
+#define FDR_STUFF_SPEED 0.5
 #define FDR_HIGH_NUMBER 10000
 #define FDR_WHEEL_SIZE 4
 #define FDR_FEED_FORWARD 0.0681
 // PID values for ball
-#define FDR_P 
-#define FDR_I 
-#define FDR_D 
+#define FDR_P 0.0595
+#define FDR_I 0.005
+#define FDR_D 0.0005
 // Refresh distance in inches
 #define FDR_REFRESH_DISTANCE 26.531
 // Max percent output that feeder can apply
 #define FDR_MAX_POWER 0.3
-#define FDR_TIMEOUT_TIME 6.0
-#define FDR_DRIVE_TIME 6.0
+#define FDR_TIMEOUT_TIME 4.0
+#define FDR_STUFF_TIME 4.0
 #define FDR_GEAR_RATIO 4.167
 #define FDR_INVERTED 1.0
 

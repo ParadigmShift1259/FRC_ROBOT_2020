@@ -23,11 +23,10 @@ void Robot::RobotInit()
 	m_vision = new Vision(m_operatorinputs);
 	m_gyrodrive = new GyroDrive(m_operatorinputs, m_vision);
 	m_pneumatics = new Pneumatics();
-	m_sensors = new CDSensors();
-	m_intake = new Intake(m_operatorinputs, m_sensors);
-	m_feeder = new Feeder(m_operatorinputs, m_intake, m_sensors);
+	m_intake = new Intake(m_operatorinputs);
+	m_feeder = new Feeder(m_operatorinputs, m_intake);
 	m_turret = new Turret(m_operatorinputs, m_intake, m_feeder, m_vision, m_gyrodrive);
-	//m_controlpanel = new ControlPanel(m_operatorinputs, m_sensors, m_gyrodrive);
+	//m_controlpanel = new ControlPanel(m_operatorinputs, m_gyrodrive);
 }
 
 
@@ -60,7 +59,6 @@ void Robot::TeleopInit()
 {
 	m_gyrodrive->Init();
 	m_pneumatics->Init();
-	m_sensors->Init();
 	m_vision->Init();
 	m_intake->Init();
 	m_feeder->Init();
@@ -73,7 +71,6 @@ void Robot::TeleopPeriodic()
 {
 	m_gyrodrive->Loop();
 	m_pneumatics->Loop();
-	m_sensors->Loop();
 	m_vision->Loop();
 	m_intake->Loop();
 	m_feeder->Loop();
@@ -87,7 +84,6 @@ void Robot::DisabledInit()
 {
 	m_gyrodrive->Stop();
 	m_pneumatics->Stop();
-	m_sensors->Stop();
 	m_vision->Stop();
 	m_intake->Stop();
 	m_feeder->Stop();
