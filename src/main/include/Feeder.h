@@ -24,7 +24,6 @@ using namespace frc;
 class Feeder
 {
 public:
-	
 	enum FeederState {kIdle, kRefresh, kStuff};
 	
 	Feeder(OperatorInputs *inputs, Intake *intake);

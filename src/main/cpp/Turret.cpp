@@ -10,6 +10,7 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
 
+
 using namespace std;
 
 
@@ -28,6 +29,7 @@ Turret::Turret(OperatorInputs *inputs, Intake *intake, Feeder *feeder, Vision *v
     m_flywheelmotor = nullptr;
     m_flywheelPID = nullptr;
     m_flywheelencoder = nullptr;
+    m_flywheelsimplemotorfeedforward = nullptr;
 
     m_turretmotor = nullptr;
 
@@ -56,7 +58,7 @@ Turret::~Turret()
 void Turret::Init()
 {
     // Flywheel
-    if ((TUR_SHOOTER_ID != -1) && (m_flywheelmotor == nullptr))
+    if ((m_flywheelmotor == nullptr) && (TUR_SHOOTER_ID != -1))
     {
         m_flywheelmotor = new CANSparkMax(TUR_SHOOTER_ID, CANSparkMax::MotorType::kBrushless);
         m_flywheelPID = new CANPIDController(*m_flywheelmotor);
@@ -74,7 +76,7 @@ void Turret::Init()
     }
 
     // Turret
-    if ((TUR_TURRET_ID != -1) && (m_turretmotor == nullptr))
+    if (((m_turretmotor == nullptr) && TUR_TURRET_ID != -1))
     {
         m_turretmotor = new WPI_TalonSRX(TUR_TURRET_ID);
         m_turretmotor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, TUR_TIMEOUT_MS);
@@ -84,8 +86,8 @@ void Turret::Init()
     }
     
     // Hood
-    if ((TUR_HOOD_ID != -1) && (m_hoodservo == nullptr))
-        m_hoodservo = new Servo(0);
+    if ((m_hoodservo == nullptr) && (TUR_HOOD_ID != -1))
+        m_hoodservo = new Servo(TUR_HOOD_ID);
 
     if (!NullCheck())
         return;
@@ -128,9 +130,6 @@ void Turret::Init()
     m_robotangle = 0;
     m_turretangle = 135;      // Change these when starting orientation is different
     m_turretrampedangle = 135;
-    
-    SmartDashboard::PutNumber("Robot Setup Angle", m_robotangle);
-    SmartDashboard::PutNumber("Absolute Setup Angle", m_fieldangle);
 
     m_turretinitialfeedforward = 0;
 
