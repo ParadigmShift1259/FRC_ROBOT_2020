@@ -32,6 +32,7 @@ public:
 	void Init();
 	void Loop();
 	void Stop();
+	void Dashboard();
 
 	void FeederStateMachine();
 	void SetStuffing(bool stuff = true);

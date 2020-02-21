@@ -41,6 +41,7 @@ public:
     void Init();
     void Loop();
     void Stop();
+    void Dashboard();
 
 protected:
     bool NullCheck();

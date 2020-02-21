@@ -16,8 +16,8 @@ using namespace std;
 Vision::Vision(OperatorInputs *inputs)
 {
     m_inputs = inputs;
-    m_networktable = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
-    m_camera = nt::NetworkTableInstance::GetDefault().GetTable("SmartDashboard");
+    //m_networktable = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
+    //m_camera = nt::NetworkTableInstance::GetDefault().GetTable("SmartDashboard");
     m_camerachoice = 0;
 }
 
@@ -30,20 +30,29 @@ Vision::~Vision()
 
 void Vision::Init()
 {
+    m_tx = 0;
+    m_ty = 0;
+    m_ta = 0;
+    m_ts = 0;
+    m_active = false;
 
+    m_verticalangle = 0;
+
+    m_distance = 0;
+    m_horizontalangle = 0;
 }
 
 
 void Vision::Loop()
 {
-    m_camera->PutNumber("cameraFeed", m_camerachoice);
+    //m_camera->PutNumber("cameraFeed", m_camerachoice);
 
-    m_active = m_networktable->GetNumber("tv", 0);
+    //m_active = m_networktable->GetNumber("tv", 0);
     if (!m_active)
         return;
 
-    m_tx = m_networktable->GetNumber("tx", 0.0);
-    m_ty = m_networktable->GetNumber("ty", 0.0);
+    //m_tx = m_networktable->GetNumber("tx", 0.0);
+    //m_ty = m_networktable->GetNumber("ty", 0.0);
     /*
     m_ta = m_networktable->GetNumber("ta", 0.0);
     m_ts = m_networktable->GetNumber("ts", 0.0);

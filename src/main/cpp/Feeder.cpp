@@ -67,6 +67,9 @@ void Feeder::Init()
         );
     }
 
+    if (m_motor == nullptr)
+        return;
+
     m_feederPID->SetConstraints(m_constraints);
     m_feederPID->SetTolerance(m_tolerance, FDR_HIGH_NUMBER * 1_in / 1_s);
     m_feederPID->SetPID(m_feederPIDvals[0], m_feederPIDvals[1], m_feederPIDvals[2]);
@@ -74,7 +77,11 @@ void Feeder::Init()
     m_motor->Set(ControlMode::PercentOutput, 0);
     m_motor->SetSelectedSensorPosition(0);
     m_motor->SetSensorPhase(true);
-
+    // 2/20/2020 6:47 PM
+    m_motor->ConfigNominalOutputForward(0);
+    m_motor->ConfigNominalOutputReverse(0);
+    m_motor->ConfigPeakOutputForward(FDR_MAX_POWER);
+    m_motor->ConfigPeakOutputReverse(0);
     m_timer.Reset();
     m_timer.Start();
 }
@@ -86,8 +93,7 @@ void Feeder::Loop()
         return;
 
     FeederStateMachine();
-
-    SmartDashboard::PutNumber("Encoder Raw", m_motor->GetSelectedSensorPosition());
+    Dashboard();
 }
 
 
@@ -95,6 +101,19 @@ void Feeder::Stop()
 {
     if (m_motor == nullptr)
         return;
+}
+
+
+void Feeder::Dashboard()
+{
+    if (m_motor == nullptr)
+        return;
+
+    if (Debug)
+    {
+        SmartDashboard::PutNumber("INT0_Position", m_motor->GetSelectedSensorPosition());
+        SmartDashboard::PutNumber("INT1_State", m_feederstate);
+    }
 }
 
 

@@ -87,6 +87,9 @@ void Turret::Init()
     if ((TUR_HOOD_ID != -1) && (m_hoodservo == nullptr))
         m_hoodservo = new Servo(0);
 
+    if (!NullCheck())
+        return;
+
     // Flywheel
     // set increase and decrease PID gains on slot 0
     m_flywheelPID->SetP(TUR_SHOOTER_P, 0);
@@ -199,27 +202,7 @@ void Turret::Loop()
 
     RampUpFlywheel();
     RampUpTurret();
-
-    SmartDashboard::PutNumber("TUR0_Setpoint", m_flywheelsetpoint);
-    SmartDashboard::PutNumber("TUR1_Encoder_Position in Native units", m_flywheelencoder->GetPosition());
-    SmartDashboard::PutNumber("TUR2_Encoder_Velocity in Native Speed", m_flywheelencoder->GetVelocity());
-    SmartDashboard::PutNumber("TUR3_SimpleMotorFeedforward", m_flywheelinitialfeedforward);
-    SmartDashboard::PutNumber("TUR4_Error", m_flywheelrampedsetpoint - m_flywheelencoder->GetVelocity());
-    SmartDashboard::PutNumber("TUR5_RampedSetpoint", m_flywheelrampedsetpoint);
-    SmartDashboard::PutNumber("TUR6_RampState", m_flywheelrampstate);
-    SmartDashboard::PutNumber("TUR7_PIDslot", m_PIDslot);
-    double heading;
-    m_robotgyro->GetHeading(heading);
-    SmartDashboard::PutNumber("Robot Gyro", heading);
-    SmartDashboard::PutNumber("TUR8_Turret Degrees", TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()));
-    SmartDashboard::PutNumber("TUR9_Setpoint Angle", m_turretmotor->GetClosedLoopTarget(0));
-    SmartDashboard::PutNumber("TUR10_Flywheel Ramp State", m_flywheelrampstate);
-    SmartDashboard::PutNumber("TUR11_Turret Angle", m_turretangle);
-    SmartDashboard::PutNumber("TUR12_Turret Ramp Goal", m_turretrampedangle);
-    SmartDashboard::PutNumber("TUR13_Turret State", m_turretstate);
-    SmartDashboard::PutNumber("TUR14_Intake Up", m_intakeup);
-    SmartDashboard::PutNumber("TUR15_Firing", m_firing);
-    SmartDashboard::PutNumber("TUR16_Ready to Fire", m_readytofire);
+    Dashboard();
 }
 
 
@@ -232,6 +215,36 @@ void Turret::Stop()
     m_flywheelmotor->SetIdleMode(CANSparkMax::IdleMode::kCoast);
     m_turretmotor->SetNeutralMode(NeutralMode::Brake);
 }
+
+
+void Turret::Dashboard()
+{
+    if (!NullCheck())
+        return;
+
+    SmartDashboard::PutNumber("TUR00_State", m_turretstate);
+    SmartDashboard::PutBoolean("TUR01_ReadytoFire", m_readytofire);
+
+    if (Debug)
+    {
+        SmartDashboard::PutNumber("TUR02_Setpoint", m_flywheelsetpoint);
+        SmartDashboard::PutNumber("TUR03_Encoder_Position in Native units", m_flywheelencoder->GetPosition());
+        SmartDashboard::PutNumber("TUR04_Encoder_Velocity in Native Speed", m_flywheelencoder->GetVelocity());
+        SmartDashboard::PutNumber("TUR05_SimpleMotorFeedforward", m_flywheelinitialfeedforward);
+        SmartDashboard::PutNumber("TUR06_Error", m_flywheelrampedsetpoint - m_flywheelencoder->GetVelocity());
+        SmartDashboard::PutNumber("TUR07_RampedSetpoint", m_flywheelrampedsetpoint);
+        SmartDashboard::PutNumber("TUR08_RampState", m_flywheelrampstate);
+        SmartDashboard::PutNumber("TUR09_PIDslot", m_PIDslot);
+        SmartDashboard::PutNumber("TUR10_Turret Degrees", TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()));
+        SmartDashboard::PutNumber("TUR11_Setpoint Angle", m_turretmotor->GetClosedLoopTarget(0));
+        SmartDashboard::PutNumber("TUR12_Flywheel Ramp State", m_flywheelrampstate);
+        SmartDashboard::PutNumber("TUR13_Turret Angle", m_turretangle);
+        SmartDashboard::PutNumber("TUR14_Intake Up", m_intakeup);
+        SmartDashboard::PutNumber("TUR15_Firing", m_firing);
+        SmartDashboard::PutNumber("TUR16_Ready to Fire", m_readytofire);
+    }
+}
+
 
 // If it doesn't pass, return false
 bool Turret::NullCheck()

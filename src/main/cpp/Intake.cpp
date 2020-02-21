@@ -71,9 +71,6 @@ bool Intake::NullCheck()
 
 void Intake::Init()
 {
-    if (!NullCheck())
-        return;
-
     if ((INT_SOLENOID != -1) && (m_solenoid == nullptr))
         m_solenoid = new Solenoid(INT_SOLENOID);
     if ((INT_MOTOR1 != -1) && (m_rollermotor == nullptr))
@@ -84,6 +81,9 @@ void Intake::Init()
         m_rollersensor = new DigitalInput(INT_ROLLER_SENSOR);
     if ((INT_CHUTE_SENSOR != -1) && (m_chutesensor == nullptr))
         m_chutesensor = new DigitalInput(INT_CHUTE_SENSOR);
+
+    if (!NullCheck())
+        return;
 
     m_intakestate = kIdle;
     m_intakeposition = kDown;
