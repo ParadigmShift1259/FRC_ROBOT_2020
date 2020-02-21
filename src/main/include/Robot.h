@@ -67,6 +67,8 @@ protected:
 	const string scCurveAuto = "CurveAuto";
 	SendableChooser<string> m_chooser;
 	void ReadChooser();
+
+	int m_autostate;
 };
 
 

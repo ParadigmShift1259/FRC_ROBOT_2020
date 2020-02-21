@@ -19,7 +19,7 @@ CurveAuto::CurveAuto(OperatorInputs *inputs, Drivetrain *drivetrain)
 
     m_gyroPIDController = nullptr;
     // Configure these after testing to lock them into place
-    m_gyroPIDvals[0] = 0.045;
+    m_gyroPIDvals[0] = 0.035;
     m_gyroPIDvals[1] = 0;
     m_gyroPIDvals[2] = 0;
     // These values will be scaled based on the input, so doens't really matter here
@@ -81,10 +81,10 @@ void CurveAuto::Init()
     m_gyroPIDController->SetPID(m_gyroPIDvals[0], m_gyroPIDvals[1], m_gyroPIDvals[2]);
     m_gyroPIDController->SetTolerance(units::meter_t{m_gyrotolerance.to<double>()}, units::meters_per_second_t{HIGH_NUMBER});
 
-    m_encodertolerance = 0.5_m;
+    m_encodertolerance = 0.1_m;
 
     m_encoderPIDController->SetConstraints(m_encoderconstraints);
-    m_encoderPIDController->SetTolerance(m_encodertolerance, units::meters_per_second_t{HIGH_NUMBER});
+    m_encoderPIDController->SetTolerance(m_encodertolerance, units::meters_per_second_t{1});
     m_encoderPIDController->SetPID(m_encoderPIDvals[0], m_encoderPIDvals[1], m_encoderPIDvals[2]);
     
     m_setpoint = 0_m;
@@ -121,7 +121,8 @@ void CurveAuto::Loop()
             }
             else
             {
-                m_drivetrain->GetDrive()->ArcadeDrive(m_encoderfeedforward->Calculate(m_prevvelocity).to<double>() / 12, 0);
+                //m_drivetrain->GetDrive()->ArcadeDrive(m_encoderfeedforward->Calculate(m_prevvelocity).to<double>() / 12, 0);
+                m_drivetrain->GetDrive()->ArcadeDrive(0, 0, false);
             }
             break;
         case kDrive:
@@ -145,7 +146,8 @@ void CurveAuto::Loop()
             SmartDashboard::PutNumber("Z", z);
             SmartDashboard::PutNumber("X", x);
             double sign = x / abs(x);
-            m_drivetrain->GetDrive()->ArcadeDrive(x + sign * INITIAL_FEEDFORWARD_DRIVE, z, false);
+            double anglesign = z / abs(z);
+            m_drivetrain->GetDrive()->ArcadeDrive(x + sign * INITIAL_FEEDFORWARD_DRIVE, z + anglesign * INITIAL_FEEDFORWARD_TURN/2, false);
 
             if (m_encoderPIDController->AtGoal())
             {
@@ -242,10 +244,10 @@ void CurveAuto::StartMotion(double distance, double angle, double targetvelocity
     // Based on the number of turns, the gyro constraints are recalculated
     // Take the encoderconstraints and scale it up to the gyro setpointangle
     m_gyroconstraints.maxVelocity = (
-        m_encoderconstraints.maxVelocity.to<double>() / m_setpoint.to<double>() * m_setpointangle.to<double>())
+        m_encoderconstraints.maxVelocity.to<double>() / fabs(m_setpoint.to<double>()) * fabs(m_setpointangle.to<double>()))
         * 1_m / 1_s;
     m_gyroconstraints.maxAcceleration = (
-        m_encoderconstraints.maxAcceleration.to<double>() / m_setpoint.to<double>() * m_setpointangle.to<double>())
+        m_encoderconstraints.maxAcceleration.to<double>() / fabs(m_setpoint.to<double>()) * fabs(m_setpointangle.to<double>()))
         * 1_m / 1_s / 1_s;
 
     m_gyroPIDController->SetConstraints(m_gyroconstraints);
@@ -255,5 +257,5 @@ void CurveAuto::StartMotion(double distance, double angle, double targetvelocity
     m_encoderPIDController->SetGoal(goal);
     m_gyroPIDController->SetGoal(units::meter_t{m_setpointangle.to<double>()});
     m_start = true;
-    m_prevvelocity = units::meters_per_second_t{maxvelocity};
+    m_prevvelocity = units::meters_per_second_t{targetvelocity};
 }

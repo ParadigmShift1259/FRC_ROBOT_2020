@@ -84,6 +84,8 @@ void Robot::TeleopInit()
             m_curveauto->Init();
             break;
     }
+	
+	m_autostate = 0;
 }
 
 
@@ -134,10 +136,40 @@ void Robot::TeleopPeriodic()
             //m_curveauto->ConfigureEncoderPID();
             //m_curveauto->ConfigureProfiles();
             m_curveauto->Loop();
-            if (m_operatorinputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
-            {
-                m_curveauto->StartMotion(5, 45, 0, 3, 1.5);
-            }
+			switch (m_autostate)
+			{
+				case 0:
+					if (m_operatorinputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
+					{
+						m_curveauto->StartMotion(3, 0, 0, 3, 1.5);
+						m_autostate++;
+					}
+					break;
+				
+				case 1:
+					if (m_curveauto->IsFinished())
+					{
+						m_curveauto->StartMotion(3, 45, 0, 3, 1.5);
+						m_autostate++;
+					}
+					break;
+				
+				case 2:
+					if (m_curveauto->IsFinished())
+					{
+						m_curveauto->StartMotion(3, 0, 0, 3, 1.5);
+						m_autostate++;
+					}
+					break;
+				
+				case 3:
+					if (m_curveauto->IsFinished())
+					{
+						m_autostate = 0;
+					}
+					break;
+			}
+
             SmartDashboard::PutBoolean("Finished", m_curveauto->IsFinished());
     }
 }
