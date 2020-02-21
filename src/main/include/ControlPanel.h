@@ -11,8 +11,12 @@
 
 #include "OperatorInputs.h"
 #include "GyroDrive.h"
-#include "rev/ColorSensorV3.h"
-#include "rev/ColorMatch.h"
+#ifdef USE_LOGGER
+#include "Logger.h"
+#endif
+
+#include <rev/ColorSensorV3.h>
+#include <rev/ColorMatch.h>
 #include <frc/Solenoid.h>
 #include <ctre/Phoenix.h>
 #include <frc/DriverStation.h>
@@ -31,7 +35,7 @@ public:
 	 * ColorSpin - Attempts to spin the control panel to a specific color
 	 */
 	enum SpinnerState {kOff, kRotationControl, kPositionControl};
-	enum ColorOptions {kNone, kYellow, kRed, kGreen, kBlue};
+	enum ColorOptions {kNone, kYellow, kRed, kGreen, kBlue, kSize };
 	ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive);
 	~ControlPanel();
 	void Init();
@@ -44,6 +48,7 @@ protected:
 	void ControlPanelStates();
 	void ChangeSpinnerState();
 	void ChangeSpinnerState(SpinnerState);
+	void Dashboard();
 
 private:
 	ColorOptions GetColor();
@@ -62,11 +67,14 @@ private:
 	int m_direction;
 	int m_startencodervalue;
 	int m_currentencodervalue;
-	
+	string m_color[kSize];
 	ColorOptions m_currentcolor, m_previouscolor;
 	bool m_stop;
-
 	double m_spinnersetpoint;
+#ifdef USE_LOGGER
+	Logger m_log;
+	vector<int*> m_data;
+#endif
 };
 
 

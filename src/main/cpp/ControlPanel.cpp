@@ -18,6 +18,9 @@ using namespace std;
 
 
 ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive)
+#ifdef USE_LOGGER
+	: m_log("home/cplogfile.csv", true)
+#endif
 {
 	m_inputs = inputs;
 	m_gyrodrive = gyrodrive;
@@ -29,9 +32,25 @@ ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive)
 	
 	if (CPL_SOLENOID != -1)
 		m_solenoid = new Solenoid(CPL_SOLENOID);
+	
+	m_color[0] = "no Color";
+	m_color[1] = "yellow"; 
+	m_color[2] = "red"   ;
+	m_color[3] = "green" ;
+	m_color[4] = "blue"  ;
+
+#ifdef USE_LOGGER
+	m_log.logMsg(eInfo, __FUNCTION__, __LINE__, "currentcolor,previouscolor,redCount,blueCount,m_spinnersetpoint,m_currentencodervalue");
+	m_data.push_back(&(int)m_currentcolor);
+	m_data.push_back(&(int)m_previouscolor);
+	m_data.push_back(&m_redCount);
+	m_data.push_back(&m_blueCount);
+	// note sp is a double m_data.push_back(&m_spinnersetpoint);
+	m_data.push_back(&m_currentencodervalue);
+#endif
 
 	// Integrate color sensor TAG
-	m_colorsensor = nullptr;
+	m_colorsensor = new ColorSensorV3(I2C::Port::kOnboard);
 	m_timer = new Timer();
 
 	m_stop = false;
@@ -91,11 +110,7 @@ void ControlPanel::Loop()
 
 	ControlPanelStates();
 
-	SmartDashboard::PutNumber("CPL1_Encoder_Position in Revolutions", m_spinner->GetSelectedSensorPosition(0) / CPL_COUNTS_PER_CW_REV);
-	SmartDashboard::PutNumber("CPL2_Encoder_Velocity in RPM", m_spinner->GetSelectedSensorVelocity(0) / MINUTES_TO_HUNDRED_MS / CPL_COUNTS_PER_CW_REV);
-	SmartDashboard::PutNumber("CPL3_Motor Voltage", m_spinner->GetMotorOutputVoltage());
-	SmartDashboard::PutNumber("CPL4_Registered Red Count", m_redCount);
-	SmartDashboard::PutNumber("CPL5_Registered Blue Count", m_blueCount);
+	Dashboard();
 }
 
 
@@ -112,7 +127,7 @@ void ControlPanel::ControlPanelStates()
 	switch (m_spinnerstate)
 	{
 	case kOff:
-		m_spinner->Set(ControlMode::PercentOutput, 0);
+		m_spinner->Set(ControlMode::Velocity, 0);
 		m_stop = true;
 		break;
 
@@ -121,12 +136,10 @@ void ControlPanel::ControlPanelStates()
 		
 			if (m_currentcolor == kRed && m_previouscolor != kRed)
 			{
-				SmartDashboard::PutString("CPL6_TrueColor", "Red");
 				m_redCount++;
 			}
 			else if (m_currentcolor == kBlue &&  m_previouscolor != kBlue )
 			{
-				SmartDashboard::PutString("CPL7_TrueColor", "Blue");
 				m_blueCount++;
 			}	
 
@@ -135,7 +148,7 @@ void ControlPanel::ControlPanelStates()
 		
 		if (m_stop)
 		{
-			// Once stopped, use A button to restart. (TO DO: Move reading user inputs to a higher level robot class)
+			// Once stopped, use Xbox Back button to restart. (TO DO: Move reading user inputs to a higher level robot class)
 			
 			m_spinner->Set(ControlMode::Velocity, 0);
 		}
@@ -146,6 +159,9 @@ void ControlPanel::ControlPanelStates()
 			m_spinner->Set(ControlMode::Velocity, m_spinnersetpoint); 
 			m_currentencodervalue = m_spinner->GetSelectedSensorPosition(0);
 			std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
+#ifdef USE_LOGGER
+			m_log.logData(__FUNCTION__, __LINE__, m_data);
+#endif
 		}
 
 		// (TO DO: Move reading user inputs to a higher level robot class)
@@ -203,9 +219,9 @@ void ControlPanel::ControlPanelStates()
 		
 		if (m_stop)
 		{
+			// Press Xbox Start Button to Restart
 			m_spinner->Set(ControlMode::Velocity, 0);
 			// (TO DO: Move reading user inputs to a higher level robot class)
-		
 		}
 		else
 		{
@@ -320,4 +336,16 @@ void ControlPanel::ChangeSpinnerState()
 void ControlPanel::ChangeSpinnerState(SpinnerState state)
 {
 	m_spinnerstate = state;
+}
+
+void ControlPanel::Dashboard()
+{
+	SmartDashboard::PutNumber("CPL1_Encoder_Position in Revolutions", m_spinner->GetSelectedSensorPosition(0) / CPL_COUNTS_PER_CW_REV);
+	SmartDashboard::PutNumber("CPL2_Encoder_Velocity in RPM", m_spinner->GetSelectedSensorVelocity(0) / MINUTES_TO_HUNDRED_MS / CPL_COUNTS_PER_CW_REV);
+	SmartDashboard::PutNumber("CPL3_Motor Voltage", m_spinner->GetMotorOutputVoltage());
+	SmartDashboard::PutNumber("CPL4_Registered Red Count", m_redCount);
+	SmartDashboard::PutNumber("CPL5_Registered Blue Count", m_blueCount);
+
+	SmartDashboard::PutString("CPL6_CurrentColor", m_color[m_currentcolor]);
+
 }
