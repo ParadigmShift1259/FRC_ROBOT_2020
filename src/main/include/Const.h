@@ -178,7 +178,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Feeder ---------------------------------------
 #define FDR_ENABLED 1           // set to 1 to enable feeder motor
 #define FDR_MOTOR ENABLED(FDR_ENABLED, 9)
-#define FDR_STUFF_SPEED 0.5
+#define FDR_STUFF_SPEED 0.6
 #define FDR_HIGH_NUMBER 10000
 #define FDR_WHEEL_SIZE 4
 #define FDR_FEED_FORWARD 0.0681
@@ -187,7 +187,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define FDR_I 0.005
 #define FDR_D 0.0005
 // Refresh distance in inches
-#define FDR_REFRESH_DISTANCE 27.531
+#define FDR_REFRESH_DISTANCE 29.581
 // Max percent output that feeder can apply
 #define FDR_MAX_POWER 1.0
 #define FDR_TIMEOUT_TIME 4.0
@@ -226,6 +226,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Maximum percent output that PID loop can output
 #define TUR_SHOOTER_MINOUT 0.0
 #define TUR_SHOOTER_MAXOUT 1.0
+#define TUR_SHOOTER_ERROR 50
+#define TUR_SHOOTER_MAX_ERROR 100
 // Turret Spinning
 #define TUR_TURRET_RAMPING_RATE 7           // in degrees
 // kS, kV, kA values turned using frc-characterization 2/8/20 for the Metal V2 Shooter Flywheel by Geoffrey
@@ -233,7 +235,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_TURRET_KS_BACKWARDS 0.0
 // Turret turning PID values
 #define TUR_TURRET_P 0.13114
-#define TUR_TURRET_I 0.0001
+#define TUR_TURRET_I 0.0002
 #define TUR_TURRET_D 0.0975
 // Maximum percent output that PID loop can output
 #define TUR_TURRET_MINOUT 0.0
@@ -249,11 +251,11 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_TURRET_SPINNER 29.845
 #define REV_TO_TURRET_REV (TUR_PULLEY / TUR_TURRET_SPINNER) 
 #define TURRET_REV_TO_DEGREES 360
-#define TURRET_DEGREE_STOP_RANGE 1
+#define TURRET_DEGREE_STOP_RANGE 0.25
 
 // Vision ---------------------------------------
-#define VIS_MOUNTING_ANGLE 20.6     // degrees
-#define VIS_MOUNTING_HEIGHT 19.5      // inches
+#define VIS_MOUNTING_ANGLE 18     // degrees
+#define VIS_MOUNTING_HEIGHT 21.375      // inches
 #define VIS_TARGET_HEIGHT 98.25     // inches
 #define VIS_TARGET_SIZE 15          // inches
 

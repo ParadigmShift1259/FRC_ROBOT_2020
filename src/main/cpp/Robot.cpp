@@ -26,7 +26,7 @@ void Robot::RobotInit()
 	m_intake = new Intake(m_operatorinputs);
 	m_feeder = new Feeder(m_operatorinputs, m_intake);
 	m_turret = new Turret(m_operatorinputs, m_intake, m_feeder, m_vision, m_gyrodrive);
-	m_controlpanel = new ControlPanel(m_operatorinputs, m_gyrodrive);
+	//m_controlpanel = new ControlPanel(m_operatorinputs, m_gyrodrive);
 }
 
 
@@ -63,7 +63,7 @@ void Robot::TeleopInit()
 	m_intake->Init();
 	m_feeder->Init();
 	m_turret->Init();
-	m_controlpanel->Init();
+	//m_controlpanel->Init();
 }
 
 
@@ -75,7 +75,7 @@ void Robot::TeleopPeriodic()
 	m_intake->Loop();
 	m_feeder->Loop();
 	m_turret->Loop();
-	m_controlpanel->Loop();
+	//m_controlpanel->Loop();
 	
 }
 
@@ -88,7 +88,7 @@ void Robot::DisabledInit()
 	m_intake->Stop();
 	m_feeder->Stop();
 	m_turret->Stop();
-	m_controlpanel->Stop();
+	//m_controlpanel->Stop();
 }
 
 

@@ -45,7 +45,13 @@ Intake::~Intake()
         delete m_rollermotor;
 
     if (m_wheelmotor != nullptr)
-        delete m_wheelmotor;	  
+        delete m_wheelmotor;	 
+
+    if (m_rollersensor != nullptr) 
+        delete m_rollersensor;
+
+    if (m_chutesensor != nullptr)
+        delete m_chutesensor; 
 }
 
 

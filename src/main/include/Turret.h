@@ -96,6 +96,7 @@ private:
 
     // Hood
     Servo *m_hoodservo;
+    double m_hoodangle;
 
     TurretState m_turretstate;
     FireMode m_firemode;

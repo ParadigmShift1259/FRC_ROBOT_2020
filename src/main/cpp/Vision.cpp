@@ -16,8 +16,8 @@ using namespace std;
 Vision::Vision(OperatorInputs *inputs)
 {
     m_inputs = inputs;
-    //m_networktable = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
-    //m_camera = nt::NetworkTableInstance::GetDefault().GetTable("SmartDashboard");
+    m_networktable = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
+    m_camera = nt::NetworkTableInstance::GetDefault().GetTable("SmartDashboard");
     m_camerachoice = 0;
 }
 
@@ -40,19 +40,35 @@ void Vision::Init()
 
     m_distance = 0;
     m_horizontalangle = 0;
+
+    m_averagedistance[0] = 0;
+    m_averagedistance[1] = 0;
+    m_averagedistance[2] = 0;
+    m_averageangle[0] = 0;
+    m_averageangle[1] = 0;
+    m_averagedistance[2] = 0;
 }
 
 
 void Vision::Loop()
 {
-    //m_camera->PutNumber("cameraFeed", m_camerachoice);
+    m_camera->PutNumber("cameraFeed", m_camerachoice);
 
-    //m_active = m_networktable->GetNumber("tv", 0);
+    m_active = m_networktable->GetNumber("tv", 0);
     if (!m_active)
+    {
+        m_averagedistance[0] = 0;
+        m_averagedistance[1] = 0;
+        m_averagedistance[2] = 0;
+        m_averageangle[0] = 0;
+        m_averageangle[1] = 0;
+        m_averagedistance[2] = 0;
         return;
+    }
 
-    //m_tx = m_networktable->GetNumber("tx", 0.0);
-    //m_ty = m_networktable->GetNumber("ty", 0.0);
+    m_tx = m_networktable->GetNumber("tx", 0.0);
+    m_ty = m_networktable->GetNumber("ty", 0.0);
+
     /*
     m_ta = m_networktable->GetNumber("ta", 0.0);
     m_ts = m_networktable->GetNumber("ts", 0.0);
@@ -65,8 +81,22 @@ void Vision::Loop()
     m_distance = (VIS_TARGET_HEIGHT - VIS_MOUNTING_HEIGHT) / tanf(DegreesToRadians(m_verticalangle));
     m_horizontalangle = m_tx;
 
+    for (int i = 0; i < 2; i++)
+    {
+        m_averagedistance[i] = m_averagedistance[i + 1];
+        m_averageangle[i] = m_averageangle[i + 1];
+    }
+
+    m_averagedistance[2] = m_distance;
+    m_averageangle[2] = m_horizontalangle;
+
+    SmartDashboard::PutNumber("VIS0_Active", m_active);
     SmartDashboard::PutNumber("VIS1_Distance", m_distance);
     SmartDashboard::PutNumber("VIS2_Angle", m_horizontalangle);
+    SmartDashboard::PutNumber("VIS3_Average Distance", 
+    (m_averagedistance[0] + m_averagedistance[1] + m_averagedistance[2]) / 3);
+    SmartDashboard::PutNumber("VIS4_Average Angle", 
+    (m_averageangle[0] + m_averageangle[1] + m_averageangle[2]) / 3);
 }
 
 
@@ -84,7 +114,7 @@ bool Vision::GetActive()
 
 double Vision::GetDistance()
 {
-    return m_distance;
+    return (m_averagedistance[0] + m_averagedistance[1] + m_averagedistance[2]) / 3;
 }
 
 

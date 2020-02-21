@@ -78,12 +78,11 @@ void Feeder::Init()
     m_motor->Set(ControlMode::PercentOutput, 0);
     m_motor->SetSelectedSensorPosition(0);
     m_motor->SetSensorPhase(true);
-    /*
-    m_motor->ConfigNominalOutputForward(0);
+    
+    //m_motor->ConfigNominalOutputForward(0);
     m_motor->ConfigNominalOutputReverse(0);
-    m_motor->ConfigPeakOutputForward(FDR_MAX_POWER);
+    //m_motor->ConfigPeakOutputForward(FDR_MAX_POWER);
     m_motor->ConfigPeakOutputReverse(0);
-    */
     m_timer.Reset();
     m_timer.Start();
 }
