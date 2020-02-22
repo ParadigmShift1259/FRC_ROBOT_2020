@@ -13,6 +13,7 @@
 
 DrivePID::DrivePID(DriveTrainFX *drivetrain, DualGyro *gyro, OperatorInputs *inputs): PIDSubsystem(0.0, 0.0, 0.0)
 {
+	m_log = g_log;
 	m_drivetrain = drivetrain;
 	m_gyro = gyro;
 	m_inputs = inputs;
@@ -24,6 +25,16 @@ DrivePID::DrivePID(DriveTrainFX *drivetrain, DualGyro *gyro, OperatorInputs *inp
 	m_feedback = kDisabled;
 	m_heading = 0;
 	m_ontarget = 0;
+
+	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "ontarget,heading,p,i,d,y,ramp");
+	m_dataInt.push_back(&m_ontarget);
+	
+	m_dataDouble.push_back(&m_heading);
+	m_dataDouble.push_back(&m_p);
+	m_dataDouble.push_back(&m_i);
+	m_dataDouble.push_back(&m_d);
+	m_dataDouble.push_back(&m_y);
+	m_dataDouble.push_back(&m_ramp);
 }
 
 
@@ -58,6 +69,8 @@ void DrivePID::Loop()
 
 	if (m_gyro->GetHeading(heading))
 		m_heading = heading;
+
+	m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 }
 
 

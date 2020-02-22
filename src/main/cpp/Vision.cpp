@@ -15,10 +15,28 @@ using namespace std;
  
 Vision::Vision(OperatorInputs *inputs)
 {
+    m_log = g_log;
     m_inputs = inputs;
     m_networktable = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
     m_camera = nt::NetworkTableInstance::GetDefault().GetTable("SmartDashboard");
     m_camerachoice = 0;
+
+	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "active,tx,ty,ta,ts,verticalangle,distance,horizontalangle,averagedistance[0],averagedistance[1],averagedistance[2],averageangle[0],averageangle[1],");
+    m_dataInt.push_back((int*)&m_active);
+
+    m_dataDouble.push_back(&m_tx);
+    m_dataDouble.push_back(&m_ty);
+    m_dataDouble.push_back(&m_ta);
+    m_dataDouble.push_back(&m_ts);
+    m_dataDouble.push_back(&m_verticalangle);
+    m_dataDouble.push_back(&m_distance);
+    m_dataDouble.push_back(&m_horizontalangle);
+    m_dataDouble.push_back(&m_averagedistance[0]);
+    m_dataDouble.push_back(&m_averagedistance[1]);
+    m_dataDouble.push_back(&m_averagedistance[2]);
+    m_dataDouble.push_back(&m_averageangle[0]);
+    m_dataDouble.push_back(&m_averageangle[1]);
+    m_dataDouble.push_back(&m_averageangle[2]);
 }
 
 
@@ -97,6 +115,8 @@ void Vision::Loop()
     (m_averagedistance[0] + m_averagedistance[1] + m_averagedistance[2]) / 3);
     SmartDashboard::PutNumber("VIS4_Average Angle", 
     (m_averageangle[0] + m_averageangle[1] + m_averageangle[2]) / 3);
+
+	m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 }
 
 

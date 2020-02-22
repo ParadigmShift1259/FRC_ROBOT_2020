@@ -15,6 +15,7 @@
 #include "DrivePID.h"
 #include "Gyro.h"
 #include "Vision.h"
+#include "Logger.h"
 
 
 using namespace frc;
@@ -56,7 +57,10 @@ protected:
 	double m_pidstraight[3];
 	double m_pidangle[3];
 	double m_distance;
-	
+
+	Logger *m_log;
+	vector<int*> m_dataInt;
+	vector<double*> m_dataDouble;
 };
 
 

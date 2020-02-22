@@ -7,7 +7,6 @@
 
 
 #include "ControlPanel.h"
-#include "Const.h"
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/Timer.h>
 #include "math.h"
@@ -16,10 +15,8 @@
 using namespace std;
 
 ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive)
-#ifdef USE_LOGGER
-	: m_log("home/cplogfile.csv", true)
-#endif
 {
+	m_log = g_log;
 	m_inputs = inputs;
 	m_gyrodrive = gyrodrive;
 	m_pigeon1 = nullptr;
@@ -41,15 +38,10 @@ ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive)
 	m_gyroval1[1] = 0.0;
 	m_gyroval1[2] = 0.0;
 	
-
-
-
-
 	if (CAN_GYRO1 != -1 )
 		m_pigeon1 = new PigeonIMU(CAN_GYRO1);
 
-#ifdef USE_LOGGER
-	m_log.logMsg(eInfo, __FUNCTION__, __LINE__, "currentcolor,previouscolor,targetcolor,redCount,blueCount,direction,currentencodervalue,startencodervalue,encodertickstogoal,spinnersetpoint");
+	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "currentcolor,previouscolor,targetcolor,redCount,blueCount,direction,currentencodervalue,startencodervalue,encodertickstogoal,spinnersetpoint");
 	m_dataInt.push_back((int*)&m_currentcolor);
 	m_dataInt.push_back((int*)&m_previouscolor);
 	m_dataInt.push_back((int*)&m_targetcolor);
@@ -61,7 +53,6 @@ ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive)
 	m_dataInt.push_back(&m_encodertickstogoal);
 
 	m_dataDouble.push_back(&m_spinnersetpoint);
-#endif
 
 	// Integrate color sensor TAG
 	m_colorsensor = new ColorSensorV3(I2C::Port::kOnboard);
@@ -83,11 +74,13 @@ ControlPanel::~ControlPanel()
 		delete m_timer;
 }
 
-
 void ControlPanel::Init()
 {
 	if (m_spinner == nullptr || m_colorsensor == nullptr || m_solenoid == nullptr)
+	{
+		DriverStation::ReportError("ControlPanel::Init returning early due to bad pointer");
 		return;
+	}
 
 	m_colorsensor->ConfigureColorSensor(rev::ColorSensorV3::ColorResolution::k13bit, rev::ColorSensorV3::ColorMeasurementRate::k25ms);
 	m_solenoid->Set(false);
@@ -116,11 +109,13 @@ void ControlPanel::Init()
 	m_spinner->Config_kI(0, CPL_I);
 }
 
-
 void ControlPanel::Loop()
 {
 	if (m_spinner == nullptr || m_colorsensor == nullptr || m_solenoid == nullptr)
+	{
+		DriverStation::ReportError("ControlPanel::Loop returning early due to bad pointer\n");
 		return;
+	}
 
 	ChangeSpinnerState();
 
@@ -136,10 +131,8 @@ void ControlPanel::Stop()
 }
 
 
-
 void ControlPanel::ControlPanelStates()
 {
-
 	switch (m_spinnerstate)
 	{
 	case kOff:
@@ -177,7 +170,7 @@ void ControlPanel::ControlPanelStates()
 			int encoderdelta = abs(m_currentencodervalue - m_startencodervalue);
 			m_encodertickstogoal = CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta;
 #ifdef USE_LOGGER
-			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
+			m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 #else
 			std::cout 	<< m_currentcolor << ", " 
 						<< m_previouscolor << ", " 
@@ -218,9 +211,7 @@ void ControlPanel::ControlPanelStates()
 					m_direction = 1;
 				// Set motor speed	
 				m_spinnersetpoint = CPL_POSITION_CONTROL_FAST;
-#ifndef USE_LOGGER
 				cout<< "Target Color =" << m_targetcolor <<endl;
-#endif
 				}
 			}
 		
@@ -229,21 +220,14 @@ void ControlPanel::ControlPanelStates()
 			m_spinnersetpoint = CPL_POSITION_CONTROL_SLOW;
 			if (m_startencodervalue == 0)
 			{
-#ifdef USE_LOGGER
-				m_log.logMsg(eDebug, __FUNCTION__, __LINE__, "found target color!");
-#else
-				cout << "found target color!" << endl;
-#endif
+				m_log->logMsg(eDebug, __FUNCTION__, __LINE__, "found target color!");
 				// Record the current encoder value
 				m_startencodervalue = m_spinner->GetSelectedSensorPosition(0);
 			}
 			else if (abs(m_currentencodervalue - m_startencodervalue) >= CPL_COUNTS_PER_CW_SECTOR/2 )
 			{
-#ifdef USE_LOGGER
-				m_log.logMsg(eDebug, __FUNCTION__, __LINE__, "done!");
-#else
+				m_log->logMsg(eDebug, __FUNCTION__, __LINE__, "done!");
 				cout << "done!" << endl;
-#endif
 				// if the wheel has spun half a sector, then stop the motor
 				m_stop = true;
 				}
@@ -254,7 +238,6 @@ void ControlPanel::ControlPanelStates()
 			m_startencodervalue = 0;
 			m_spinnersetpoint = CPL_POSITION_CONTROL_FAST;
 			}
-
 		
 		if (m_stop)
 		{
@@ -268,21 +251,7 @@ void ControlPanel::ControlPanelStates()
 			m_spinner->Set(ControlMode::Velocity, m_spinnersetpoint * m_direction); 
 			int encoderdelta = abs(m_currentencodervalue - m_startencodervalue);
 			m_encodertickstogoal = CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta;
-#ifdef USE_LOGGER
-			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
-#else
-			std::cout 	<< m_currentcolor << ", " 
-						<< m_previouscolor << ", " 
-						<< m_targetcolor << ", " 
-						<< m_redCount << ", " 
-						<< m_blueCount << ", " 
-						<< m_direction << ", " 
-						<< m_currentencodervalue << ", " 
-						<< m_startencodervalue << "," 
-						<< m_encodertickstogoal << "," 
-						<< m_spinnersetpoint << ", " 
-						<< endl;
-#endif
+			m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 		}
 		
 		break;

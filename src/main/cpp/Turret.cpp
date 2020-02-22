@@ -25,6 +25,7 @@ Turret::Turret(OperatorInputs *inputs, Intake *intake, Feeder *feeder, Vision *v
     m_vision = vision;
     m_intake = intake;
     m_feeder = feeder;
+    m_log    = g_log;
 
     m_flywheelmotor = nullptr;
     m_flywheelPID = nullptr;
@@ -42,6 +43,41 @@ Turret::Turret(OperatorInputs *inputs, Intake *intake, Feeder *feeder, Vision *v
     m_flywheelrampstate = kMaintain;
     m_turretrampstate = kMaintain;
     m_readytofire = false;
+
+    double m_PIDslot;
+    double m_flywheelsetpoint;
+    double m_flywheelrampedsetpoint;
+    // TODO how to log? SimpleMotorFeedforward<units::meters> *m_flywheelsimplemotorfeedforward;
+    double m_flywheelinitialfeedforward;
+    double m_fieldangle;
+    double m_robotangle;
+    double m_turretangle;
+    double m_turretrampedangle;
+    double m_turretinitialfeedforward;
+    double m_hoodangle;
+    double m_distance;
+
+	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "PIDslot,flywheelsetpoint,flywheelrampedsetpoint,flywheelinitialfeedforward,fieldangle,robotangle,turretangle,turretrampedangle,turretinitialfeedforward,hoodangle,distance,intakeup,turretstate,firemode,flywheelrampstate,turretrampstate,readytofire,firing");
+	
+	m_dataInt.push_back((int*)&m_intakeup);
+    m_dataInt.push_back((int*)&m_turretstate);
+	m_dataInt.push_back((int*)&m_firemode);
+    m_dataInt.push_back((int*)&m_flywheelrampstate);
+	m_dataInt.push_back((int*)&m_turretrampstate);
+	m_dataInt.push_back((int*)&m_readytofire);
+	m_dataInt.push_back((int*)&m_firing);
+
+	m_dataDouble.push_back(&m_PIDslot);
+	m_dataDouble.push_back(&m_flywheelsetpoint);
+	m_dataDouble.push_back(&m_flywheelrampedsetpoint);
+	m_dataDouble.push_back(&m_flywheelinitialfeedforward);
+	m_dataDouble.push_back(&m_fieldangle);
+	m_dataDouble.push_back(&m_robotangle);
+	m_dataDouble.push_back(&m_turretangle);
+	m_dataDouble.push_back(&m_turretrampedangle);
+	m_dataDouble.push_back(&m_turretinitialfeedforward);
+	m_dataDouble.push_back(&m_hoodangle);
+	m_dataDouble.push_back(&m_distance);
 }
 
 
@@ -247,6 +283,7 @@ void Turret::Dashboard()
         SmartDashboard::PutNumber("TUR15_Firing", m_firing);
         SmartDashboard::PutNumber("TUR16_Ready to Fire", m_readytofire);
     }
+	m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 }
 
 

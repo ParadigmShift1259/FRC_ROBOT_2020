@@ -11,6 +11,7 @@
 
 #include "OperatorInputs.h" 
 #include "Intake.h"
+#include "Logger.h"
 
 #include <ctre/Phoenix.h>
 
@@ -53,6 +54,10 @@ protected:
 	bool m_stuffing;
 
 	FeederState m_feederstate;
+
+	Logger *m_log;
+	vector<int*> m_dataInt;
+	vector<double*> m_dataDouble;
 };
 
 

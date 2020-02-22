@@ -10,7 +10,7 @@
 
 
 #include "OperatorInputs.h"
-#include "Const.h"
+#include "Logger.h"
 
 #include <frc\Solenoid.h>
 #include <frc\Spark.h>
@@ -65,6 +65,9 @@ protected:
 	int m_ballcount;
 	bool m_stuffing;
 	bool m_gathering;
+
+	Logger *m_log;
+	vector<int*> m_dataInt;
 };
 
 

@@ -2,29 +2,51 @@
 
 Logger::Logger(const char *path, bool console_echo)
 {
-    m_fd = fopen(path, "a");
+    openLog(path);
     m_timer = new Timer();
     m_console_echo = console_echo;
     m_formattedData.reserve(500);
+
+    // CSV header for free form text logging
     printf("Level,Function,Line,Message\n");
     // if(m_fd == nullptr)
     // TBD how to handle failure in constructor???
 }
 
-Logger::~Logger(){
-    fclose(m_fd);
+void Logger::openLog(const char *path)
+{
+    if (m_fd != nullptr)
+    {
+        closeLog();
+    }
+
+    m_fd = fopen(path, "a");
+}
+
+Logger::~Logger()
+{
+    closeLog();
+}
+
+void Logger::closeLog()
+{
+    if (m_fd != nullptr)
+    {
+        fclose(m_fd);
+        m_fd = nullptr;
+    }
 }
 
 void Logger::logMsg(ELogLevel level, const char* func, const int line, const char* msg)
 {
-    float timestamp = m_timer->GetFPGATimestamp();
+    if (m_fd != nullptr)
+    {
+        float timestamp = m_timer->GetFPGATimestamp();
 
-    fprintf(m_fd, "%9.4f,l%u,%s,%d,%s\n", timestamp, level, func, line, msg);
-    if (m_console_echo)
-        printf("%9.4f,l%u,%s,%d,%s\n", timestamp, level, func, line, msg);
-
-    //fputs(msg, m_fd);
-    //fputs("\n", m_fd);
+        fprintf(m_fd, "%9.4f,l%u,%s,%d,%s\n", timestamp, level, func, line, msg);
+        if (m_console_echo)
+            printf("%9.4f,l%u,%s,%d,%s\n", timestamp, level, func, line, msg);
+    }
 }
 
 void Logger::logData(const char* func, const int line, const vector<double*>& data)

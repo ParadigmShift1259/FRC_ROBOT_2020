@@ -9,11 +9,12 @@
 #define SRC_Vision_H_
 
 
-#include "frc/smartdashboard/SmartDashboard.h"
-#include "networktables/NetworkTable.h"
-#include "networktables/NetworkTableInstance.h"
+#include <frc/smartdashboard/SmartDashboard.h>
+#include <networktables/NetworkTable.h>
+#include <networktables/NetworkTableInstance.h>
 
 #include "OperatorInputs.h"
+#include "Logger.h"
 
 
 using namespace frc;
@@ -59,6 +60,10 @@ private:
 
     double m_averagedistance[3];
     double m_averageangle[3];
+
+	Logger *m_log;
+	vector<int*> m_dataInt;
+	vector<double*> m_dataDouble;
 };
 
 

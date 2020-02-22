@@ -16,6 +16,10 @@
   "C_Cpp.default.configurationProvider": "vscode-wpilib",
   "files.associations": {
     "cmath": "cpp",
-    "complex": "cpp"
+    "complex": "cpp",
+    "*.inc": "cpp",
+    "deque": "cpp",
+    "string": "cpp",
+    "vector": "cpp"
   }
 }

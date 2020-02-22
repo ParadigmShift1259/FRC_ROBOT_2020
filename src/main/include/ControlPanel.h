@@ -9,13 +9,9 @@
 #define SRC_ControlPanel_H_
 
 
+#include "Logger.h"
 #include "OperatorInputs.h"
 #include "GyroDrive.h"
-//#define USE_LOGGER
-#ifdef USE_LOGGER
-#include "Logger.h"
-#endif
-
 #include <rev/ColorSensorV3.h>
 #include <rev/ColorMatch.h>
 #include <frc/Solenoid.h>
@@ -42,8 +38,6 @@ public:
 	void Init();
 	void Loop();
 	void Stop();
-	
-	
 	
 protected:
 	//Should these be public???
@@ -80,11 +74,9 @@ private:
 	double m_controlpanelangle;
 	double m_pigeon1currentangle;
 
-#ifdef USE_LOGGER
-	Logger m_log;
+	Logger *m_log;
 	vector<int*> m_dataInt;
 	vector<double*> m_dataDouble;
-#endif
 };
 
 
