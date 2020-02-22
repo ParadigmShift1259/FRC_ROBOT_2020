@@ -145,7 +145,7 @@ void Turret::Init()
     m_distance = 0;
     
     SmartDashboard::PutNumber("TESTING_Flywheel", TUR_SHOOTER_IDLE_STATE_RPM);
-    SmartDashboard::PutNumber("TESTING_Hood Angle", 0.25);
+    SmartDashboard::PutNumber("TESTING_Hood Angle", 0);
 }
 
 
@@ -160,12 +160,6 @@ void Turret::Loop()
         m_readytofire = false;
     }
     else
-    if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-    {
-        m_turretstate = kRampUp;
-        m_readytofire = false;
-    }
-    else
     if (m_inputs->xBoxLeftY(1 * INP_DUAL) < -0.7)
     {
         m_turretstate = kVision;
@@ -174,7 +168,7 @@ void Turret::Loop()
     else
     if (m_inputs->xBoxLeftY(1 * INP_DUAL) > 0.7 && (m_turretstate == kVision || m_turretstate == kAllReady))
     {
-        m_turretstate = kRampUp;
+        m_turretstate = kIdle;
         m_readytofire = false;
     }
 
@@ -192,7 +186,7 @@ void Turret::Loop()
     }
     
 
-    //m_hoodservo->SetPosition(fabs(m_inputs->xBoxLeftY(1 * INP_DUAL)));
+    //m_hoodangle = SmartDashboard::GetNumber("TESTING_Hood Angle", 0);
 
 
     TurretStates();
@@ -228,24 +222,26 @@ void Turret::Dashboard()
 
     SmartDashboard::PutNumber("TUR00_State", m_turretstate);
     SmartDashboard::PutBoolean("TUR01_ReadytoFire", m_readytofire);
+    SmartDashboard::PutBoolean("TUR02_Targeting", (m_turretstate == kVision));
 
     if (Debug)
     {
-        SmartDashboard::PutNumber("TUR02_Setpoint", m_flywheelsetpoint);
-        SmartDashboard::PutNumber("TUR03_Encoder_Position in Native units", m_flywheelencoder->GetPosition());
-        SmartDashboard::PutNumber("TUR04_Encoder_Velocity in Native Speed", m_flywheelencoder->GetVelocity());
-        SmartDashboard::PutNumber("TUR05_SimpleMotorFeedforward", m_flywheelinitialfeedforward);
-        SmartDashboard::PutNumber("TUR06_Error", m_flywheelrampedsetpoint - m_flywheelencoder->GetVelocity());
-        SmartDashboard::PutNumber("TUR07_RampedSetpoint", m_flywheelrampedsetpoint);
-        SmartDashboard::PutNumber("TUR08_RampState", m_flywheelrampstate);
-        SmartDashboard::PutNumber("TUR09_PIDslot", m_PIDslot);
-        SmartDashboard::PutNumber("TUR10_Turret Degrees", TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()));
-        SmartDashboard::PutNumber("TUR11_Setpoint Angle", m_turretmotor->GetClosedLoopTarget(0));
-        SmartDashboard::PutNumber("TUR12_Flywheel Ramp State", m_flywheelrampstate);
-        SmartDashboard::PutNumber("TUR13_Turret Angle", m_turretangle);
-        SmartDashboard::PutNumber("TUR14_Intake Up", m_intakeup);
-        SmartDashboard::PutNumber("TUR15_Firing", m_firing);
-        SmartDashboard::PutNumber("TUR16_Ready to Fire", m_readytofire);
+        SmartDashboard::PutNumber("TUR03_Setpoint", m_flywheelsetpoint);
+        SmartDashboard::PutNumber("TUR04_Encoder_Position in Native units", m_flywheelencoder->GetPosition());
+        SmartDashboard::PutNumber("TUR05_Encoder_Velocity in Native Speed", m_flywheelencoder->GetVelocity());
+        SmartDashboard::PutNumber("TUR06_SimpleMotorFeedforward", m_flywheelinitialfeedforward);
+        SmartDashboard::PutNumber("TUR07_Error", m_flywheelrampedsetpoint - m_flywheelencoder->GetVelocity());
+        SmartDashboard::PutNumber("TUR08_RampedSetpoint", m_flywheelrampedsetpoint);
+        SmartDashboard::PutNumber("TUR09_RampState", m_flywheelrampstate);
+        SmartDashboard::PutNumber("TUR10_PIDslot", m_PIDslot);
+        SmartDashboard::PutNumber("TUR11_Turret Degrees", TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()));
+        SmartDashboard::PutNumber("TUR12_Setpoint Angle", m_turretmotor->GetClosedLoopTarget(0));
+        SmartDashboard::PutNumber("TUR13_Flywheel Ramp State", m_flywheelrampstate);
+        SmartDashboard::PutNumber("TUR14_Turret Angle", m_turretangle);
+        SmartDashboard::PutNumber("TUR15_Intake Up", m_intakeup);
+        SmartDashboard::PutNumber("TUR16_Firing", m_firing);
+        SmartDashboard::PutNumber("TUR17_Ready to Fire", m_readytofire);
+        SmartDashboard::PutNumber("TUR18_Hood Angle", m_hoodangle);
     }
 }
 
@@ -489,7 +485,7 @@ bool Turret::VisionFieldAngle()
 
 void Turret::CalculateHoodFlywheel(double distance, double &hoodangle, double &flywheelspeed)
 {
-    hoodangle = 0.009985919 + (0.3172809 - 0.009985919)/(1 + pow((distance/148.786), 20.89529));
+    hoodangle = (0.03362488 * distance)/(-115.3355 + distance) + 0.0045;
     flywheelspeed = 5711.094 + (2521.797 - 5711.094)/(1 + pow((distance/378.657), 2.567828));
 }
 

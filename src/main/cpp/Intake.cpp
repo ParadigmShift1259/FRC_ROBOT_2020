@@ -186,7 +186,7 @@ void Intake::Loop()
         if (m_ballcount >= 2)
         {
             m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED);
-            m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED / 2);
+            m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED * 0.67);
         }
         else
         {
@@ -364,12 +364,13 @@ void Intake::Dashboard()
         return;
     
     SmartDashboard::PutNumber("INT0_Ball Count", m_ballcount);
-    SmartDashboard::PutNumber("INT1_Roller", m_rollersensor->Get());
-    SmartDashboard::PutNumber("INT2_Chute", m_chutesensor->Get());
+    SmartDashboard::PutBoolean("INT1_Intake On", (m_intakestate != kIdle));
+    SmartDashboard::PutBoolean("INT2_Roller", m_rollersensor->Get());
+    SmartDashboard::PutBoolean("INT3_Chute", m_chutesensor->Get());
 
     if (Debug)
     {
-        SmartDashboard::PutNumber("INT3_State", m_intakestate);
+        SmartDashboard::PutNumber("INT4_State", m_intakestate);
     }
 }
 
