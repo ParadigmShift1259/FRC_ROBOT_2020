@@ -26,11 +26,6 @@ enum ELogLevel
     , eError
 };
 
-//                                          1234567
-constexpr char* c_doubleFmt = "%.3f%s";  // 3.141,2.718
-constexpr char* c_intFmt = "%6d%s";      //     42,    17
-constexpr int c_charsPerDouble = 6;
-constexpr int c_charsPerInt = 7;
 
 using namespace std;
 using namespace frc;
@@ -41,39 +36,18 @@ class Logger
     Timer *m_timer;
     bool m_console_echo;
 
-   public:
+  public:
     Logger(const char *path, bool console_echo);
     ~Logger();
 
     void logMsg(ELogLevel level, const char* func, const int line, const char* msg);
- 
-    void logData(const char* func, const int line, const vector<double*>& data)
-    {
-        logDataImpl<double>(func, line, m_dataFmtFloatingPoint, c_charsPerDouble, data);
-    }
+    void logData(const char* func, const int line, const vector<double*>& data);
+    void logData(const char* func, const int line, const vector<int*>& data);
+    void logData(const char* func, const int line, const vector<int*>& dataInt, const vector<double*>& dataDouble);
 
-    void logData(const char* func, const int line, const vector<int*>& data)
-    {
-        logDataImpl<int>(func, line, m_dataFmtInteger, c_charsPerInt, data);
-    }
-
-protected:
-    template <typename T>
-    void logDataImpl(const char* func, const int line, const string& fmt, size_t charsPerDataElem, const vector<T*>& data)
-    {
-        const size_t sz = data.size();
-        m_formattedData.resize(charsPerDataElem * sz + 1);
-        char* out = const_cast<char*>(m_formattedData.c_str());
-
-        for (size_t i = 0; i < sz; i++)
-        {
-            out += sprintf(out, fmt.c_str(), *data[i], i == sz - 1 ? "" : ",");
-        }
-        logMsg(eInfo, func, line, m_formattedData.c_str());
-    }
-
-    string m_dataFmtFloatingPoint;
-    string m_dataFmtInteger;
+  protected:
+    void formatData(const vector<double*>& data);
+    void formatData(const vector<int*>& data);
     string m_formattedData;
 };
 

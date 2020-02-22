@@ -11,6 +11,7 @@
 
 #include "OperatorInputs.h"
 #include "GyroDrive.h"
+#define USE_LOGGER
 #ifdef USE_LOGGER
 #include "Logger.h"
 #endif
@@ -73,7 +74,8 @@ private:
 	double m_spinnersetpoint;
 #ifdef USE_LOGGER
 	Logger m_log;
-	vector<int*> m_data;
+	vector<int*> m_dataInt;
+	vector<double*> m_dataDouble;
 #endif
 };
 
