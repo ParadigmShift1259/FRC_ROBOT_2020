@@ -76,15 +76,16 @@ void CurveAuto::Init()
         0 * 1_V * 1_s * 1_s / 1_m
     );
 
-    m_gyrotolerance = 2_deg;
+    m_gyrotolerance = 3_deg;
 
     m_gyroPIDController->SetPID(m_gyroPIDvals[0], m_gyroPIDvals[1], m_gyroPIDvals[2]);
     m_gyroPIDController->SetTolerance(units::meter_t{m_gyrotolerance.to<double>()}, units::meters_per_second_t{HIGH_NUMBER});
 
-    m_encodertolerance = 0.1_m;
+    m_encodertolerance = 0.2_m;
 
     m_encoderPIDController->SetConstraints(m_encoderconstraints);
-    m_encoderPIDController->SetTolerance(m_encodertolerance, units::meters_per_second_t{1});
+
+    m_encoderPIDController->SetTolerance(m_encodertolerance, units::meters_per_second_t{0.1});
     m_encoderPIDController->SetPID(m_encoderPIDvals[0], m_encoderPIDvals[1], m_encoderPIDvals[2]);
     
     m_setpoint = 0_m;
@@ -118,6 +119,8 @@ void CurveAuto::Loop()
             {
                 m_autostate = kDrive;
                 m_finished = false;
+                m_drivetrain->SetGyro(0);
+                m_drivetrain->SetEncoders(0);
             }
             else
             {
@@ -149,19 +152,30 @@ void CurveAuto::Loop()
             double anglesign = z / abs(z);
             m_drivetrain->GetDrive()->ArcadeDrive(x + sign * INITIAL_FEEDFORWARD_DRIVE, z + anglesign * INITIAL_FEEDFORWARD_TURN/2, false);
 
+            double velocity1 = m_drivetrain->GetLeftSensor()->GetIntegratedSensorVelocity() / TICKS_PER_METER * 10;
+            double velocity2 = m_drivetrain->GetRightSensor()->GetIntegratedSensorVelocity() / TICKS_PER_METER * 10 * ENCODER_INVERTED;
+            double avvelocity = (velocity1 + velocity2) / 2;
+
             if (m_encoderPIDController->AtGoal())
             {
-                m_setpoint = 0_m;
-                m_setpointangle = 0_deg;
+                DriverStation::ReportError("One completed");
                 SmartDashboard::PutNumber("Setpoint", m_setpoint.to<double>());
                 SmartDashboard::PutNumber("Setpoint Angle", m_setpointangle.to<double>());
                 m_autostate = kIdle;
                 m_finished = true;
+                m_prevvelocity = units::meters_per_second_t{avvelocity};
             }
+            SmartDashboard::PutNumber("Robot Average Velocity", avvelocity);
             break;
-
     }
     SmartDashboard::PutNumber("Autostate", m_autostate);
+    SmartDashboard::PutNumber("Robot Encoders", m_drivetrain->GetLeftSensor()->GetIntegratedSensorPosition() / TICKS_PER_METER);
+    SmartDashboard::PutNumber("Robot Gyro", m_drivetrain->GetGyro()->GetFusedHeading());
+    SmartDashboard::PutNumber("Encoder Error", m_encoderPIDController->GetPositionError().to<double>());
+    SmartDashboard::PutNumber("Encoder Velocity Error", m_encoderPIDController->GetVelocityError().to<double>());
+    SmartDashboard::PutNumber("Encoder Position Setpoint", m_encoderPIDController->GetSetpoint().position.to<double>());
+    SmartDashboard::PutNumber("Encoder Velocity Setpoint", m_encoderPIDController->GetSetpoint().velocity.to<double>());
+
 }
 
 
@@ -256,6 +270,7 @@ void CurveAuto::StartMotion(double distance, double angle, double targetvelocity
 
     m_encoderPIDController->SetGoal(goal);
     m_gyroPIDController->SetGoal(units::meter_t{m_setpointangle.to<double>()});
+    m_finished = false;
     m_start = true;
-    m_prevvelocity = units::meters_per_second_t{targetvelocity};
+    //m_prevvelocity = units::meters_per_second_t{targetvelocity};
 }

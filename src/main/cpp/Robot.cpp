@@ -141,7 +141,7 @@ void Robot::TeleopPeriodic()
 				case 0:
 					if (m_operatorinputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
 					{
-						m_curveauto->StartMotion(3, 0, 0, 3, 1.5);
+						m_curveauto->StartMotion(3, 0, 2, 3, 1.5);
 						m_autostate++;
 					}
 					break;
@@ -149,16 +149,21 @@ void Robot::TeleopPeriodic()
 				case 1:
 					if (m_curveauto->IsFinished())
 					{
-						m_curveauto->StartMotion(3, 45, 0, 3, 1.5);
+                        m_curveauto->StartMotion(2, 0, 0, 3, 2);
 						m_autostate++;
+						//m_curveauto->StartMotion(3, 45, 0, 3, 1.5);
+						//m_autostate++;
+                        //m_autostate = 0;
 					}
 					break;
 				
 				case 2:
 					if (m_curveauto->IsFinished())
 					{
-						m_curveauto->StartMotion(3, 0, 0, 3, 1.5);
-						m_autostate++;
+						//m_curveauto->StartMotion(3, 45, 0, 3, 1.5);
+                        //m_curveauto->StartMotion(3, 0, 0, 3, 1.5);
+						//m_autostate++;
+                        m_autostate = 0;
 					}
 					break;
 				
@@ -169,7 +174,7 @@ void Robot::TeleopPeriodic()
 					}
 					break;
 			}
-
+            SmartDashboard::PutNumber("State", m_autostate);
             SmartDashboard::PutBoolean("Finished", m_curveauto->IsFinished());
     }
 }
