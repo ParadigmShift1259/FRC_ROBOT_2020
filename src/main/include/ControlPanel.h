@@ -11,7 +11,7 @@
 
 #include "OperatorInputs.h"
 #include "GyroDrive.h"
-#define USE_LOGGER
+//#define USE_LOGGER
 #ifdef USE_LOGGER
 #include "Logger.h"
 #endif
@@ -69,6 +69,7 @@ private:
 	int m_direction;
 	int m_startencodervalue;
 	int m_currentencodervalue;
+	int m_encodertickstogoal;
 	string m_color[kSize];
 	ColorOptions m_currentcolor, m_previouscolor;
 	bool m_stop;

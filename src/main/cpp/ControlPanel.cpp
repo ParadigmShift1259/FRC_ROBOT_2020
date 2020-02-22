@@ -13,9 +13,7 @@
 #include "math.h"
 
 
-
 using namespace std;
-
 
 ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive)
 #ifdef USE_LOGGER
@@ -51,24 +49,18 @@ ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive)
 		m_pigeon1 = new PigeonIMU(CAN_GYRO1);
 
 #ifdef USE_LOGGER
-	m_log.logMsg(eInfo, __FUNCTION__, __LINE__, "currentcolor,previouscolor,targetcolor,redCount,blueCount,direction,currentencodervalue,startencodervalue,spinnersetpoint");
+	m_log.logMsg(eInfo, __FUNCTION__, __LINE__, "currentcolor,previouscolor,targetcolor,redCount,blueCount,direction,currentencodervalue,startencodervalue,encodertickstogoal,spinnersetpoint");
 	m_dataInt.push_back((int*)&m_currentcolor);
 	m_dataInt.push_back((int*)&m_previouscolor);
+	m_dataInt.push_back((int*)&m_targetcolor);
 	m_dataInt.push_back(&m_redCount);
 	m_dataInt.push_back(&m_blueCount);
+	m_dataInt.push_back(&m_direction);
 	m_dataInt.push_back(&m_currentencodervalue);
+	m_dataInt.push_back(&m_startencodervalue);
+	m_dataInt.push_back(&m_encodertickstogoal);
+
 	m_dataDouble.push_back(&m_spinnersetpoint);
-			std::cout 	<< m_currentcolor << ", " 
-						<< m_previouscolor << ", " 
-						<< m_targetcolor << ", " 
-						<< m_redCount << ", " 
-						<< m_blueCount << ", " 
-						<< m_direction << ", " 
-						<< m_currentencodervalue << ", " 
-						<< m_startencodervalue << "," 
-						<< CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta 
-						<< m_spinnersetpoint << ", " 
-						<< endl;
 #endif
 
 	// Integrate color sensor TAG
@@ -109,6 +101,8 @@ void ControlPanel::Init()
 	m_spinnerstate = kOff;
 	m_stop = true;
 	m_startencodervalue = 0;
+	m_encodertickstogoal = 0;
+	// TODO initialize m_currentencodervalue?
 
 	m_spinner->SetNeutralMode(NeutralMode::Brake);
 	m_spinner->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0);
@@ -180,6 +174,8 @@ void ControlPanel::ControlPanelStates()
 			m_spinnersetpoint = CPL_ROTATION_CONTROL_FAST;
 			m_spinner->Set(ControlMode::Velocity, m_spinnersetpoint); 
 			m_currentencodervalue = m_spinner->GetSelectedSensorPosition(0);
+			int encoderdelta = abs(m_currentencodervalue - m_startencodervalue);
+			m_encodertickstogoal = CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta;
 #ifdef USE_LOGGER
 			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 #else
@@ -222,38 +218,32 @@ void ControlPanel::ControlPanelStates()
 					m_direction = 1;
 				// Set motor speed	
 				m_spinnersetpoint = CPL_POSITION_CONTROL_FAST;
-#ifdef USE_LOGGER
-			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
-#else
-			std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
-#endif
+#ifndef USE_LOGGER
 				cout<< "Target Color =" << m_targetcolor <<endl;
-
+#endif
 				}
 			}
 		
-		if(m_currentcolor == m_targetcolor)
-			{
+		if (m_currentcolor == m_targetcolor)
+		{
 			m_spinnersetpoint = CPL_POSITION_CONTROL_SLOW;
 			if (m_startencodervalue == 0)
-				{
+			{
 #ifdef USE_LOGGER
-			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
+				m_log.logMsg(eDebug, __FUNCTION__, __LINE__, "found target color!");
 #else
-			std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
-#endif
 				cout << "found target color!" << endl;
+#endif
 				// Record the current encoder value
 				m_startencodervalue = m_spinner->GetSelectedSensorPosition(0);
-				}
+			}
 			else if (abs(m_currentencodervalue - m_startencodervalue) >= CPL_COUNTS_PER_CW_SECTOR/2 )
-				{
+			{
 #ifdef USE_LOGGER
-			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
+				m_log.logMsg(eDebug, __FUNCTION__, __LINE__, "done!");
 #else
-			std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
-#endif
 				cout << "done!" << endl;
+#endif
 				// if the wheel has spun half a sector, then stop the motor
 				m_stop = true;
 				}
@@ -277,6 +267,7 @@ void ControlPanel::ControlPanelStates()
 			//If not stopped command motor according to setpoint and direction
 			m_spinner->Set(ControlMode::Velocity, m_spinnersetpoint * m_direction); 
 			int encoderdelta = abs(m_currentencodervalue - m_startencodervalue);
+			m_encodertickstogoal = CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta;
 #ifdef USE_LOGGER
 			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 #else
@@ -288,7 +279,7 @@ void ControlPanel::ControlPanelStates()
 						<< m_direction << ", " 
 						<< m_currentencodervalue << ", " 
 						<< m_startencodervalue << "," 
-						<< CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta 
+						<< m_encodertickstogoal << "," 
 						<< m_spinnersetpoint << ", " 
 						<< endl;
 #endif
@@ -395,14 +386,13 @@ void ControlPanel::ChangeSpinnerState()
 		m_startencodervalue = 0;
 	}
 }
+
 void ControlPanel::GyroToSpin()
 {
 	if (m_pigeon1 != nullptr)
-		{
-			m_pigeon1->GetAccumGyro(m_gyroval1);
-		}
-
-	 
+	{
+		m_pigeon1->GetAccumGyro(m_gyroval1);
+	}
 }
 
 void ControlPanel::ChangeSpinnerState(SpinnerState state)
