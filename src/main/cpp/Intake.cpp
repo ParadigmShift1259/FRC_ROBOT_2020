@@ -10,6 +10,7 @@
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
 
+
 using namespace std;
 
 
@@ -44,7 +45,13 @@ Intake::~Intake()
         delete m_rollermotor;
 
     if (m_wheelmotor != nullptr)
-        delete m_wheelmotor;	  
+        delete m_wheelmotor;	 
+
+    if (m_rollersensor != nullptr) 
+        delete m_rollersensor;
+
+    if (m_chutesensor != nullptr)
+        delete m_chutesensor; 
 }
 
 
@@ -71,15 +78,15 @@ bool Intake::NullCheck()
 
 void Intake::Init()
 {
-    if ((INT_SOLENOID != -1) && (m_solenoid == nullptr))
+    if ((m_solenoid == nullptr) && (INT_SOLENOID != -1))
         m_solenoid = new Solenoid(INT_SOLENOID);
-    if ((INT_MOTOR1 != -1) && (m_rollermotor == nullptr))
-        m_rollermotor = new Spark(INT_MOTOR1);
-    if ((INT_MOTOR2 != -1) && (m_wheelmotor == nullptr))
-        m_wheelmotor = new Spark(INT_MOTOR2);
-    if ((INT_ROLLER_SENSOR != -1) && (m_rollersensor == nullptr))
+    if ((m_rollermotor == nullptr) && (INT_ROLLER_MOTOR != -1))
+        m_rollermotor = new Spark(INT_ROLLER_MOTOR);
+    if ((m_wheelmotor == nullptr) && (INT_WHEEL_MOTOR != -1))
+        m_wheelmotor = new Spark(INT_WHEEL_MOTOR);
+    if ((m_rollersensor == nullptr) && (INT_ROLLER_SENSOR != -1))
         m_rollersensor = new DigitalInput(INT_ROLLER_SENSOR);
-    if ((INT_CHUTE_SENSOR != -1) && (m_chutesensor == nullptr))
+    if ((m_chutesensor == nullptr) && (INT_CHUTE_SENSOR != -1))
         m_chutesensor = new DigitalInput(INT_CHUTE_SENSOR);
 
     if (!NullCheck())
@@ -114,6 +121,7 @@ void Intake::Loop()
         if (m_stuffing)
         {
             m_timer.Reset();
+            m_gathering = false;
             m_rollermotor->Feed();
             m_wheelmotor->Feed();
             m_intakestate = kStuff;
@@ -129,6 +137,12 @@ void Intake::Loop()
             m_intakeposition = kDown;
             m_rollermotor->Feed();
             m_wheelmotor->Feed();
+        }
+        else
+        // if B button is pressed, ensure gathering is false
+        if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        {
+            m_gathering = false;
         }
         else
         // If previously gathering and less balls, go back to gathering
@@ -168,10 +182,18 @@ void Intake::Loop()
         }
         // Otherwise, gather the balls
         else
+        // if ball count is one less from full, slow down speed
+        if (m_ballcount >= 2)
+        {
+            m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED);
+            m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED / 2);
+        }
+        else
         {
             m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED);
             m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED);
         }
+        
         break;
 
     case kStuff:
@@ -341,10 +363,14 @@ void Intake::Dashboard()
     if (!NullCheck())
         return;
     
-    SmartDashboard::PutNumber("INT1_Ball Count", m_ballcount);
-    SmartDashboard::PutNumber("Roller Sensor", m_rollersensor->Get());
-    SmartDashboard::PutNumber("Chute Sensor", m_chutesensor->Get());
-    SmartDashboard::PutNumber("INT2_Intake State", m_intakestate);
+    SmartDashboard::PutNumber("INT0_Ball Count", m_ballcount);
+    SmartDashboard::PutNumber("INT1_Roller", m_rollersensor->Get());
+    SmartDashboard::PutNumber("INT2_Chute", m_chutesensor->Get());
+
+    if (Debug)
+    {
+        SmartDashboard::PutNumber("INT3_State", m_intakestate);
+    }
 }
 
 

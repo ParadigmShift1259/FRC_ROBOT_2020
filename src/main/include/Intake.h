@@ -31,16 +31,16 @@ public:
 	void Init();
 	void Loop();
 	void Stop();
+	void Dashboard();
 
 	void SetStuffing(bool stuff = true);
 	bool IsStuffing();
 
 	bool CanRefresh();
+	int GetBallCount() { return m_ballcount; }
 
 	void IntakePositionLoop();
 	bool IntakeUp();
-
-	void Dashboard();
 
 private:
 	bool NullCheck();

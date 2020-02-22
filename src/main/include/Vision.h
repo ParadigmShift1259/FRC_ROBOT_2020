@@ -56,6 +56,9 @@ private:
 
     double m_distance;
     double m_horizontalangle;
+
+    double m_averagedistance[3];
+    double m_averageangle[3];
 };
 
 

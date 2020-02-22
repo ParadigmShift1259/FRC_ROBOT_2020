@@ -11,6 +11,7 @@
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
 
+
 using namespace std;
 
 
@@ -41,8 +42,8 @@ Feeder::~Feeder()
 
 void Feeder::Init()
 {
-    m_constraints.maxVelocity = 10_in / 1_s;
-    m_constraints.maxAcceleration = 10_in / 1_s / 1_s;
+    m_constraints.maxVelocity = 20_in / 1_s;
+    m_constraints.maxAcceleration = 15_in / 1_s / 1_s;
     m_tolerance = 2.0_in;
     m_goal = 0_in;
     m_feederstate = kIdle;
@@ -52,7 +53,7 @@ void Feeder::Init()
     m_loaded = false;
     m_stuffing = false;
 
-    if (FDR_MOTOR != -1 && m_motor == nullptr)
+    if ((m_motor == nullptr) && (FDR_MOTOR != -1))
     {
         m_motor = new WPI_TalonSRX(FDR_MOTOR);
     }
@@ -77,10 +78,10 @@ void Feeder::Init()
     m_motor->Set(ControlMode::PercentOutput, 0);
     m_motor->SetSelectedSensorPosition(0);
     m_motor->SetSensorPhase(true);
-    // 2/20/2020 6:47 PM
-    m_motor->ConfigNominalOutputForward(0);
+    
+    //m_motor->ConfigNominalOutputForward(0);
     m_motor->ConfigNominalOutputReverse(0);
-    m_motor->ConfigPeakOutputForward(FDR_MAX_POWER);
+    //m_motor->ConfigPeakOutputForward(FDR_MAX_POWER);
     m_motor->ConfigPeakOutputReverse(0);
     m_timer.Reset();
     m_timer.Start();
@@ -109,10 +110,13 @@ void Feeder::Dashboard()
     if (m_motor == nullptr)
         return;
 
+    SmartDashboard::PutBoolean("FDR0_Loaded", m_loaded);
+    SmartDashboard::PutNumber("FDR1_Ball Count", m_intake->GetBallCount() + (m_loaded ? 2 : 0));
+
     if (Debug)
     {
-        SmartDashboard::PutNumber("INT0_Position", m_motor->GetSelectedSensorPosition());
-        SmartDashboard::PutNumber("INT1_State", m_feederstate);
+        SmartDashboard::PutNumber("FDR2_Position", m_motor->GetSelectedSensorPosition() / ENCODER_TICKS_PER_REV * FDR_WHEEL_SIZE * 3.1415926535);
+        SmartDashboard::PutNumber("FDR3_State", m_feederstate);
     }
 }
 
