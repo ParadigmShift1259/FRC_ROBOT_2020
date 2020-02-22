@@ -12,6 +12,8 @@
 #include "frc/PowerDistributionPanel.h"
 #include "frc/Timer.h"
 
+#include "Logger.h"
+
 
 using namespace frc;
 using namespace std;
@@ -31,8 +33,18 @@ public:
 private:
 	Compressor *m_compressor;
 	PowerDistributionPanel *m_pdp;
-	Stage m_stage;
 	Timer m_timer;
+
+	Stage m_stage;
+	bool m_pressureSwitch;
+	double m_compressorCurrent;
+	double m_totalCurrent;
+	double m_voltage;
+	double m_temperature;
+
+	Logger *m_log;
+	vector<int*> m_dataInt;
+	vector<double*> m_dataDouble;
 };
 
 
