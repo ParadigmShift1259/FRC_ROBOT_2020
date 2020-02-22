@@ -11,7 +11,8 @@
 
 #include "OperatorInputs.h"
 #include "GyroDrive.h"
-#define USE_LOGGER
+#include "Intake.h"
+// #define USE_LOGGER
 #ifdef USE_LOGGER
 #include "Logger.h"
 #endif
@@ -37,7 +38,7 @@ public:
 	 */
 	enum SpinnerState {kOff, kRotationControl, kPositionControl};
 	enum ColorOptions {kNone, kYellow, kRed, kGreen, kBlue, kSize };
-	ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive);
+	ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake);
 	~ControlPanel();
 	void Init();
 	void Loop();
@@ -57,6 +58,8 @@ private:
 
 	OperatorInputs *m_inputs;
 	GyroDrive *m_gyrodrive;
+	Intake *m_intake;
+
 	ColorOptions m_targetcolor;
 	TalonSRX *m_spinner;
 	Solenoid *m_solenoid;

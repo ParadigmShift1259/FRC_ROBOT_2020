@@ -185,7 +185,7 @@ void Intake::Loop()
         // if ball count is one less from full, slow down speed
         if (m_ballcount >= 2)
         {
-            m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED);
+            m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED * 0.67);
             m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED * 0.67);
         }
         else

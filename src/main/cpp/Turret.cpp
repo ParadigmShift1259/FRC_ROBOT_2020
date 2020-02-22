@@ -271,6 +271,7 @@ void Turret::TurretStates()
             FindFieldXBox();
             // maintain flywheel at last absolute angle
             CalculateTurretFromField();
+            m_hoodservo->SetPosition(0);
             break;
 
         case kRampUp:
@@ -279,6 +280,7 @@ void Turret::TurretStates()
             FindFieldXBox();
             // maintain flywheel at last absolute angle
             CalculateTurretFromField();
+            m_hoodservo->SetPosition(0);
         
             if (m_flywheelsetpoint == m_flywheelrampedsetpoint && !m_firing)
                 m_readytofire = true;

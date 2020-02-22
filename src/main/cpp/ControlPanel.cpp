@@ -17,13 +17,14 @@
 using namespace std;
 
 
-ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive)
+ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake)
 #ifdef USE_LOGGER
 	: m_log("home/cplogfile.csv", true)
 #endif
 {
 	m_inputs = inputs;
 	m_gyrodrive = gyrodrive;
+	m_intake = intake;
 	
 	m_spinner = nullptr;
 
@@ -40,6 +41,7 @@ ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive)
 	m_color[4] = "blue"  ;
 
 #ifdef USE_LOGGER
+/*
 	m_log.logMsg(eInfo, __FUNCTION__, __LINE__, "currentcolor,previouscolor,targetcolor,redCount,blueCount,direction,currentencodervalue,startencodervalue,spinnersetpoint");
 	m_dataInt.push_back((int*)&m_currentcolor);
 	m_dataInt.push_back((int*)&m_previouscolor);
@@ -58,6 +60,7 @@ ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive)
 						<< CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta 
 						<< m_spinnersetpoint << ", " 
 						<< endl;
+	*/
 #endif
 
 	// Integrate color sensor TAG
@@ -143,7 +146,9 @@ void ControlPanel::ControlPanelStates()
 		break;
 
 	case kRotationControl:
+		cout << "In Rotation Control" << endl;
 		m_currentcolor = GetColor();	
+		cout  << "Got Color" << endl;
 		
 			if (m_currentcolor == kRed && m_previouscolor != kRed)
 			{
@@ -160,8 +165,9 @@ void ControlPanel::ControlPanelStates()
 		if (m_stop)
 		{
 			// Once stopped, use Xbox Back button to restart. (TO DO: Move reading user inputs to a higher level robot class)
-			
+			cout << "Going to set spinner" << endl;
 			m_spinner->Set(ControlMode::Velocity, 0);
+			cout << "Started spinning" << endl;
 		}
 		else
 		{
@@ -172,6 +178,7 @@ void ControlPanel::ControlPanelStates()
 #ifdef USE_LOGGER
 			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 #else
+/*
 			std::cout 	<< m_currentcolor << ", " 
 						<< m_previouscolor << ", " 
 						<< m_targetcolor << ", " 
@@ -183,6 +190,7 @@ void ControlPanel::ControlPanelStates()
 						<< CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta 
 						<< m_spinnersetpoint << ", " 
 						<< endl;
+*/
 #endif
 		}
 
@@ -214,7 +222,7 @@ void ControlPanel::ControlPanelStates()
 #ifdef USE_LOGGER
 			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 #else
-			std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
+			//std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
 #endif
 				cout<< "Target Color =" << m_targetcolor <<endl;
 
@@ -229,7 +237,7 @@ void ControlPanel::ControlPanelStates()
 #ifdef USE_LOGGER
 			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 #else
-			std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
+			//std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
 #endif
 				cout << "found target color!" << endl;
 				// Record the current encoder value
@@ -240,7 +248,7 @@ void ControlPanel::ControlPanelStates()
 #ifdef USE_LOGGER
 			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 #else
-			std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
+			//std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
 #endif
 				cout << "done!" << endl;
 				// if the wheel has spun half a sector, then stop the motor
@@ -269,6 +277,7 @@ void ControlPanel::ControlPanelStates()
 #ifdef USE_LOGGER
 			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 #else
+/*
 			std::cout 	<< m_currentcolor << ", " 
 						<< m_previouscolor << ", " 
 						<< m_targetcolor << ", " 
@@ -280,6 +289,7 @@ void ControlPanel::ControlPanelStates()
 						<< CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta 
 						<< m_spinnersetpoint << ", " 
 						<< endl;
+*/
 #endif
 		}
 		
@@ -353,16 +363,17 @@ ControlPanel::ColorOptions ControlPanel::GetTargetColor()
 
 void ControlPanel::ChangeSpinnerState()
 {
-	if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+	if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && !m_intake->IntakeUp())
 	{
 		m_solenoid->Set(true);
 		m_gyrodrive->SetLowSpeed(true);
 	}
 	else
-	if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+	if (m_intake->IntakeUp() || m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 	{
 		m_solenoid->Set(false);
 		m_gyrodrive->SetLowSpeed(false);
+		m_stop = true;
 	}
 
 	if (!m_solenoid->Get())
@@ -371,6 +382,7 @@ void ControlPanel::ChangeSpinnerState()
 	//TODO: Move reading of operator inputs to higher level class
 	if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 	{
+		cout<<"Back Button Pressed"<<endl;
 		m_spinnerstate = kRotationControl;
 		m_stop = false;
 		m_redCount = 0;

@@ -51,9 +51,9 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define AXIS1_FORWARD_MIN 0.75
 #define AXIS1_FORWARD_MAX 1.0
 //	 Controller Dead Zones
-#define DEADZONE_Y  0.18
-#define DEADZONE_X  0.18
-#define DEADZONE_Z  0.18
+#define DEADZONE_Y  0.08    // Changed to 0.08 from 0.18 on 2/22/20
+#define DEADZONE_X  0.08
+#define DEADZONE_Z  0.08
 
 
 //   Enabled macro
