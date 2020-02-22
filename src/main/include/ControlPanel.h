@@ -44,17 +44,18 @@ public:
 	void Stop();
 	
 	
+	
 protected:
 	//Should these be public???
 	void ControlPanelStates();
 	void ChangeSpinnerState();
 	void ChangeSpinnerState(SpinnerState);
 	void Dashboard();
+	void GyroToSpin();
 
 private:
 	ColorOptions GetColor();
 	ColorOptions GetTargetColor();
-
 	OperatorInputs *m_inputs;
 	GyroDrive *m_gyrodrive;
 	ColorOptions m_targetcolor;
@@ -72,6 +73,12 @@ private:
 	ColorOptions m_currentcolor, m_previouscolor;
 	bool m_stop;
 	double m_spinnersetpoint;
+	// Gyro :
+	PigeonIMU *m_pigeon1;
+	double m_gyroval1[3];
+	double m_controlpanelangle;
+	double m_pigeon1currentangle;
+
 #ifdef USE_LOGGER
 	Logger m_log;
 	vector<int*> m_dataInt;

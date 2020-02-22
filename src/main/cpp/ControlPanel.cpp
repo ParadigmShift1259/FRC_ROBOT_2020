@@ -24,7 +24,7 @@ ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive)
 {
 	m_inputs = inputs;
 	m_gyrodrive = gyrodrive;
-	
+	m_pigeon1 = nullptr;
 	m_spinner = nullptr;
 
 	if (CPL_MOTOR != -1)
@@ -38,6 +38,17 @@ ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive)
 	m_color[2] = "red"   ;
 	m_color[3] = "green" ;
 	m_color[4] = "blue"  ;
+
+	m_gyroval1[0] = 0.0;
+	m_gyroval1[1] = 0.0;
+	m_gyroval1[2] = 0.0;
+	
+
+
+
+
+	if (CAN_GYRO1 != -1 )
+		m_pigeon1 = new PigeonIMU(CAN_GYRO1);
 
 #ifdef USE_LOGGER
 	m_log.logMsg(eInfo, __FUNCTION__, __LINE__, "currentcolor,previouscolor,targetcolor,redCount,blueCount,direction,currentencodervalue,startencodervalue,spinnersetpoint");
@@ -383,6 +394,15 @@ void ControlPanel::ChangeSpinnerState()
 		m_targetcolor = kNone;
 		m_startencodervalue = 0;
 	}
+}
+void ControlPanel::GyroToSpin()
+{
+	if (m_pigeon1 != nullptr)
+		{
+			m_pigeon1->GetAccumGyro(m_gyroval1);
+		}
+
+	 
 }
 
 void ControlPanel::ChangeSpinnerState(SpinnerState state)
