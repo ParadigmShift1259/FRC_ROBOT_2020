@@ -33,8 +33,6 @@ public:
 	void Stop();
 	void Disabled();
 
-	DualGyro *GetGyro() { return m_gyro; }
-
 	void Drive(double x, double y, bool ramp = false);
 	void SetStraightPID(double P = -1, double I = -1, double D = -1);
 	void SetAnglePID(double P = -1, double I = -1, double D = -1);
@@ -42,6 +40,8 @@ public:
 	bool DriveStraight(double targetdistance, double autopower, bool reset = true);
 	bool DriveAngle(double angle, bool reset = true);
 	void SetLowSpeed(bool enable) { m_drivetrain->SetLowSpeedMode(enable); }
+	void ZeroHeading() { m_gyro->ZeroHeading(); }
+	bool GetHeading(double &heading) { return m_gyro->GetHeading(heading); }
 
 protected:
 	OperatorInputs *m_inputs;

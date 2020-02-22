@@ -270,60 +270,72 @@ void Intake::CountBalls()
     switch (m_ballstate)
     {
     case kZero:
-        // if something is detected in chute, start timer for ball validity
+        // if ball detected in chute
         if (m_chutesensor->Get())
         {
-            m_balltimer.Reset();
-            m_ballstate = kTwoCheck;
+            // wait for steady state detection
+            if (m_balltimer.Get() > INT_BALL_CHECK_TIME)
+            {
+                m_ballstate = kTwo;
+            }
         }
+        // no balls in system
         else
+        {
             m_ballcount = 0;
+            m_balltimer.Reset();
+        }
         break;
     
-    case kTwoCheck:
-        // if nothing in the chute, no balls in system
-        if (!m_chutesensor->Get())
-        {
-            m_ballstate = kZero;
-        }
-        else
-        // if timer passes, register two balls
-        if (m_balltimer.Get() > INT_BALL_CHECK_TIME)
-        {
-            m_ballstate = kTwo;
-        }
-        break;
-
     case kTwo:
-        // if nothing in the chute, no balls in system
+        // if no ball detected in chute
         if (!m_chutesensor->Get())
         {
-            m_ballstate = kZero;
+            // wait for steady state no detection
+            if (m_balltimer.Get() > INT_BALL_CHECK_TIME)
+            {
+                m_ballstate = kZero;
+            }
         }
-        else
         // if ball in the rollers, three balls in system
+        else
         if (m_rollersensor->Get())
         {
             m_ballstate = kThree;
         }
+        // two balls in system
         else
+        {
             m_ballcount = 2;
+            m_balltimer.Reset();
+        }
         break;
     
     case kThree:
-        // if nothing in the chute, no balls in system
-        if (!m_chutesensor->Get())
-        {
-            m_ballstate = kZero;
-        }
-        else
         // if nothing in the rollers, two balls in system
         if (!m_rollersensor->Get())
         {
-            m_ballstate = kTwo;
+            // wait for steady state no detection
+            if (m_balltimer.Get() > INT_BALL_CHECK_TIME)
+            {
+                m_ballstate = kTwo;
+            }
         }
+        // if nothing in the chute, no balls in system
         else
+        if (!m_chutesensor->Get())
+        {
+            if (m_balltimer.Get() > INT_BALL_CHECK_TIME)
+            {
+                m_ballstate = kZero;
+            }
+        }
+        // 3 ball in system
+        else
+        {
             m_ballcount = 3;
+            m_balltimer.Reset();
+        }
         break;
     }
 }

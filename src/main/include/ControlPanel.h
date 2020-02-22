@@ -43,7 +43,8 @@ public:
 	void Init();
 	void Loop();
 	void Stop();
-	
+
+	bool ControlPanelUp() { return m_solenoid->Get(); }
 	
 protected:
 	//Should these be public???

@@ -14,7 +14,7 @@
 using namespace std;
 
 
-Turret::Turret(OperatorInputs *inputs, Intake *intake, Feeder *feeder, Vision *vision, GyroDrive *gyrodrive)
+Turret::Turret(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake, Feeder *feeder, ControlPanel *controlpanel, Vision *vision)
 {
     if (TUR_ENABLED != 1)
     {
@@ -22,9 +22,11 @@ Turret::Turret(OperatorInputs *inputs, Intake *intake, Feeder *feeder, Vision *v
     }
 
     m_inputs = inputs;
+    m_gyrodrive = gyrodrive;
     m_vision = vision;
     m_intake = intake;
     m_feeder = feeder;
+    m_controlpanel = controlpanel;
 
     m_flywheelmotor = nullptr;
     m_flywheelPID = nullptr;
@@ -34,8 +36,6 @@ Turret::Turret(OperatorInputs *inputs, Intake *intake, Feeder *feeder, Vision *v
     m_turretmotor = nullptr;
 
     m_hoodservo = nullptr;
-    
-    m_robotgyro = gyrodrive->GetGyro();
 
     m_turretstate = kIdle;
     m_firemode = kHoldShoot;
@@ -127,7 +127,6 @@ void Turret::Init()
 
     m_fieldangle = 180;
     m_robotangle = 0;
-    m_robotgyro->ZeroHeading();
     m_turretangle = 135;      // Change these when starting orientation is different
     m_turretrampedangle = 135;
 
@@ -197,6 +196,12 @@ void Turret::Loop()
         if (m_turretangle < 120)
             m_turretangle = 120;
     }
+    else
+    if (m_controlpanel->ControlPanelUp())
+    {
+        if (m_turretangle > 235)
+            m_turretangle = 235;
+    }
 
     RampUpFlywheel();
     RampUpTurret();
@@ -262,6 +267,20 @@ bool Turret::NullCheck()
 
 void Turret::TurretStates()
 {
+    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    {
+        m_hoodangle += 0.1;
+        if (m_hoodangle > 0.5)
+            m_hoodangle = 0.5;
+    }
+    else
+    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    {
+        m_hoodangle -= 0.1;
+        if (m_hoodangle < 0)
+            m_hoodangle = 0;
+    }
+    
     switch (m_turretstate)
     {
         case kIdle:
@@ -272,15 +291,23 @@ void Turret::TurretStates()
             // maintain flywheel at last absolute angle
             CalculateTurretFromField();
             m_hoodservo->SetPosition(0);
+
+            if (m_feeder->GetBallCount() >= 5)
+            {
+                m_turretstate = kRampUp;
+            }
             break;
 
         case kRampUp:
-            m_flywheelsetpoint = TUR_SHOOTER_PREMOVE_STATE_RPM;
+            m_flywheelsetpoint = TUR_SHOOTER_RAMPUP_STATE_RPM;
             // Check xBox for abs angle
             FindFieldXBox();
             // maintain flywheel at last absolute angle
             CalculateTurretFromField();
             m_hoodservo->SetPosition(0);
+
+            if (m_feeder->GetBallCount() <= 5)
+                m_turretstate = kIdle;
         
             if (m_flywheelsetpoint == m_flywheelrampedsetpoint && !m_firing)
                 m_readytofire = true;
@@ -289,29 +316,7 @@ void Turret::TurretStates()
             break;
 
         case kVision:
-            /*
-            m_flywheelsetpoint = TUR_SHOOTER_PREMOVE_STATE_RPM;
             m_readytofire = false;
-            // Loop vision but also check if valid
-            if (!VisionFieldAngle())
-                m_turretstate = kRampUp;
-
-            // CalculateHoodFlywheel(distance, m_hoodangle, m_setpoint);
-            
-            // If driver wants to adjust turret angle, go back to rampUp
-            if (fabs(m_inputs->xBoxRightX(1 * INP_DUAL)) > 0.7 || fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.7)
-                m_turretstate = kRampUp;
-    
-            // if turret is only off by a small amount with its error and its flywheel is up to speed, progress
-            if (fabs(TicksToDegrees(m_turretmotor->GetClosedLoopError())) <= TUR_TURRET_ERROR &&
-                fabs(m_flywheelencoder->GetVelocity() - m_flywheelsetpoint) <= TUR_SHOOTER_ERROR &&
-                !m_firing)
-            {
-                m_turretstate = kAllReady;
-                m_readytofire = true;
-            }
-            */
-
             if (!VisionFieldAngle())
             {
                 m_turretstate = kIdle;
@@ -322,7 +327,9 @@ void Turret::TurretStates()
             VisionFieldAngle();
             CalculateHoodFlywheel(m_vision->GetDistance(), m_hoodangle, m_flywheelsetpoint);
             m_hoodservo->SetPosition(m_hoodangle);
-            if (m_inputs->xBoxRightTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+
+            if (TicksToDegrees(m_turretmotor->GetClosedLoopError() <= TUR_TURRET_ERROR &&
+                fabs(m_flywheelencoder->GetVelocity() - m_flywheelsetpoint) <= TUR_SHOOTER_ERROR))
             {
                m_readytofire = true;
                m_turretstate = kAllReady;
@@ -331,12 +338,13 @@ void Turret::TurretStates()
             break;
     
         case kAllReady:
-            m_flywheelsetpoint = TUR_SHOOTER_PREMOVE_STATE_RPM;
             VisionFieldAngle();
+            CalculateHoodFlywheel(m_vision->GetDistance(), m_hoodangle, m_flywheelsetpoint);
+            m_hoodservo->SetPosition(m_hoodangle);
 
-            // If driver wants to adjust turret angle, go back to rampUp
+            // If driver wants to adjust turret field angle, go back to rampUp
             if (fabs(m_inputs->xBoxRightX(1 * INP_DUAL)) > 0.8 || fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.8)
-                m_turretstate = kRampUp;
+                m_turretstate = kIdle;
     
             // If the turret is suddenly off by a large amount (hit by robot, robot turned, etc), return to homing
             if (!m_firing &&
@@ -432,7 +440,9 @@ void Turret::FindFieldXBox()
 void Turret::CalculateTurretFromField()
 {
     double heading;
-    m_robotgyro->GetHeading(heading);
+    if (!m_gyrodrive->GetHeading(heading))
+        return;
+
     m_robotangle = fmod(heading, 360.0);
     if (m_robotangle < 0)
         m_robotangle += 360;
@@ -467,6 +477,7 @@ void Turret::CalculateTurretFromField()
     }
 }
 
+
 // Uses vision input and calculates angle, adds it to the current angle and sets turretangle
 bool Turret::VisionFieldAngle()
 {
@@ -487,8 +498,10 @@ bool Turret::VisionFieldAngle()
 
 void Turret::CalculateHoodFlywheel(double distance, double &hoodangle, double &flywheelspeed)
 {
-    hoodangle = (0.03362488 * distance)/(-115.3355 + distance) + 0.0045;
-    flywheelspeed = 5711.094 + (2521.797 - 5711.094)/(1 + pow((distance/378.657), 2.567828));
+    hoodangle = -4.308317412 * pow(10,-12) * pow(distance, 5) + 5.194744002 * pow(10, -9) * pow(distance, 4) - 2.473275858 * pow(10, -6) * pow(distance, 3) + 5.807646984 * pow(10, -4) * pow(distance, 2)- 6.749202731 * pow(10, -2) * distance + 3.209018403;
+    flywheelspeed = 5711.094 + (2521.797 - 5711.094)/(1 + pow((distance/378.657), 2.567828)) + 100;
+    if (m_turretangle < 100)
+        flywheelspeed += 150;
 }
 
 
@@ -540,7 +553,7 @@ void Turret::RampUpFlywheel()
         case kDecrease:
             m_PIDslot = 0;
             // Provided that the setpoint hasn't been reached and the ramping has already reached halfway
-            if ((m_flywheelsetpoint < m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() - m_flywheelrampedsetpoint < TUR_SHOOTER_RAMPING_RATE / 1.5))
+            if ((m_flywheelsetpoint < m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() - m_flywheelrampedsetpoint < TUR_SHOOTER_RAMPING_RATE))
             {
                 m_flywheelrampedsetpoint -= TUR_SHOOTER_RAMPING_RATE;
 

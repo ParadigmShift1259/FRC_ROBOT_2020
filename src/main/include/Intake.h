@@ -24,7 +24,7 @@ class Intake
 public:
 	enum IntakeState {kIdle, kGather, kStuff};
 	enum IntakePosition {kDown, kUp};
-	enum BallState {kZero, kTwoCheck, kTwo, kThree};
+	enum BallState {kZero, kTwo, kThree};
 
 	Intake(OperatorInputs *inputs);
 	~Intake();

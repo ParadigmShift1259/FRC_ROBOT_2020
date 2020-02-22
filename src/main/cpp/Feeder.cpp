@@ -81,7 +81,7 @@ void Feeder::Init()
     
     //m_motor->ConfigNominalOutputForward(0);
     m_motor->ConfigNominalOutputReverse(0);
-    //m_motor->ConfigPeakOutputForward(FDR_MAX_POWER);
+    m_motor->ConfigPeakOutputForward(1);
     m_motor->ConfigPeakOutputReverse(0);
     m_timer.Reset();
     m_timer.Start();
@@ -93,36 +93,6 @@ void Feeder::Loop()
     if (m_motor == nullptr)
         return;
 
-    FeederStateMachine();
-    Dashboard();
-}
-
-
-void Feeder::Stop()
-{
-    if (m_motor == nullptr)
-        return;
-}
-
-
-void Feeder::Dashboard()
-{
-    if (m_motor == nullptr)
-        return;
-
-    SmartDashboard::PutBoolean("FDR0_Loaded", m_loaded);
-    SmartDashboard::PutNumber("FDR1_Ball Count", m_intake->GetBallCount() + (m_loaded ? 2 : 0));
-
-    if (Debug)
-    {
-        SmartDashboard::PutNumber("FDR2_Position", m_motor->GetSelectedSensorPosition() / ENCODER_TICKS_PER_REV * FDR_WHEEL_SIZE * 3.1415926535);
-        SmartDashboard::PutNumber("FDR3_State", m_feederstate);
-    }
-}
-
-
-void Feeder::FeederStateMachine()
-{    
     double distance;
     double power;
 
@@ -184,6 +154,31 @@ void Feeder::FeederStateMachine()
         }
         break;
     }
+
+    Dashboard();
+}
+
+
+void Feeder::Stop()
+{
+    if (m_motor == nullptr)
+        return;
+}
+
+
+void Feeder::Dashboard()
+{
+    if (m_motor == nullptr)
+        return;
+
+    SmartDashboard::PutBoolean("FDR0_Loaded", m_loaded);
+    SmartDashboard::PutNumber("FDR1_Ball Count", GetBallCount());
+
+    if (Debug)
+    {
+        SmartDashboard::PutNumber("FDR2_Position", m_motor->GetSelectedSensorPosition() / ENCODER_TICKS_PER_REV * FDR_WHEEL_SIZE * 3.1415926535);
+        SmartDashboard::PutNumber("FDR3_State", m_feederstate);
+    }
 }
 
 
@@ -196,4 +191,10 @@ void Feeder::SetStuffing(bool stuff)
 bool Feeder::IsStuffing()
 {
     return m_stuffing;
+}
+
+
+int Feeder::GetBallCount()
+{
+    return m_intake->GetBallCount() + (m_loaded ? 2 : 0);
 }

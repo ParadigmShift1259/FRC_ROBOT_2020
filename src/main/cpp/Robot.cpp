@@ -26,7 +26,7 @@ void Robot::RobotInit()
 	m_intake = new Intake(m_operatorinputs);
 	m_feeder = new Feeder(m_operatorinputs, m_intake);
 	m_controlpanel = new ControlPanel(m_operatorinputs, m_gyrodrive, m_intake);
-	m_turret = new Turret(m_operatorinputs, m_intake, m_feeder, m_vision, m_gyrodrive);
+	m_turret = new Turret(m_operatorinputs, m_gyrodrive, m_intake, m_feeder, m_controlpanel, m_vision);
 }
 
 
@@ -58,6 +58,7 @@ void Robot::TestPeriodic()
 void Robot::TeleopInit()
 {
 	m_gyrodrive->Init();
+	m_gyrodrive->ZeroHeading();		// move to autonomous in future - 2/22/20
 	m_pneumatics->Init();
 	m_vision->Init();
 	m_intake->Init();

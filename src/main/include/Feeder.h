@@ -33,9 +33,9 @@ public:
 	void Stop();
 	void Dashboard();
 
-	void FeederStateMachine();
 	void SetStuffing(bool stuff = true);
 	bool IsStuffing();
+	int GetBallCount();
 
 protected:
     OperatorInputs *m_inputs;
