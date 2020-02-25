@@ -259,4 +259,12 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define VIS_TARGET_HEIGHT 98.25     // inches
 #define VIS_TARGET_SIZE 15          // inches
 
+// Autonomous -----------------------------------
+enum AutoMode
+{
+    kNoAuto, kSimpleAuto
+};
+
+extern AutoMode automode;
+
 #endif /* SRC_CONST_H_ */

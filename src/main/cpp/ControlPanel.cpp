@@ -363,23 +363,29 @@ ControlPanel::ColorOptions ControlPanel::GetTargetColor()
 
 void ControlPanel::ChangeSpinnerState()
 {
-	if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && !m_intake->IntakeUp())
+	// if Y button is pressed and intake is down, deploy control panel
+	if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL) && !m_intake->IsIntakeUp())
 	{
 		m_solenoid->Set(true);
 		m_gyrodrive->SetLowSpeed(true);
 	}
 	else
-	if (m_intake->IntakeUp() || m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+	// if X button is pressed, retract control panel and disable movement
+	if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 	{
 		m_solenoid->Set(false);
 		m_gyrodrive->SetLowSpeed(false);
 		m_stop = true;
 	}
 
+	// If control panel isn't deployed, exit
 	if (!m_solenoid->Get())
 		return;
+	
+	// if control is deployed, always force intake down
+	m_intake->SetIntakePosition(Intake::IntakePosition::kDown);
 
-	//TODO: Move reading of operator inputs to higher level class
+	// back button enables 3 - 5 spin
 	if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 	{
 		cout<<"Back Button Pressed"<<endl;
@@ -388,6 +394,7 @@ void ControlPanel::ChangeSpinnerState()
 		m_redCount = 0;
 		m_blueCount = 0;
 	}
+	// start button enables specific color spin
 	if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 	{
 		m_spinnerstate = kPositionControl;

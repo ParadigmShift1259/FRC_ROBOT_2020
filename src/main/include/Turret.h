@@ -44,6 +44,10 @@ public:
     void Stop();
     void Dashboard();
 
+    void SetFireMode(FireMode mode) { m_firemode = mode; }
+    void SetTurretState(TurretState state) { m_turretstate = state; }
+    TurretState GetTurretState() { return m_turretstate; }
+
 protected:
     bool NullCheck();
 

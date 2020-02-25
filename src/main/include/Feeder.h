@@ -37,6 +37,8 @@ public:
 	bool IsStuffing();
 	int GetBallCount();
 
+	void SetLoaded(bool loaded) {m_loaded = loaded; }
+
 protected:
     OperatorInputs *m_inputs;
 	Intake *m_intake;

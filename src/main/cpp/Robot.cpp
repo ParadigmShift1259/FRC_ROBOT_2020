@@ -16,9 +16,19 @@
 
 
 bool Debug = true;
+bool StartedInAuto = false;
+
+AutoMode automode = kNoAuto;
+
 
 void Robot::RobotInit()
 {
+	m_chooser.SetDefaultOption(kszNoAuto, kszNoAuto);
+	m_chooser.AddOption(kszSimpleAuto, kszSimpleAuto);
+	SmartDashboard::PutData("Auto Modes", &m_chooser);
+
+	m_driverstation = &DriverStation::GetInstance();
+
 	m_operatorinputs = new OperatorInputs();
 	m_vision = new Vision(m_operatorinputs);
 	m_gyrodrive = new GyroDrive(m_operatorinputs, m_vision);
@@ -27,6 +37,7 @@ void Robot::RobotInit()
 	m_feeder = new Feeder(m_operatorinputs, m_intake);
 	m_controlpanel = new ControlPanel(m_operatorinputs, m_gyrodrive, m_intake);
 	m_turret = new Turret(m_operatorinputs, m_gyrodrive, m_intake, m_feeder, m_controlpanel, m_vision);
+	m_autonomous = new Autonomous(m_gyrodrive, m_intake, m_feeder, m_turret, m_vision);
 }
 
 
@@ -37,11 +48,29 @@ void Robot::RobotPeriodic()
 
 void Robot::AutonomousInit()
 {
+	ReadChooser();
+
+	StartedInAuto = true;
+
+	m_gyrodrive->Init();
+	m_pneumatics->Init();
+	m_vision->Init();
+	m_intake->Init();
+	m_feeder->Init();
+	m_feeder->SetLoaded(true);		// ensure feeder state is loaded before loop runs
+	m_turret->Init();
+	m_controlpanel->Init();
 }
 
 
 void Robot::AutonomousPeriodic()
 { 
+	m_autonomous->Loop();
+	m_gyrodrive->Loop();
+	m_vision->Loop();
+	m_intake->Loop();
+	m_feeder->Loop();
+	m_turret->Loop();
 }
 
 
@@ -57,14 +86,16 @@ void Robot::TestPeriodic()
 
 void Robot::TeleopInit()
 {
-	m_gyrodrive->Init();
-	m_gyrodrive->ZeroHeading();		// move to autonomous in future - 2/22/20
-	m_pneumatics->Init();
-	m_vision->Init();
-	m_intake->Init();
-	m_feeder->Init();
-	m_turret->Init();
-	m_controlpanel->Init();
+	if (!StartedInAuto)
+	{
+		m_gyrodrive->Init();
+		m_pneumatics->Init();
+		m_vision->Init();
+		m_intake->Init();
+		m_feeder->Init();
+		m_turret->Init();
+		m_controlpanel->Init();
+	}
 }
 
 
@@ -77,24 +108,42 @@ void Robot::TeleopPeriodic()
 	m_feeder->Loop();
 	m_turret->Loop();
 	m_controlpanel->Loop();
-	
 }
 
 
 void Robot::DisabledInit()
 {
-	m_gyrodrive->Stop();
-	m_pneumatics->Stop();
-	m_vision->Stop();
-	m_intake->Stop();
-	m_feeder->Stop();
-	m_turret->Stop();
-	m_controlpanel->Stop();
+	if (!StartedInAuto)
+	{
+		m_gyrodrive->Stop();
+		m_pneumatics->Stop();
+		m_vision->Stop();
+		m_intake->Stop();
+		m_feeder->Stop();
+		m_turret->Stop();
+		m_controlpanel->Stop();
+	}
 }
 
 
 void Robot::DisabledPeriodic()
 {
+	ReadChooser();
+}
+
+
+void Robot::ReadChooser()
+{
+	m_autoSelected = m_chooser.GetSelected();
+
+	automode = kNoAuto;
+	if (m_autoSelected == kszNoAuto)
+		automode = kNoAuto;
+	else
+	if (m_autoSelected == kszSimpleAuto)
+		automode = kSimpleAuto;
+
+	SmartDashboard::PutNumber("AU1_automode", automode);
 }
 
 

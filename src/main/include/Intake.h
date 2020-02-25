@@ -38,9 +38,10 @@ public:
 
 	bool CanRefresh();
 	int GetBallCount() { return m_ballcount; }
-
-	void IntakePositionLoop();
-	bool IntakeUp();
+	
+	void SetIntakePosition(IntakePosition pos) { m_intakeposition = pos; }
+	IntakePosition GetIntakePosition() { return m_intakeposition; }
+	bool IsIntakeUp() { return (GetIntakePosition() == kUp); }
 
 private:
 	bool NullCheck();

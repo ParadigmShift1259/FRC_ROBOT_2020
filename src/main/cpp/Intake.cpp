@@ -95,7 +95,7 @@ void Intake::Init()
     m_intakestate = kIdle;
     m_intakeposition = kDown;
     m_ballstate = kZero;
-    m_solenoid->Set(true);
+
     m_ballcount = 0;
     m_stuffing = false;
     m_gathering = false;
@@ -111,7 +111,20 @@ void Intake::Loop()
     if (!NullCheck())
         return;
     
-    IntakePositionLoop();
+    // teleop inputs to set intake position
+    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        SetIntakePosition(kUp);
+    else
+    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        SetIntakePosition(kDown);
+
+    // Setting intake position 
+    if (m_intakeposition == kUp)
+        m_solenoid->Set(false);
+    else
+    if (m_intakeposition == kDown)
+        m_solenoid->Set(true);
+
     CountBalls();
 
     switch (m_intakestate)
@@ -338,35 +351,6 @@ void Intake::CountBalls()
         }
         break;
     }
-}
-
-
-void Intake::IntakePositionLoop()
-{
-    switch (m_intakeposition)
-    {
-        case kDown:
-            if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-            {
-                m_intakeposition = kUp;
-                m_solenoid->Set(false);
-            }
-            break;
-        
-        case kUp:
-            if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-            {
-                m_intakeposition = kDown;
-                m_solenoid->Set(true);
-            }
-            break;
-    }
-}
-
-
-bool Intake::IntakeUp()
-{
-    return (m_intakeposition == kUp);
 }
 
 

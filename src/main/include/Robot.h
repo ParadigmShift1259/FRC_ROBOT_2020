@@ -3,6 +3,9 @@
 
 
 #include <frc\TimedRobot.h>
+#include <frc/LiveWindow/LiveWindow.h>
+#include <frc/SmartDashboard/SendableChooser.h>
+
 #include "Const.h"
 #include "OperatorInputs.h"
 #include "GyroDrive.h"
@@ -12,9 +15,11 @@
 #include "Intake.h"
 #include "Feeder.h"
 #include "Vision.h"
+#include "Autonomous.h"
 
 
 using namespace frc;
+using namespace std;
 
 
 class Robot : public TimedRobot
@@ -41,6 +46,16 @@ protected:
 	Feeder *m_feeder;
 	Turret *m_turret;
 	ControlPanel *m_controlpanel;
+	Autonomous *m_autonomous;
+	DriverStation *m_driverstation;
+
+private:
+	SendableChooser<string> m_chooser;
+	const string kszNoAuto = "No Auto";
+	const string kszSimpleAuto = "Simple";
+	string m_autoSelected;
+
+	void ReadChooser();
 };
 
 

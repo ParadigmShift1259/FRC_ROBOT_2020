@@ -52,6 +52,7 @@ void GyroDrive::Init()
 	m_drivetrain->SetChangeDirButton(A_BUTTON);		
 
 	m_gyro->Init();
+	ZeroHeading();
 	m_drivestate = kInit;
 	m_timer.Reset();
 	m_timer.Start();
@@ -80,8 +81,10 @@ void GyroDrive::Loop()
 		}
 		break;
 	}
+
 	if	(m_inputs->xBoxRightTrigger(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		m_drivetrain->SetLowSpeedMode(true);
+
 	if (m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		m_drivetrain->SetLowSpeedMode(false);
 }

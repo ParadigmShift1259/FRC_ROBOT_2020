@@ -133,7 +133,7 @@ void Turret::Init()
     m_turretinitialfeedforward = 0;
 
     m_hoodangle = 0;
-
+    
     m_turretstate = kIdle;
     m_firemode = kHoldShoot;
     m_flywheelrampstate = kMaintain;
@@ -171,7 +171,7 @@ void Turret::Loop()
     TurretStates();
     FireModes();
 
-    if (m_intake->IntakeUp())
+    if (m_intake->IsIntakeUp())
     {
         if (m_turretangle < 120)
             m_turretangle = 120;
