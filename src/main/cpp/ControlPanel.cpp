@@ -169,21 +169,7 @@ void ControlPanel::ControlPanelStates()
 			m_currentencodervalue = m_spinner->GetSelectedSensorPosition(0);
 			int encoderdelta = abs(m_currentencodervalue - m_startencodervalue);
 			m_encodertickstogoal = CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta;
-#ifdef USE_LOGGER
 			m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
-#else
-			std::cout 	<< m_currentcolor << ", " 
-						<< m_previouscolor << ", " 
-						<< m_targetcolor << ", " 
-						<< m_redCount << ", " 
-						<< m_blueCount << ", " 
-						<< m_direction << ", " 
-						<< m_currentencodervalue << ", " 
-						<< m_startencodervalue << "," 
-						<< CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta 
-						<< m_spinnersetpoint << ", " 
-						<< endl;
-#endif
 		}
 
 		// (TO DO: Move reading user inputs to a higher level robot class)
