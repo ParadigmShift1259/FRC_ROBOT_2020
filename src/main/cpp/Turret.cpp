@@ -122,11 +122,11 @@ void Turret::Init()
     m_turretmotor->ConfigNominalOutputReverse(-1 * TUR_TURRET_MINOUT, TUR_TIMEOUT_MS);
     m_turretmotor->ConfigPeakOutputForward(TUR_TURRET_MAXOUT, TUR_TIMEOUT_MS);
     m_turretmotor->ConfigPeakOutputReverse(-1 * TUR_TURRET_MAXOUT, TUR_TIMEOUT_MS);
-    m_turretmotor->SetSelectedSensorPosition(DegreesToTicks(135), 0, TUR_TIMEOUT_MS);
     m_turretmotor->ConfigAllowableClosedloopError(0, DegreesToTicks(TURRET_DEGREE_STOP_RANGE));
 
     m_fieldangle = 180;
     m_robotangle = 0;
+    m_turretmotor->SetSelectedSensorPosition(DegreesToTicks(135), 0, TUR_TIMEOUT_MS);
     m_turretangle = 135;      // Change these when starting orientation is different
     m_turretrampedangle = 135;
 
@@ -142,9 +142,6 @@ void Turret::Init()
     m_firing = false;
 
     m_distance = 0;
-    
-    SmartDashboard::PutNumber("TESTING_Flywheel", TUR_SHOOTER_IDLE_STATE_RPM);
-    SmartDashboard::PutNumber("TESTING_Hood Angle", 0);
 }
 
 
@@ -171,27 +168,10 @@ void Turret::Loop()
         m_readytofire = false;
     }
 
-    // TAG change this
-    if (m_intake->IntakeUp())
-    {
-        m_intakeup = true;
-        m_fieldangle = 180;
-
-    }
-    else
-    if (!m_intake->IntakeUp())
-    {
-        m_intakeup = false;
-    }
-    
-
-    //m_hoodangle = SmartDashboard::GetNumber("TESTING_Hood Angle", 0);
-
-
     TurretStates();
     FireModes();
 
-    if (m_intakeup)
+    if (m_intake->IntakeUp())
     {
         if (m_turretangle < 120)
             m_turretangle = 120;
@@ -215,6 +195,7 @@ void Turret::Stop()
         return;
 
     m_flywheelsetpoint = 0;
+    m_flywheelrampedsetpoint = 0;
     m_flywheelmotor->SetIdleMode(CANSparkMax::IdleMode::kCoast);
     m_turretmotor->SetNeutralMode(NeutralMode::Brake);
 }
@@ -243,10 +224,9 @@ void Turret::Dashboard()
         SmartDashboard::PutNumber("TUR12_Setpoint Angle", m_turretmotor->GetClosedLoopTarget(0));
         SmartDashboard::PutNumber("TUR13_Flywheel Ramp State", m_flywheelrampstate);
         SmartDashboard::PutNumber("TUR14_Turret Angle", m_turretangle);
-        SmartDashboard::PutNumber("TUR15_Intake Up", m_intakeup);
-        SmartDashboard::PutNumber("TUR16_Firing", m_firing);
-        SmartDashboard::PutNumber("TUR17_Ready to Fire", m_readytofire);
-        SmartDashboard::PutNumber("TUR18_Hood Angle", m_hoodangle);
+        SmartDashboard::PutNumber("TUR15_Firing", m_firing);
+        SmartDashboard::PutNumber("TUR16_Ready to Fire", m_readytofire);
+        SmartDashboard::PutNumber("TUR17_Hood Angle", m_hoodangle);
     }
 }
 
@@ -300,9 +280,9 @@ void Turret::TurretStates()
 
         case kRampUp:
             m_flywheelsetpoint = TUR_SHOOTER_RAMPUP_STATE_RPM;
-            // Check xBox for abs angle
+            // Check xBox for field angle
             FindFieldXBox();
-            // maintain flywheel at last absolute angle
+            // maintain flywheel at last field angle
             CalculateTurretFromField();
             m_hoodservo->SetPosition(0);
 
@@ -323,13 +303,14 @@ void Turret::TurretStates()
                 return;
             }
 
-            // automatically calculate turret angle, but manually adjust flywheel and hood
+            // automatically calculate turret angle, flywheel and hood
             VisionFieldAngle();
             CalculateHoodFlywheel(m_vision->GetDistance(), m_hoodangle, m_flywheelsetpoint);
             m_hoodservo->SetPosition(m_hoodangle);
 
-            if (TicksToDegrees(m_turretmotor->GetClosedLoopError() <= TUR_TURRET_ERROR &&
-                fabs(m_flywheelencoder->GetVelocity() - m_flywheelsetpoint) <= TUR_SHOOTER_ERROR))
+            // if certain errors are met, ready for shooting
+            if (TicksToDegrees(m_turretmotor->GetClosedLoopError()) <= TUR_TURRET_ERROR &&
+                fabs(m_flywheelencoder->GetVelocity() - m_flywheelsetpoint) <= TUR_SHOOTER_ERROR)
             {
                m_readytofire = true;
                m_turretstate = kAllReady;

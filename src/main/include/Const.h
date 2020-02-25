@@ -183,7 +183,6 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define FDR_WHEEL_SIZE 4
 #define FDR_FEED_FORWARD 0.0681
 // PID values for ball
-
 #define FDR_P 0.0795
 #define FDR_I 0.005
 #define FDR_D 0.0005
@@ -212,16 +211,16 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_SHOOTER_RAMPING_RATE 100       // in rpm
 #define TUR_SHOOTER_IDLE_STATE_RPM 2000
 #define TUR_SHOOTER_RAMPUP_STATE_RPM 2500
-// kS, kV, kA values tuned using frc-characterization 2/1/20 for the Metal V2 Shooter Flywheel by Geoffrey
+// kS, kV, kA values tuned using frc-characterization 2/20/20 for the Metal V2 Shooter Flywheel by Geoffrey
 #define TUR_SHOOTER_KS 0.0876
-#define TUR_SHOOTER_KV 0.124    // was actually 0.128, but we'll see
+#define TUR_SHOOTER_KV 0.124
 #define TUR_SHOOTER_KA 0   // 0.0152, but probably 0
 // Increasing/Decreasing PID values tuned manually 1/27/20 for the V1 Shooter Flywheel by Geoffrey
 #define TUR_SHOOTER_P 0.000632
 #define TUR_SHOOTER_I 0.0
 #define TUR_SHOOTER_D 0.0002231
 // Ball Recovery PID values tuned manually 1/29/20 for the V1 Shooter Flywheel by Geoffrey
-#define TUR_SHOOTER_MP 0.00068
+#define TUR_SHOOTER_MP 0.00136  // doubled 2/24/20 for testing
 #define TUR_SHOOTER_MI 0.0
 #define TUR_SHOOTER_MD 0.008110
 // Maximum percent output that PID loop can output

@@ -95,8 +95,6 @@ private:
 
     double m_turretinitialfeedforward;
 
-    bool m_intakeup;
-
     // Hood
     Servo *m_hoodservo;
     double m_hoodangle;
