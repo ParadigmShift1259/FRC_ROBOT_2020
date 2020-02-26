@@ -17,7 +17,7 @@ Vision::Vision(OperatorInputs *inputs)
 {
     m_inputs = inputs;
     m_networktable = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
-    m_camera = nt::NetworkTableInstance::GetDefault().GetTable("SmartDashboard");
+    m_dashboard = nt::NetworkTableInstance::GetDefault().GetTable("SmartDashboard");
     m_camerachoice = 0;
 }
 
@@ -52,7 +52,7 @@ void Vision::Init()
 
 void Vision::Loop()
 {
-    m_camera->PutNumber("cameraFeed", m_camerachoice);
+    m_dashboard->PutNumber("cameraFeed", m_camerachoice);
 
     m_active = m_networktable->GetNumber("tv", 0);
     if (!m_active)
@@ -133,4 +133,22 @@ double Vision::DegreesToRadians(double degrees)
 double Vision::RadiansToDegrees(double radians)
 {
     return radians / 2 / 3.1415926535 * 360;
+}
+
+
+void Vision::IntakeSensorUpdate(bool update)
+{
+    m_dashboard->PutNumber("RollerSensor", update);
+}
+
+
+double Vision::IntakeDistance()
+{
+    return 0;
+}
+
+
+double Vision::IntakeAngle()
+{
+    return 0;
 }

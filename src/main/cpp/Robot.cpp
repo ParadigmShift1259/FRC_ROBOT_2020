@@ -33,7 +33,7 @@ void Robot::RobotInit()
 	m_vision = new Vision(m_operatorinputs);
 	m_gyrodrive = new GyroDrive(m_operatorinputs, m_vision);
 	m_pneumatics = new Pneumatics();
-	m_intake = new Intake(m_operatorinputs);
+	m_intake = new Intake(m_operatorinputs, m_vision);
 	m_feeder = new Feeder(m_operatorinputs, m_intake);
 	m_controlpanel = new ControlPanel(m_operatorinputs, m_gyrodrive, m_intake);
 	m_turret = new Turret(m_operatorinputs, m_gyrodrive, m_intake, m_feeder, m_controlpanel, m_vision);

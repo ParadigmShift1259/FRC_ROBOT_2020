@@ -14,7 +14,7 @@
 using namespace std;
 
 
-Intake::Intake(OperatorInputs *inputs)
+Intake::Intake(OperatorInputs *inputs, Vision *vision)
 {
     if (INT_ENABLED != 1)
     {
@@ -22,6 +22,7 @@ Intake::Intake(OperatorInputs *inputs)
     }
 
 	m_inputs = inputs;
+    m_vision = vision;
     
     m_solenoid = nullptr;
     m_rollermotor = nullptr;
@@ -111,6 +112,9 @@ void Intake::Loop()
     if (!NullCheck())
         return;
     
+    // Vision ball tracking update
+    m_vision->IntakeSensorUpdate(m_rollersensor->Get());
+
     // teleop inputs to set intake position
     if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         SetIntakePosition(kUp);

@@ -34,13 +34,17 @@ public:
     double GetAngle();
     void ChangeCamera() { m_camerachoice = !m_camerachoice; }
 
+    void IntakeSensorUpdate(bool update);
+    double IntakeAngle();
+    double IntakeDistance();
+
 protected:
     double DegreesToRadians(double degrees);
     double RadiansToDegrees(double radians);
 private:
     OperatorInputs *m_inputs;
     
-    shared_ptr<NetworkTable> m_camera;
+    shared_ptr<NetworkTable> m_dashboard;
     int m_camerachoice;
     
     shared_ptr<NetworkTable> m_networktable;

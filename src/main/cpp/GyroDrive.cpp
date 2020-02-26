@@ -227,4 +227,6 @@ bool GyroDrive::StartMotion(double distance, double angle, double targetvelocity
 		}
 		break;
 	}
+
+	return false;
 }

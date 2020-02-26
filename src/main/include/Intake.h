@@ -10,6 +10,7 @@
 
 
 #include "OperatorInputs.h"
+#include "Vision.h"
 #include "Const.h"
 
 #include <frc\Solenoid.h>
@@ -26,7 +27,7 @@ public:
 	enum IntakePosition {kDown, kUp};
 	enum BallState {kZero, kTwo, kThree};
 
-	Intake(OperatorInputs *inputs);
+	Intake(OperatorInputs *inputs, Vision *vision);
 	~Intake();
 	void Init();
 	void Loop();
@@ -49,6 +50,7 @@ private:
 
 protected:
     OperatorInputs *m_inputs;
+	Vision *m_vision;
 
     Solenoid *m_solenoid;
     Spark *m_rollermotor;
