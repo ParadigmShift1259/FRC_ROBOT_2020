@@ -71,6 +71,7 @@ void Drivetrain::Init(DriveMotors motors, DriveMode mode)
     m_motors =  motors;
     m_mode = mode;
 
+
     switch (motors)
     {
     case DriveMotors::k6Motors:
@@ -90,7 +91,8 @@ void Drivetrain::Init(DriveMotors motors, DriveMode mode)
             m_right3 = new CANSparkMax(CAN_RIGHT_PORT_3, CANSparkMax::MotorType::kBrushless);
             m_right3owner = true;
         }
-       
+        // No break, fall through
+
     case DriveMotors::k4Motors:
         if ((CAN_LEFT_PORT_2 == -1) || (CAN_RIGHT_PORT_2 == -1))
         {
@@ -108,6 +110,7 @@ void Drivetrain::Init(DriveMotors motors, DriveMode mode)
             m_right2 = new CANSparkMax(CAN_RIGHT_PORT_2, CANSparkMax::MotorType::kBrushless);
             m_right2owner = true;
         }
+        // No break, fall through
 
     case DriveMotors::k2Motors:
         if ((CAN_LEFT_PORT_1 == -1) || (CAN_RIGHT_PORT_1 == -1))
@@ -126,6 +129,8 @@ void Drivetrain::Init(DriveMotors motors, DriveMode mode)
             m_right1 = new CANSparkMax(CAN_RIGHT_PORT_1, CANSparkMax::MotorType::kBrushless);
             m_right1owner = true;
         }
+        break;
+
     }
 
     switch (m_mode)
@@ -136,12 +141,15 @@ void Drivetrain::Init(DriveMotors motors, DriveMode mode)
             case DriveMotors::k6Motors:
                 m_left3->Follow(*m_left1);
                 m_right3->Follow(*m_right1);
+                // No break, fall through
             case DriveMotors::k4Motors:
                 m_left2->Follow(*m_left1);
-                m_left2->Follow(*m_right1);
+                m_right2->Follow(*m_right1);
+                // No break, fall through
             case DriveMotors::k2Motors:
                 m_drive = new DifferentialDrive(*m_left1, *m_right1);
                 m_inited = true;
+                break;
         }
         break;
 
@@ -154,9 +162,10 @@ void Drivetrain::Init(DriveMotors motors, DriveMode mode)
         m_leftenc = new CANEncoder(*m_left1);
         m_rightenc = new CANEncoder(*m_right1);
 
-        m_leftenc->SetPositionConversionFactor(NEO_CONVERSION);
-        m_rightenc->SetPositionConversionFactor(NEO_CONVERSION);
-
+        m_leftenc->SetPositionConversionFactor(METERS_ENCODER_CONVERSION);
+        m_rightenc->SetPositionConversionFactor(METERS_ENCODER_CONVERSION);
+        m_rightoffset = m_rightenc->GetPosition();
+         m_leftoffset = m_leftenc->GetPosition();
         // invert sides
         SetInvert(INVERT_LEFT, INVERT_RIGHT);
         
@@ -187,7 +196,7 @@ void Drivetrain::Loop()
     y *= Y_SCALING;
 
     m_drive->FeedWatchdog();
-    m_drive->ArcadeDrive(y, x); // test 8.8.19
+    m_drive->ArcadeDrive(y, x); // Note: Xbox Y axis corresponds to X speed in Robot Y axis and Xbox X axis corresponds to turning 
 
     if ((m_leftenc->GetVelocity() < 0 || m_rightenc->GetVelocity() > 0) && y < 0)
     {
@@ -323,16 +332,27 @@ void Drivetrain::ExperimentalData()
     SmartDashboard::PutNumber("DT_Right1 Temperature", m_right1->GetMotorTemperature());
     SmartDashboard::PutNumber("DT_Right2 Temperature", m_right2->GetMotorTemperature());
 
-    if (SIX_WHEEL_DRIVE)
+    if (m_motors == k6Motors)
     {
         SmartDashboard::PutNumber("DT_Left3 Temperature", m_left3->GetMotorTemperature());
         SmartDashboard::PutNumber("DT_Right3 Temperature", m_right3->GetMotorTemperature());
     }
 
     // encoders
-    SmartDashboard::PutNumber("DT_LeftENC Position", m_leftenc->GetPosition());
+    SmartDashboard::PutNumber("DT_LeftENC Position", m_leftenc->GetPosition() - m_leftoffset);
     SmartDashboard::PutNumber("DT_LeftENC Velocity", m_leftenc->GetVelocity());
 
-    SmartDashboard::PutNumber("DT_RightENC Position", m_rightenc->GetPosition());
+    SmartDashboard::PutNumber("DT_RightENC Position", m_rightenc->GetPosition() - m_rightoffset);
     SmartDashboard::PutNumber("DT_RightENC Velocity", m_rightenc->GetVelocity());
+}
+
+units::meter_t Drivetrain::getLeftDist()
+{
+    // WHY IS ONLY LEFT ONLY SIDE READING NEG WHEN BOTH ARE NEGATED ????
+    return units::meter_t { -(m_leftenc->GetPosition() - m_leftoffset)};  
+}
+
+units::meter_t Drivetrain::getRightDist()
+{
+    return units::meter_t {m_rightenc->GetPosition() - m_rightoffset}; 
 }

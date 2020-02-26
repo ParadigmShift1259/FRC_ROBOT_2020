@@ -42,6 +42,8 @@ public:
     void SetCoastMode();
     void SetVoltageCompensation(double voltage);
     void SetCurrentLimit(double current);
+    units::meter_t getLeftDist();
+    units::meter_t getRightDist();
 
 protected:
     void ExperimentalData();
@@ -71,6 +73,8 @@ protected:
 
     bool m_inited;
     double m_ramprate;
+    double m_rightoffset;
+    double m_leftoffset;
 };
 
 

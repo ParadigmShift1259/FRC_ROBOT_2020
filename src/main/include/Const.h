@@ -57,23 +57,23 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 // Drivetrain
-#define INVERT_LEFT false
-#define INVERT_RIGHT false
+#define INVERT_LEFT true
+#define INVERT_RIGHT true
 //   SparkMax Ports
-#define SIX_WHEEL_DRIVE false
+//#define SIX_WHEEL_DRIVE false
 #define CAN_LEFT_PORT_1 2       // Changed for test bot 2/9/19
 #define CAN_LEFT_PORT_2 4
-#define CAN_LEFT_PORT_3 -2
+#define CAN_LEFT_PORT_3 6
 #define CAN_RIGHT_PORT_1 1
 #define CAN_RIGHT_PORT_2 3
-#define CAN_RIGHT_PORT_3 -3
+#define CAN_RIGHT_PORT_3 5
 //   NEO parameters
 #define MOTOR_CURRENT_LIMIT 30
 #define MOTOR_VOLTAGE_COMPENSATION 10
-#define MOTOR_RAMP_RATE_TIME 1
-// Scaling
-#define X_SCALING 0.5
-#define Y_SCALING 1.0
+#define MOTOR_RAMP_RATE_TIME 5 // 1
+// Xbox Joystick Scaling (Note: Xbox Y axis corresponds to X speed in Robot Y axis and Xbox X axis corresponds to turning) 
+#define X_SCALING  0.35 // 0.5 
+#define Y_SCALING 0.5 // 1.0
 
 //   Encoders
 #define ENC_PRESENT_1 true
@@ -84,8 +84,12 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define CODES_PER_INCH 73.317
 #define WHEEL_DIAMETER 6.0
 #define WHEEL_TRACK 23.50
-#define NEO_CONVERSION (WHEEL_DIAMETER * 3.1415926535 / 5.2)
-
+#define NEO_CONVERSION (WHEEL_DIAMETER * 3.1415926535 / 5.2) // ????
+#define METERS_ENCODER_CONVERSION (.02*NEO_CONVERSION) // emperically determined with above  NEO_CONVERSION 
+// Gyro 
+#define GRY_ENABLED 1 
+#define CAN_GYRO1 0 // ENABLED(GRY_ENBALED, 0)
+#define CAN_GYRO2 -1
 
 
 #endif /* SRC_CONST_H_ */
