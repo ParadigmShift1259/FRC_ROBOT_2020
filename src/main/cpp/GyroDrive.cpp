@@ -20,6 +20,7 @@ GyroDrive::GyroDrive(OperatorInputs *inputs, Vision *vision)
 	m_drivetrain = new DriveTrainFX(inputs, vision);
 	m_gyro = new DualGyro(CAN_GYRO1, CAN_GYRO2);
 	m_drivepid = new DrivePID(m_drivetrain, m_gyro, m_inputs);
+	m_curveauto = new CurveAuto(m_drivetrain, m_gyro);
 
 	m_drivemode = kManual;
 	m_stage = 0;
@@ -205,4 +206,25 @@ bool GyroDrive::DriveAngle(double angle, bool reset)
 		break;
 	}
 	return false;
+}
+
+
+bool GyroDrive::StartMotion(double distance, double angle, double targetvelocity, double maxvelocity, double maxacceleration)
+{
+	switch (m_drivestate)
+	{
+	case kInit:
+		m_curveauto->StartMotion(distance, angle, targetvelocity, maxvelocity, maxacceleration);
+		m_drivestate = kDrive;
+		return false;
+		break;
+
+	case kDrive:
+		if (m_curveauto->IsFinished())
+		{
+			m_drivestate = kInit;
+			return true;
+		}
+		break;
+	}
 }

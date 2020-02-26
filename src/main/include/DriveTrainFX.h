@@ -60,9 +60,9 @@ public:
 	WPI_TalonFX *Left1() {return m_left1;}
 	WPI_TalonFX *Right1() {return m_right1;}
 	WPI_TalonFX *Left2() {return m_left2;}
-	WPI_TalonFX *RIght2() {return m_right2;}
+	WPI_TalonFX *Right2() {return m_right2;}
 	WPI_TalonFX *Left3() {return m_left3;}
-	WPI_TalonFX *RIght3() {return m_right3;}
+	WPI_TalonFX *Right3() {return m_right3;}
 
 protected:
 	DriveMode m_mode;

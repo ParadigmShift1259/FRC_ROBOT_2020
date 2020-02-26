@@ -13,6 +13,7 @@
 #include "OperatorInputs.h"
 #include "DriveTrainFX.h"
 #include "DrivePID.h"
+#include "CurveAuto.h"
 #include "Gyro.h"
 #include "Vision.h"
 
@@ -39,6 +40,7 @@ public:
 	void GetAnglePID(double &P, double &I, double &D);
 	bool DriveStraight(double targetdistance, double autopower, bool reset = true);
 	bool DriveAngle(double angle, bool reset = true);
+	bool StartMotion(double distance, double angle, double targetvelocity, double maxvelocity, double maxacceleration);
 	void SetLowSpeed(bool enable) { m_drivetrain->SetLowSpeedMode(enable); }
 	void ZeroHeading() { m_gyro->ZeroHeading(); }
 	bool GetHeading(double &heading) { return m_gyro->GetHeading(heading); }
@@ -48,6 +50,7 @@ protected:
 	DriveTrainFX *m_drivetrain;
 	DualGyro *m_gyro;
 	DrivePID *m_drivepid;
+	CurveAuto *m_curveauto;
 
 	Timer m_timer;
 	DriveMode m_drivemode;

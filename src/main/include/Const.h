@@ -103,6 +103,25 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define CODES_PER_INCH 73.317
 #define WHEEL_DIAMETER 6.0
 #define WHEEL_TRACK 23.50
+// Arbitrary and feed forward values
+#define INITIAL_FEEDFORWARD_DRIVE (0.393 / 12)
+#define VELOCITY_FEEDFORWARD_DRIVE (1 / 12)
+#define INITIAL_FEEDFORWARD_TURN (0.451 / 12)
+// Additional Constants
+// All units will be in meters and seconds unless otherwise specified
+#define DT_DRIVE_INVERTED -1.0
+#define DT_ENCODER_INVERTED -1.0
+#define DT_GYRO_INVERTED -1.0
+#define DT_DEG_TO_ROT 1/360
+#define DT_WHEEL_DIAMETER 0.1524
+#define DT_WHEEL_CIRCUMFERENCE (DT_WHEEL_DIAMETER * 3.1415926535)
+#define DT_FX_GEAR_RATIO 6.11
+#define DT_TICKS_PER_REV 2048
+#define DT_TICKS_PER_METER (DT_TICKS_PER_REV * DT_FX_GEAR_RATIO / DT_WHEEL_CIRCUMFERENCE)
+#define DT_WHEEL_BASE 0.1
+#define DT_WHEEL_TRACK 0.665721682
+#define DT_ROBOT_CIRCUMFERENCE (sqrt(DT_WHEEL_BASE * DT_WHEEL_BASE + DT_WHEEL_TRACK * DT_WHEEL_TRACK) * 3.1415926535)
+#define DT_HIGH_NUMBER 1000000
 
 
 //   Compressor
