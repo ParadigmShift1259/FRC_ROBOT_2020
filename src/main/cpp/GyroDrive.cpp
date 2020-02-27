@@ -74,10 +74,10 @@ void GyroDrive::Loop()
 	if (m_drivepid->GetEnabled())
 		m_drivepid->Loop();
 
-	if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+	if (m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		m_drivemode = kBallTrack;
 	else
-	if (m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+	if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		m_drivemode = kManual;
 
 	double ballangle = SmartDashboard::GetNumber("XAngle", 0);
@@ -96,7 +96,8 @@ void GyroDrive::Loop()
 		// if vision not receiving values or ballangle is larger than the limiter in vision code, escape
 		if ((balldistance <= 0) || (fabs(ballangle) > 36.0))
 		{
-			m_drivetrain->Loop();
+			//m_drivetrain->Loop();
+			m_drivemode = kManual;
 		}
 		else
 		{

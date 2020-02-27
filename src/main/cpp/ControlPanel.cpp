@@ -386,7 +386,7 @@ void ControlPanel::ChangeSpinnerState()
 	m_intake->SetIntakePosition(Intake::IntakePosition::kDown);
 
 	// back button enables 3 - 5 spin
-	if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+	if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 	{
 		cout<<"Back Button Pressed"<<endl;
 		m_spinnerstate = kRotationControl;
@@ -395,7 +395,7 @@ void ControlPanel::ChangeSpinnerState()
 		m_blueCount = 0;
 	}
 	// start button enables specific color spin
-	if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+	if (m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 	{
 		m_spinnerstate = kPositionControl;
 		m_stop = false;

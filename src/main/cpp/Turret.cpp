@@ -247,14 +247,14 @@ bool Turret::NullCheck()
 
 void Turret::TurretStates()
 {
-    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
     {
         m_hoodangle += 0.1;
         if (m_hoodangle > 0.5)
             m_hoodangle = 0.5;
     }
     else
-    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
     {
         m_hoodangle -= 0.1;
         if (m_hoodangle < 0)
@@ -364,7 +364,8 @@ void Turret::FireModes()
                 m_firing = true;
             }
             else
-            if (m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+            if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && 
+                m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             {
                 m_feeder->SetStuffing();
                 m_firemode = kForceShoot;
@@ -380,13 +381,15 @@ void Turret::FireModes()
             break;
 
         case kHoldShoot:
-            if (m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+            if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && 
+                m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             {
                 m_feeder->SetStuffing();
                 m_firemode = kForceShoot;
             }
             else
-            if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+            if (!m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) &&
+                m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
                 m_firemode = kShootWhenReady;
             break;
     }
