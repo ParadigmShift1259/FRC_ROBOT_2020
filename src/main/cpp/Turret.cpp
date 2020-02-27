@@ -1,195 +1,299 @@
 /**
  *  Turret.cpp
- *  Date: 1/7/2020
+ *  Date: 2/20/2020
  *  Last Edited By: Geoffrey Xue
  */
 
 
 #include "Turret.h"
+#include "Const.h"
+#include <frc/smartdashboard/SmartDashboard.h>
+#include <frc/DriverStation.h>
 
 
 using namespace std;
 
 
-Turret::Turret(OperatorInputs *inputs)
+Turret::Turret(OperatorInputs *inputs, DualGyro *gyro)
 {
+    if (TUR_ENABLED != 1)
+    {
+        DriverStation::ReportError("Turret Not Enabled");
+    }
+
     m_inputs = inputs;
+    m_gyro = gyro;
 
     m_flywheelmotor = nullptr;
     m_flywheelPID = nullptr;
     m_flywheelencoder = nullptr;
+    m_flywheelsimplemotorfeedforward = nullptr;
 
-    // P, I, D, Iz, FF, min, max
-    m_flywheelPIDvals[0] = 0.0; 
-    m_flywheelPIDvals[1] = 0.0; 
-    m_flywheelPIDvals[2] = 0.0; 
-    m_flywheelPIDvals[3] = 2000;
-    m_flywheelPIDvals[4] = 0.0;
-    m_flywheelPIDvals[5] = -1;
-    m_flywheelPIDvals[6] = 1;
+    m_turretmotor = nullptr;
 
-    //m_pigeon = nullptr;
-    //m_heading = 0;
-    //m_hoodmotor = nullptr;
-    //m_turretmotor = nullptr;
-    //m_hoodPID = nullptr;
-    //m_turretPID = nullptr;
-    //m_hoodPIDvals[0] = 0.0; m_hoodPIDvals[1] = 0.0; m_hoodPIDvals[2] = 0.0;
-    //m_turretPIDvals[0] = 0.0; m_turretPIDvals[1] = 0.0; m_turretPIDvals[2] = 0.0;
+    m_hoodservo = nullptr;
 
     m_turretstate = kIdle;
-    m_firemode = kHoldFire;
+    m_firemode = kHoldShoot;
+    m_flywheelrampstate = kMaintain;
+    m_turretrampstate = kMaintain;
+    m_readytofire = false;
 }
 
 
 Turret::~Turret()
 {
-    if (m_flywheelmotor != nullptr)
-        delete m_flywheelmotor;
-    /*
-    if (m_flywheelPID != nullptr)
-        delete m_flywheelPID;
-    if (m_flywheelencoder != nullptr)
-        delete m_flywheelencoder;
-        */
-    /*
-    if (m_pigeon != nullptr)
-        delete m_pigeon;
-    if (m_hoodmotor != nullptr)
-        delete m_hoodmotor;
     if (m_turretmotor != nullptr)
         delete m_turretmotor;
-    if (m_hoodPID != nullptr)
-        delete m_hoodPID;
-    if (m_turretPID != nullptr)
-        delete m_turretPID;
-    */
 }
 
 
 void Turret::Init()
-{
-    /**
-     * Constants needed:
-     * CAN_GYRO_TURRET
-     * CAN_FLYWHEEL_PORT
-     * CAN_HOOD_PORT
-     * CAN_TURRET_PORT
-     */
+{   
+    if ((m_turretmotor == nullptr) && (TUR_TURRET_ID != -1))
+    {
+        m_turretmotor = new WPI_TalonSRX(TUR_TURRET_ID);
+        m_turretmotor->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, TUR_TIMEOUT_MS);
+        m_turretmotor->SetNeutralMode(NeutralMode::Brake);
+        m_turretmotor->SetSensorPhase(true);
+        m_turretmotor->SetInverted(true);
+    }
+    // Turret
+    // Set PID Values
+    m_turretmotor->Config_kP(0, TUR_TURRET_P, TUR_TIMEOUT_MS);
+    m_turretmotor->Config_kI(0, TUR_TURRET_I, TUR_TIMEOUT_MS);
+    m_turretmotor->Config_kD(0, TUR_TURRET_D, TUR_TIMEOUT_MS);
+    // Set Min/Max outputs for PID
+    m_turretmotor->ConfigNominalOutputForward(TUR_TURRET_MINOUT, TUR_TIMEOUT_MS);
+    m_turretmotor->ConfigNominalOutputReverse(-1 * TUR_TURRET_MINOUT, TUR_TIMEOUT_MS);
+    m_turretmotor->ConfigPeakOutputForward(TUR_TURRET_MAXOUT, TUR_TIMEOUT_MS);
+    m_turretmotor->ConfigPeakOutputReverse(-1 * TUR_TURRET_MAXOUT, TUR_TIMEOUT_MS);
+    m_turretmotor->ConfigAllowableClosedloopError(0, DegreesToTicks(TURRET_DEGREE_STOP_RANGE));
 
-    m_flywheelmotor = new CANSparkMax(0, CANSparkMax::MotorType::kBrushless);
+    m_fieldangle = 180;
+    m_robotangle = 0;
+    m_turretmotor->SetSelectedSensorPosition(DegreesToTicks(135), 0, TUR_TIMEOUT_MS);
+    m_turretangle = 135;      // Change these when starting orientation is different
+    m_turretrampedangle = 135;
 
-    m_flywheelPID = new CANPIDController(*m_flywheelmotor);
-    m_flywheelPID->SetP(m_flywheelPIDvals[0]);
-    m_flywheelPID->SetI(m_flywheelPIDvals[1]);
-    m_flywheelPID->SetD(m_flywheelPIDvals[2]);
-    m_flywheelPID->SetIZone(m_flywheelPIDvals[3]);
-    m_flywheelPID->SetFF(m_flywheelPIDvals[4]);
-    m_flywheelPID->SetOutputRange(m_flywheelPIDvals[5], m_flywheelPIDvals[6]);
+    m_turretinitialfeedforward = 0;
 
-    m_flywheelencoder = new CANEncoder(*m_flywheelmotor);
-
-    //m_pigeon = new PigeonIMU(0);
-    //m_heading = 0;
-    //m_hoodmotor = new TalonSRX(1);
-    //m_turretmotor = new TalonSRX(2);
-    //m_hoodPID = new PIDController(m_hoodPIDvals[0], m_hoodPIDvals[1], m_hoodPIDvals[2], nullptr, nullptr);
-    //m_turretPID = new PIDController(m_turretPIDvals[0], m_turretPIDvals[1], m_turretPIDvals[2], nullptr, nullptr);
-
-    m_turretstate = kIdle;
-    m_firemode = kHoldFire;
-
-    // Testing purposes for PID
-    SmartDashboard::PutNumber("P Gain",        m_flywheelPIDvals[0]);
-    SmartDashboard::PutNumber("I Gain",        m_flywheelPIDvals[1]);
-    SmartDashboard::PutNumber("D Gain",        m_flywheelPIDvals[2]);
-    SmartDashboard::PutNumber("I Zone",        m_flywheelPIDvals[3]);
-    SmartDashboard::PutNumber("Feed Forward",  m_flywheelPIDvals[4]);
-    SmartDashboard::PutNumber("Min Output",    m_flywheelPIDvals[5]);
-    SmartDashboard::PutNumber("Max Output",    m_flywheelPIDvals[6]);
+    m_turretrampstate = kMaintain;
 }
 
 
 void Turret::Loop()
 {
-    // read PID coefficients from SmartDashboard
-    double p = SmartDashboard::GetNumber("P Gain", 0);
-    double i = SmartDashboard::GetNumber("I Gain", 0);
-    double d = SmartDashboard::GetNumber("D Gain", 0);
-    double iz = SmartDashboard::GetNumber("I Zone", 0);
-    double ff = SmartDashboard::GetNumber("Feed Forward", 0);
-    double max = SmartDashboard::GetNumber("Max Output", 0);
-    double min = SmartDashboard::GetNumber("Min Output", 0);
+    if (!NullCheck())
+        return;
 
-    // if PID coefficients on SmartDashboard have changed, write new values to controller
-    if((p != m_flywheelPIDvals[0])) { m_flywheelPID->SetP(p); m_flywheelPIDvals[0] = p; }
-    if((i != m_flywheelPIDvals[1])) { m_flywheelPID->SetI(i); m_flywheelPIDvals[1] = i; }
-    if((d != m_flywheelPIDvals[2])) { m_flywheelPID->SetD(d); m_flywheelPIDvals[2] = d; }
-    if((iz != m_flywheelPIDvals[3])) { m_flywheelPID->SetIZone(iz); m_flywheelPIDvals[3] = iz; }
-    if((ff != m_flywheelPIDvals[4])) { m_flywheelPID->SetFF(ff); m_flywheelPIDvals[4] = ff; }
-    if((min != m_flywheelPIDvals[5]) || (max != m_flywheelPIDvals[6])) { 
-      m_flywheelPID->SetOutputRange(min, max); 
-      m_flywheelPIDvals[5] = min; m_flywheelPIDvals[6] = max; 
-    }
+    FindFieldXBox();
+    CalculateTurretFromField();
 
-    // Testing sample speeds
-    double setpoint = 0;
+    RampUpTurret();
 
-    if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 0))
-        setpoint = 0;
-    else if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 0))
-        setpoint = 250;
-    else if (m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 0))
-        setpoint = 500;
-    else if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 0))
-        setpoint = 750;
-    
-
-    m_flywheelPID->SetReference(setpoint, ControlType::kVelocity);
-
-    SmartDashboard::PutNumber("SetPoint", setpoint);
-    SmartDashboard::PutNumber("ProcessVariable", m_flywheelencoder->GetVelocity());
-
-    //TurretStates();
-    //FireModes();
+    Dashboard();
 }
 
 
 void Turret::Stop()
 {
-    m_flywheelPID->SetReference(0, ControlType::kVelocity);
+    m_turretmotor->SetNeutralMode(NeutralMode::Brake);
 }
 
 
-void Turret::TurretStates()
+void Turret::Dashboard()
 {
-    switch (m_turretstate)
+    SmartDashboard::PutNumber("TUR00_State", m_turretstate);
+    SmartDashboard::PutBoolean("TUR01_ReadytoFire", m_readytofire);
+    SmartDashboard::PutBoolean("TUR02_Targeting", (m_turretstate == kVision));
+
+    if (Debug)
     {
-        case kIdle:
-        case kPreMove:
-        case kHoming:
-        case kReady:
-        case kFire:
-        case kReturn:
-            break;
+        SmartDashboard::PutNumber("TUR11_Turret Degrees", TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()));
+        SmartDashboard::PutNumber("TUR12_Setpoint Angle", m_turretmotor->GetClosedLoopTarget(0));
+        SmartDashboard::PutNumber("TUR14_Turret Angle", m_turretangle);
+        SmartDashboard::PutNumber("TUR15_Firing", m_firing);
+        SmartDashboard::PutNumber("TUR16_Ready to Fire", m_readytofire);
     }
 }
 
 
-void Turret::FireModes()
+// If it doesn't pass, return false
+bool Turret::NullCheck()
 {
-    switch (m_firemode)
+    if (m_turretmotor == nullptr)
+        return false;
+
+    return true;
+}
+
+
+void Turret::FindFieldXBox()
+{
+    // allow for manual movement of absolute angle to find vision target
+    // X and Y are flipped due to angles in tangent starting between Quad I and IV, not Quad II and I
+    if (fabs(m_inputs->xBoxRightX(1 * INP_DUAL)) > 0.8 || fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.8)
     {
-        case kFireWhenReady:
-        case kHoldFire:
-        case kManualFire:
-        case kOff:
-            break;
+        // Prevent divide by 0 errors
+        if (m_inputs->xBoxRightY(1 * INP_DUAL) == 0)
+        {
+            m_fieldangle = m_inputs->xBoxRightX(1 * INP_DUAL) > 0 ? 90 : 270;
+        }
+        else
+        {
+            double radians = atan(m_inputs->xBoxRightX(1 * INP_DUAL) / m_inputs->xBoxRightY(1 * INP_DUAL)); // only between +- pi/2
+            double degrees = radians / 2 / 3.1415926535 * 360;   // 90 -> -90
+            m_fieldangle = m_inputs->xBoxRightY(1 * INP_DUAL) > 0 ? degrees : degrees + 180;   // -90 -> 270
+            m_fieldangle = m_fieldangle < 0 ? m_fieldangle + 360 : m_fieldangle;   // 0 -> 360
+            m_fieldangle = fmod(m_fieldangle, 360);   // just for safety
+        }
+        SmartDashboard::PutNumber("TUR11_Absolute Angle", m_fieldangle);
     }
 }
 
 
-void Turret::CalculateHoodFlywheel(double distance, double &hoodangle, double &flywheelspeed)
+// Calculates the angle of the turret given an angle relative to the field and the robot gyro 
+void Turret::CalculateTurretFromField()
+{
+    double heading;
+    if (!m_gyro->GetHeading(heading))
+        return;
+
+    m_robotangle = fmod(heading, 360.0);
+    if (m_robotangle < 0)
+        m_robotangle += 360;
+
+    double filter1 = fmod((m_robotangle + 45), 360.0);
+    double filter2 = fmod((m_robotangle + 135), 360.0);
+    // In between border of 0 - 360
+    if (fmax(filter1, filter2) > (fmin(filter1, filter2) + 90))
+    {
+        if (m_fieldangle > fmax(filter1, filter2) || m_fieldangle < fmin(filter1, filter2)) {}
+        else
+        {
+            double mirrorangle = 112.5 + m_fieldangle / 2;
+            double reflect = m_robotangle - mirrorangle;
+            m_turretangle = mirrorangle - reflect;
+            m_turretangle = fmod(m_turretangle, 360.0);
+            m_turretangle = 270 - m_turretangle;
+            m_turretangle = fmod(m_turretangle, 360.0);
+        }
+    }
+    else
+    // In between zone not on border of 0 - 360
+    if (m_fieldangle < fmax(filter1, filter2) && m_fieldangle > fmin(filter1, filter2)) {}
+    else
+    {
+        double mirrorangle = 112.5 + m_fieldangle / 2;
+        double reflect = m_robotangle - mirrorangle;
+        m_turretangle = mirrorangle - reflect;
+        m_turretangle = fmod(m_turretangle, 360.0); // safety
+        m_turretangle = 270 - m_turretangle;        // flipped because values were originally calculated wrong
+        m_turretangle = fmod(m_turretangle, 360.0); // safety
+    }
+}
+
+
+// Uses vision input and calculates angle, adds it to the current angle and sets turretangle
+bool Turret::VisionFieldAngle()
+{
+}
+
+
+void Turret::RampUpTurret()
 {
 
+    switch (m_turretrampstate)
+    {
+        case kMaintain:
+            if (m_turretangle > m_turretrampedangle)
+            {
+                m_turretrampstate = kIncrease;
+            }
+            else
+            if (m_turretangle < m_turretrampedangle)
+            {
+                m_turretrampstate = kDecrease;
+            }
+            break;
+    
+        case kIncrease:
+            // Provided that the angle hasn't been reached and the ramping has already reached halfway
+            if ((m_turretangle > m_turretrampedangle) && 
+                (TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()) - m_turretrampedangle > -1.0 * TUR_TURRET_RAMPING_RATE))
+            {
+                m_turretrampedangle += TUR_TURRET_RAMPING_RATE;
+
+                if (m_turretangle <= m_turretrampedangle)
+                    m_turretrampedangle = m_turretangle;
+            }
+            else
+            // if turretangle is suddenly set downwards
+            if (m_turretangle <= (m_turretrampedangle - (TUR_TURRET_RAMPING_RATE * 2)))
+            {
+                m_turretrampstate = kDecrease;
+            }
+            else
+            // If ramped angle has reached to the right speed
+            if (m_turretangle <= m_turretrampedangle)
+            {
+                m_turretrampedangle = m_turretangle;
+                m_turretrampstate = kMaintain;
+            }
+            break;
+
+        case kDecrease:
+            // Provided that the angle hasn't been reached and the ramping has already reached halfway
+            if ((m_turretangle < m_turretrampedangle) && 
+                (TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()) - m_turretrampedangle < TUR_TURRET_RAMPING_RATE))
+            {
+                m_turretrampedangle -= TUR_TURRET_RAMPING_RATE;
+
+                if (m_turretangle >= m_turretrampedangle)
+                    m_turretrampedangle = m_turretangle;
+            }
+            else
+            // if turretangle is suddenly set upwards
+            if (m_turretangle >= (m_turretrampedangle + (TUR_TURRET_RAMPING_RATE * 2)))
+            {
+                m_turretrampstate = kIncrease;
+            }
+            else
+            // If ramped angle has lowered to the right speed
+            if (m_turretangle >= m_turretrampedangle)
+            {
+                m_turretrampedangle = m_turretangle;
+                m_turretrampstate = kMaintain;
+            }
+            break;
+    };
+
+    if (m_turretmotor->GetClosedLoopError(0) > 0)       // Make sure these directions 
+    {
+        m_turretinitialfeedforward = TUR_TURRET_KS_BACKWARDS / 12;
+    }
+    else
+    {
+        m_turretinitialfeedforward = -1 * TUR_TURRET_KS_FORWARDS / 12;
+    }
+
+    m_turretmotor->Set(ControlMode::Position, DegreesToTicks(m_turretrampedangle), 
+                        DemandType::DemandType_ArbitraryFeedForward, m_turretinitialfeedforward);
+}
+
+
+double Turret::TicksToDegrees(double ticks)
+{
+    double rev = ticks / ENCODER_TICKS_PER_REV;
+    double turretrev = rev * REV_TO_TURRET_REV;
+    return turretrev * TURRET_REV_TO_DEGREES;
+}
+
+
+double Turret::DegreesToTicks(double degrees)
+{
+    double turretrev = degrees / TURRET_REV_TO_DEGREES;
+    double rev = turretrev / REV_TO_TURRET_REV;
+    return rev * ENCODER_TICKS_PER_REV;
 }

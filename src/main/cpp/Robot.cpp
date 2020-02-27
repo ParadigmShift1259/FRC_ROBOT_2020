@@ -24,6 +24,7 @@ void Robot::RobotInit()
     m_operatorinputs = new OperatorInputs();
     m_drivetrain = new Drivetrain(m_operatorinputs);
     m_gyro = new DualGyro(CAN_GYRO1, CAN_GYRO2);
+    m_turret = new Turret(m_operatorinputs, m_gyro);
 
     m_odo = new DifferentialDriveOdometry(Rotation2d(0_deg));
     m_StateHist = new vector<Trajectory::State> (10000);
@@ -40,8 +41,8 @@ void Robot::TestPeriodic(){}
 void Robot::TeleopInit()
 {
     m_drivetrain->Init();
-    //m_turret->Init();
     m_gyro->Init();
+    m_turret->Init();
     m_odo->ResetPosition(Pose2d(0_m, 0_m, 0_rad), Rotation2d(0_deg));
     
     m_targetPose = Pose2d(0_m, 3_m, 0_rad);  // target initial position 3 meters left of robot (target rotation is meaningless)
@@ -58,6 +59,8 @@ void Robot::TeleopPeriodic()
     // m_turret->Loop();
 
     m_gyro->Loop(); // is this needed????
+
+    m_turret->Loop();
 
     double gyroHeadingDegs;
     m_gyro->GetHeading(gyroHeadingDegs);
@@ -84,7 +87,7 @@ void Robot::TeleopPeriodic()
     SmartDashboard::PutNumber("Target range", m_targetRange);
     SmartDashboard::PutNumber("Target bearing", m_targetBearing);
 
-    cout << "t: " << state.t << "  X: " << state.pose.Translation().X() << "  Y: " << state.pose.Translation().Y() << "  Heading: " << state.pose.Rotation().Degrees() << "  Speed: " << state.velocity() << "  Accel: " << state.acceleration() << endl;
+ //   cout << "t: " << state.t << "  X: " << state.pose.Translation().X() << "  Y: " << state.pose.Translation().Y() << "  Heading: " << state.pose.Rotation().Degrees() << "  Speed: " << state.velocity() << "  Accel: " << state.acceleration() << endl;
 }
 
 
