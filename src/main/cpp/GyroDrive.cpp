@@ -17,7 +17,8 @@ using namespace std;
 GyroDrive::GyroDrive(OperatorInputs *inputs, Vision *vision)
 {
 	m_inputs = inputs;
-	m_drivetrain = new DriveTrainFX(inputs, vision);
+	m_vision = vision;
+	m_drivetrain = new DriveTrainFX(inputs);
 	m_gyro = new DualGyro(CAN_GYRO1, CAN_GYRO2);
 	m_drivepid = new DrivePID(m_drivetrain, m_gyro, m_inputs);
 	m_curveauto = new CurveAuto(m_drivetrain, m_gyro);
@@ -73,12 +74,34 @@ void GyroDrive::Loop()
 	if (m_drivepid->GetEnabled())
 		m_drivepid->Loop();
 
+	if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+		m_drivemode = kBallTrack;
+	else
+	if (m_inputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+		m_drivemode = kManual;
+
+	double ballangle = SmartDashboard::GetNumber("XAngle", 0);
+	double balldistance = SmartDashboard::GetNumber("ZDistance", 0);
+
 	switch (m_drivemode)
 	{
 	case kManual:
 		if (!m_drivepid->GetEnabled())
 		{
 			m_drivetrain->Loop();
+		}
+		break;
+
+	case kBallTrack:
+		// if vision not receiving values or ballangle is larger than the limiter in vision code, escape
+		if ((balldistance <= 0) || (fabs(ballangle) > 36.0))
+		{
+			m_drivetrain->Loop();
+		}
+		else
+		{
+			//m_drivetrain->Drive(DT_TRACKING_P * ballangle, DT_TRACKING_SPEED, true);
+			m_drivetrain->Drive(DT_TRACKING_P * ballangle, m_inputs->xBoxLeftY(0 * INP_DUAL), true);
 		}
 		break;
 	}
@@ -88,6 +111,11 @@ void GyroDrive::Loop()
 
 	if (m_inputs->xBoxRightBumper(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 		m_drivetrain->SetLowSpeedMode(false);
+
+	if (m_drivetrain->IsDefaultDirection())
+		m_vision->SetCamera(0);		// Camera 0 is default forward camera
+	else
+		m_vision->SetCamera(1);		// Camera 1 is reverse camera
 }
 
 

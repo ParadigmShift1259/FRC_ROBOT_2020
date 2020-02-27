@@ -32,7 +32,7 @@ public:
     bool GetActive();
     double GetDistance();
     double GetAngle();
-    void ChangeCamera() { m_camerachoice = !m_camerachoice; }
+    void SetCamera(int camera) { m_camerachoice = camera; }
 
     void IntakeSensorUpdate(bool update);
     double IntakeAngle();

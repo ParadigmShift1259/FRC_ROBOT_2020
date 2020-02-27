@@ -103,6 +103,9 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define CODES_PER_INCH 73.317
 #define WHEEL_DIAMETER 6.0
 #define WHEEL_TRACK 23.50
+// Ball Tracking
+#define DT_TRACKING_SPEED 0.3
+#define DT_TRACKING_P (0.45 / 36)        // max speed is 0.5, max angle is 36
 // Arbitrary and feed forward values
 #define INITIAL_FEEDFORWARD_DRIVE (0.393 / 12)
 #define VELOCITY_FEEDFORWARD_DRIVE (1 / 12)

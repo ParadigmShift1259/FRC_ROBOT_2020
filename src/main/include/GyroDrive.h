@@ -25,7 +25,7 @@ class GyroDrive
 {
 public:
 	enum DriveState { kInit, kDrive };
-	enum DriveMode { kManual };
+	enum DriveMode { kManual, kBallTrack };
 
 	GyroDrive(OperatorInputs *inputs, Vision *vision);
 	~GyroDrive();
@@ -48,6 +48,7 @@ public:
 protected:
 	OperatorInputs *m_inputs;
 	DriveTrainFX *m_drivetrain;
+	Vision *m_vision;
 	DualGyro *m_gyro;
 	DrivePID *m_drivepid;
 	CurveAuto *m_curveauto;
@@ -59,7 +60,6 @@ protected:
 	double m_pidstraight[3];
 	double m_pidangle[3];
 	double m_distance;
-	
 };
 
 

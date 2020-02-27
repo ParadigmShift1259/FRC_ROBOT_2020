@@ -13,7 +13,7 @@
 #include <frc\drive\DifferentialDrive.h>
 #include <ctre\Phoenix.h>
 #include "OperatorInputs.h"
-#include "Vision.h"
+#include "Const.h"
 
 
 using namespace frc;
@@ -25,7 +25,7 @@ public:
 	// Drivetrain modes
 	enum DriveMode { kNone, kFollower, kDiscrete, kTank, kArcade, kCurvature };
 
-	DriveTrainFX(OperatorInputs *inputs, Vision *vision, WPI_TalonFX *left1 = nullptr, WPI_TalonFX *left2 = nullptr, WPI_TalonFX *left3 = nullptr, WPI_TalonFX *right1 = nullptr, WPI_TalonFX *right2 = nullptr, WPI_TalonFX *right3 = nullptr);
+	DriveTrainFX(OperatorInputs *inputs, WPI_TalonFX *left1 = nullptr, WPI_TalonFX *left2 = nullptr, WPI_TalonFX *left3 = nullptr, WPI_TalonFX *right1 = nullptr, WPI_TalonFX *right2 = nullptr, WPI_TalonFX *right3 = nullptr);
 	~DriveTrainFX();
 	void Init(DriveMode mode = kFollower);
 	void Loop();
@@ -33,6 +33,7 @@ public:
 	void Drive(double x, double y, bool ramp = false);
 		// change DriveTrain direction and return true if going forward
 	bool ChangeDirection();
+	bool IsDefaultDirection() { return (m_direction == DT_DEFAULT_DIRECTION); }
 	bool ChangeLowSpeedMode();
 	double Ramp(double previousPow, double desiredPow);
 	double LeftMotor(double &invMaxValueXPlusY);
@@ -67,7 +68,6 @@ public:
 protected:
 	DriveMode m_mode;
 	OperatorInputs *m_inputs;
-	Vision *m_vision;
 	WPI_TalonFX *m_left1;
 	WPI_TalonFX *m_left2;
 	WPI_TalonFX *m_left3;
