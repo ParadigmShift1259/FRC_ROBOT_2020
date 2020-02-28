@@ -364,7 +364,7 @@ void Turret::FireModes()
                 m_firing = true;
             }
             else
-            if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && 
+            if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && 
                 m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             {
                 m_feeder->SetStuffing();
@@ -381,14 +381,14 @@ void Turret::FireModes()
             break;
 
         case kHoldShoot:
-            if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) && 
+            if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && 
                 m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
             {
                 m_feeder->SetStuffing();
                 m_firemode = kForceShoot;
             }
             else
-            if (!m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) &&
+            if (!m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
                 m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
                 m_firemode = kShootWhenReady;
             break;
