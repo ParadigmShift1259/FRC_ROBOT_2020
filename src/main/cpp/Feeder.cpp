@@ -78,6 +78,9 @@ void Feeder::Init()
     m_motor->Set(ControlMode::PercentOutput, 0);
     m_motor->SetSelectedSensorPosition(0);
     m_motor->SetSensorPhase(true);
+    // added 2/27/2020 after motor stall
+    m_motor->ConfigPeakCurrentLimit(FDR_MAX_CURRENT);
+    m_motor->EnableCurrentLimit(true);
     
     //m_motor->ConfigNominalOutputForward(0);
     m_motor->ConfigNominalOutputReverse(0);

@@ -204,6 +204,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define FDR_HIGH_NUMBER 10000
 #define FDR_WHEEL_SIZE 4
 #define FDR_FEED_FORWARD 0.0681
+#define FDR_MAX_CURRENT 30      // change later 2/27/20
 // PID values for ball
 #define FDR_P 0.0795
 #define FDR_I 0.005
