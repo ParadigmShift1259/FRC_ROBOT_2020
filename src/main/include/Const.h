@@ -11,6 +11,8 @@
 
 extern bool Debug;                  // Set to true to enable additional debugging
 
+class Logger;                       // Forward declare
+extern Logger *g_log;               // Global logging object pointer
 
 // OperatorInputs
 //   Controllers

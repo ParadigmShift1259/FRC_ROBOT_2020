@@ -14,6 +14,7 @@
 #include "OperatorInputs.h"
 #include "DriveTrainFX.h"
 #include "Gyro.h"
+#include "Logger.h"
 
 
 using namespace frc;
@@ -59,6 +60,10 @@ protected:
 	double m_y;
 	double m_ramp;
 	int m_ontarget;
+
+	Logger *m_log;
+	vector<int*> m_dataInt;
+	vector<double*> m_dataDouble;
 };
 
 

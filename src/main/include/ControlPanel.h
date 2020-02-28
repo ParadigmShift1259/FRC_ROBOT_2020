@@ -9,14 +9,10 @@
 #define SRC_ControlPanel_H_
 
 
+#include "Logger.h"
 #include "OperatorInputs.h"
 #include "GyroDrive.h"
 #include "Intake.h"
-// #define USE_LOGGER
-#ifdef USE_LOGGER
-#include "Logger.h"
-#endif
-
 #include <rev/ColorSensorV3.h>
 #include <rev/ColorMatch.h>
 #include <frc/Solenoid.h>
@@ -72,15 +68,15 @@ private:
 	int m_direction;
 	int m_startencodervalue;
 	int m_currentencodervalue;
+	int m_encodertickstogoal;
 	string m_color[kSize];
 	ColorOptions m_currentcolor, m_previouscolor;
 	bool m_stop;
 	double m_spinnersetpoint;
-#ifdef USE_LOGGER
-	Logger m_log;
+
+	Logger *m_log;
 	vector<int*> m_dataInt;
 	vector<double*> m_dataDouble;
-#endif
 };
 
 

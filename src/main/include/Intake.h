@@ -11,6 +11,7 @@
 
 #include "OperatorInputs.h"
 #include "Vision.h"
+#include "Logger.h"
 #include "Const.h"
 
 #include <frc\Solenoid.h>
@@ -68,6 +69,9 @@ protected:
 	int m_ballcount;
 	bool m_stuffing;
 	bool m_gathering;
+
+	Logger *m_log;
+	vector<int*> m_dataInt;
 };
 
 

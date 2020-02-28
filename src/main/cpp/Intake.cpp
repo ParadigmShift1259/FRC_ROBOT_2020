@@ -21,6 +21,7 @@ Intake::Intake(OperatorInputs *inputs, Vision *vision)
         DriverStation::ReportError("Intake Not Enabled");
     }
 
+    m_log = g_log;
 	m_inputs = inputs;
     m_vision = vision;
     
@@ -34,6 +35,14 @@ Intake::Intake(OperatorInputs *inputs, Vision *vision)
     m_ballcount = 0;
     m_stuffing = false;
     m_gathering = false;
+
+	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "intakestate,intakeposition,ballstate,ballcount,stuffing,gathering");
+	m_dataInt.push_back((int*)&m_intakestate);
+    m_dataInt.push_back((int*)&m_intakeposition);
+    m_dataInt.push_back((int*)&m_ballstate);
+    m_dataInt.push_back(&m_ballcount);
+    m_dataInt.push_back((int*)&m_stuffing);
+    m_dataInt.push_back((int*)&m_gathering);
 }
 
 
@@ -372,6 +381,7 @@ void Intake::Dashboard()
     {
         SmartDashboard::PutNumber("INT4_State", m_intakestate);
     }
+	m_log->logData(__FUNCTION__, __LINE__, m_dataInt);
 }
 
 

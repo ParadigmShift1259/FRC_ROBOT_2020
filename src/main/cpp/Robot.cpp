@@ -5,17 +5,18 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
+#include "Logger.h"
 
 #include "Robot.h"
 #include <frc/LiveWindow/LiveWindow.h>
 #include <frc/SmartDashboard/SendableChooser.h>
 #include <frc/SmartDashboard/SmartDashboard.h>
 
-#include <iostream>
 
 
 
 bool Debug = true;
+Logger *g_log = nullptr;
 bool StartedInAuto = false;
 
 AutoMode automode = kNoAuto;
@@ -23,6 +24,8 @@ AutoMode automode = kNoAuto;
 
 void Robot::RobotInit()
 {
+	g_log = new Logger("/tmp/logfile.csv", true);
+
 	m_chooser.SetDefaultOption(kszNoAuto, kszNoAuto);
 	m_chooser.AddOption(kszSimpleAuto, kszSimpleAuto);
 	SmartDashboard::PutData("Auto Modes", &m_chooser);
@@ -48,6 +51,8 @@ void Robot::RobotPeriodic()
 
 void Robot::AutonomousInit()
 {
+	g_log->openLog("/tmp/logfile.csv");
+
 	ReadChooser();
 
 	StartedInAuto = true;
@@ -86,6 +91,8 @@ void Robot::TestPeriodic()
 
 void Robot::TeleopInit()
 {
+	g_log->openLog("/tmp/logfile.csv");
+	
 	if (!StartedInAuto)
 	{
 		m_gyrodrive->Init();
@@ -123,6 +130,7 @@ void Robot::DisabledInit()
 		m_turret->Stop();
 		m_controlpanel->Stop();
 	}
+	g_log->closeLog();
 }
 
 

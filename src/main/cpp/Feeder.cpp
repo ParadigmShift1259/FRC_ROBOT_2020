@@ -22,6 +22,7 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake)
         DriverStation::ReportError("Feeder Not Enabled");
     }
 
+    m_log    = g_log;
     m_inputs = inputs;
     m_intake = intake;
 
@@ -30,6 +31,18 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake)
 
     m_loaded = false;
     m_stuffing = false;
+
+	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "feederstate,feederPID,loaded,stuffing,tolerance,feederPIDvals[0],feederPIDvals[1],feederPIDvals[2],goal");
+    m_dataInt.push_back((int*)&m_feederstate);
+    m_dataInt.push_back((int*)&m_feederPID);
+    m_dataInt.push_back((int*)&m_loaded);
+    m_dataInt.push_back((int*)&m_stuffing);
+
+    m_dataDouble.push_back((double*)&m_tolerance);
+    m_dataDouble.push_back(&m_feederPIDvals[0]);
+    m_dataDouble.push_back(&m_feederPIDvals[1]);
+    m_dataDouble.push_back(&m_feederPIDvals[2]);
+    m_dataDouble.push_back((double*)&m_goal);
 }
 
 

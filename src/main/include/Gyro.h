@@ -10,6 +10,7 @@
 
 
 #include <ctre\Phoenix.h>
+#include "Logger.h"
 
 
 using namespace frc;
@@ -36,6 +37,10 @@ protected:
 	double m_heading2;
 	bool m_gyrovalid1;
 	bool m_gyrovalid2;
+
+	Logger *m_log;
+	vector<int*> m_dataInt;
+	vector<double*> m_dataDouble;
 };
 
 
