@@ -57,6 +57,8 @@ public:
 	double GetAverageMaxDistance(int encoder = 0);
 	void ResetDeltaDistance(int encoder = 0);
 	double GetMaxDeltaDistance(int encoder = 0);
+	// added 2/28/20 by Geoffrey for curve auto
+	double GetAverageDeltaDistance(int encoder = 0);
 
 	WPI_TalonFX *Left1() {return m_left1;}
 	WPI_TalonFX *Right1() {return m_right1;}

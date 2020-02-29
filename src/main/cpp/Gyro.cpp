@@ -31,6 +31,8 @@ DualGyro::DualGyro(int gyro1, int gyro2)
 	m_gyrovalid1 = false;
 	m_gyrovalid2 = false;
 
+	m_prevheading = 0;
+
 	if (gyro1 != -1)
 		m_pigeon1 = new PigeonIMU(gyro1);
 
@@ -64,6 +66,8 @@ void DualGyro::Init()
 
 	m_gyrovalid1 = false;
 	m_gyrovalid2 = false;
+
+	m_prevheading = 0;
 }
 
 
@@ -128,4 +132,16 @@ void DualGyro::ZeroHeading()
 	{
 		m_pigeon2->SetFusedHeading(0, 0);
 	}
+}
+
+
+void DualGyro::ResetDeltaHeading()
+{
+	m_prevheading = m_heading1;
+}
+
+
+double DualGyro::GetDeltaHeading()
+{
+	return (m_heading1 - m_prevheading);
 }

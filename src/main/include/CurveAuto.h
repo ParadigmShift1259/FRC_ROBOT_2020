@@ -57,7 +57,7 @@ protected:
     units::degree_t m_gyrotolerance;
     double m_gyroPIDvals[3];
 
-    units::meter_t m_setpoint;
+    units::inch_t m_setpoint;
     units::degree_t m_setpointangle;
 
     bool m_finished;

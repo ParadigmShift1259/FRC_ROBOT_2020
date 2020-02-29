@@ -54,8 +54,10 @@ void GyroDrive::Init()
 	m_drivetrain->SetChangeDirButton(A_BUTTON);		
 
 	m_gyro->Init();
-	m_curveauto->Init();
 	ZeroHeading();
+
+	m_curveauto->Init();
+
 	m_drivestate = kInit;
 	m_timer.Reset();
 	m_timer.Start();

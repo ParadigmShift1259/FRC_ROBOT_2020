@@ -109,12 +109,12 @@ void Autonomous::DriveStraight()
     switch (m_stage)
     {
     case 0:
-        if (m_gyrodrive->StartMotion(1, 0, 0, 1, 0.5))
+        if (m_gyrodrive->StartMotion(24, 0, 0, 12, 6))
             m_stage++;
         break;
     
     case 1:
-        if (m_gyrodrive->StartMotion(2, 45, 0, 1, 0.5))
+        if (m_gyrodrive->StartMotion(24, 45, 0, 12, 6))
             m_stage++;
         break;
     
