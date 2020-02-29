@@ -38,6 +38,7 @@ protected:
     DifferentialDriveOdometry *m_odo;
     vector<Trajectory::State> *m_StateHist;
     Pose2d m_targetPose;
+
     double m_targetRange;
     double m_targetBearing;
 private: 
