@@ -192,6 +192,8 @@ void Feeder::Dashboard()
         SmartDashboard::PutNumber("FDR2_Position", m_motor->GetSelectedSensorPosition() / ENCODER_TICKS_PER_REV * FDR_WHEEL_SIZE * 3.1415926535);
         SmartDashboard::PutNumber("FDR3_State", m_feederstate);
     }
+
+	m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 }
 
 

@@ -40,7 +40,7 @@ OperatorInputs::OperatorInputs()
 		m_xbox.push_back(new XboxController(INP_XBOX_2));
 	// initialize toggle variable to zero
 	memset(m_toggle, 0, sizeof(m_toggle));
-	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "Xbox#,A,B,X,Y,Lbumper,Rbumper,Ltrig,Rtrig,Start,Back,"
+	g_log->logMsg(eInfo, __FUNCTION__, __LINE__, "Xbox#,A,B,X,Y,Lbumper,Rbumper,Ltrig,Rtrig,Start,Back,"
 												"DpadUp,DpadUpRt,DpadRt,DpadDnRt,DpadDn,DpadDnLf,DpadLf,DpadLf"
 												"L3,R3,LfStickX,LfStickY,RtStickX,RtStickY");
 	for (int i = 0; i < TOGGLE_MAX_CONTROLLERS; i++)
@@ -84,17 +84,10 @@ OperatorInputs::~OperatorInputs()
 	m_xbox.clear();
 }
 
-
-void OperatorInputs::Init()
-{
-	m_log = g_log;
-}
-
-
 void OperatorInputs::Loop()
 {
-	m_log->logData(__FUNCTION__, __LINE__, m_dataInt[0], m_dataDouble[0]);
-	m_log->logData(__FUNCTION__, __LINE__, m_dataInt[1], m_dataDouble[1]);
+	g_log->logData(__FUNCTION__, __LINE__, m_dataInt[0], m_dataDouble[0]);
+	g_log->logData(__FUNCTION__, __LINE__, m_dataInt[1], m_dataDouble[1]);
 }
 
 

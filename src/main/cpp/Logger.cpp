@@ -1,3 +1,11 @@
+/*
+    Logging Class
+    2/15/20
+
+    Nicholas Seidl
+    
+*/
+
 #include "Logger.h"
 
 Logger::Logger(const char *path, bool console_echo)

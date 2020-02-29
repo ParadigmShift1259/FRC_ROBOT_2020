@@ -191,7 +191,7 @@ void ControlPanel::ControlPanelStates()
 			// If we don't know what the target color is, read the target color from FMS and 
 			m_targetcolor = GetTargetColor();
 			if(m_targetcolor != kNone)
-				{
+			{
 				// Determine the shortest path to spin the wheel
 				int colordelta = m_targetcolor - m_currentcolor;
 				if (colordelta == 1 || colordelta == -3)
@@ -200,12 +200,11 @@ void ControlPanel::ControlPanelStates()
 					m_direction = 1;
 				// Set motor speed	
 				m_spinnersetpoint = CPL_POSITION_CONTROL_FAST;
-				string msg("Target Color =");
+				string msg("Target Color = ");
 				msg += m_color[m_targetcolor];
 				m_log->logMsg(eDebug, __FUNCTION__, __LINE__, msg.c_str());
-
-				}
 			}
+		}
 		
 		if(m_currentcolor == m_targetcolor)
 			{

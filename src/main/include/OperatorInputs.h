@@ -66,7 +66,6 @@ public:
 	OperatorInputs();
 	~OperatorInputs();
 
-	void Init();                                    //!< Call to set up the log pointer
 	void Loop();                                    //!< Call periodically to log the inputs
 
 	double xBoxLeftX(unsigned int i = 0);           //!< Left stick x axis
@@ -123,7 +122,6 @@ private:
 
 	bool m_toggle[TOGGLE_MAX_CONTROLLERS][TOGGLE_MAX_BUTTONS];             //!< Maintation the toggle/hold states of each button on each xbox controller
 
-	Logger *m_log;
 	vector<int*> m_dataInt[TOGGLE_MAX_CONTROLLERS];                        //!< Collection of integer pointers to member variables for logging
 	vector<double*> m_dataDouble[TOGGLE_MAX_CONTROLLERS];                  //!< Collection of double pointers to member variables for logging
 

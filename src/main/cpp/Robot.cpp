@@ -13,8 +13,6 @@
 #include <frc/SmartDashboard/SmartDashboard.h>
 
 
-
-
 bool Debug = true;
 Logger *g_log = nullptr;
 bool StartedInAuto = false;
@@ -31,7 +29,7 @@ void Robot::RobotInit()
 	SmartDashboard::PutData("Auto Modes", &m_chooser);
 
 	m_driverstation = &DriverStation::GetInstance();
-
+#if 0
 	m_operatorinputs = new OperatorInputs();
 	m_vision = new Vision(m_operatorinputs);
 	m_gyrodrive = new GyroDrive(m_operatorinputs, m_vision);
@@ -41,6 +39,7 @@ void Robot::RobotInit()
 	m_controlpanel = new ControlPanel(m_operatorinputs, m_gyrodrive, m_intake);
 	m_turret = new Turret(m_operatorinputs, m_gyrodrive, m_intake, m_feeder, m_controlpanel, m_vision);
 	m_autonomous = new Autonomous(m_gyrodrive, m_intake, m_feeder, m_turret, m_vision);
+#endif
 }
 
 
@@ -57,6 +56,7 @@ void Robot::AutonomousInit()
 
 	StartedInAuto = true;
 
+#if 0
 	m_gyrodrive->Init();
 	m_pneumatics->Init();
 	m_vision->Init();
@@ -65,17 +65,21 @@ void Robot::AutonomousInit()
 	m_feeder->SetLoaded(true);		// ensure feeder state is loaded before loop runs
 	m_turret->Init();
 	m_controlpanel->Init();
+#endif
 }
 
 
 void Robot::AutonomousPeriodic()
 { 
+#if 0
 	m_autonomous->Loop();
 	m_gyrodrive->Loop();
 	m_vision->Loop();
 	m_intake->Loop();
 	m_feeder->Loop();
 	m_turret->Loop();
+	m_operatorinputs->Loop();		// For logging
+#endif
 }
 
 
@@ -95,6 +99,7 @@ void Robot::TeleopInit()
 	
 	if (!StartedInAuto)
 	{
+#if 0
 		m_gyrodrive->Init();
 		m_pneumatics->Init();
 		m_vision->Init();
@@ -102,12 +107,14 @@ void Robot::TeleopInit()
 		m_feeder->Init();
 		m_turret->Init();
 		m_controlpanel->Init();
+#endif
 	}
 }
 
 
 void Robot::TeleopPeriodic()
 {
+#if 0
 	m_gyrodrive->Loop();
 	m_pneumatics->Loop();
 	m_vision->Loop();
@@ -115,6 +122,8 @@ void Robot::TeleopPeriodic()
 	m_feeder->Loop();
 	m_turret->Loop();
 	m_controlpanel->Loop();
+	m_operatorinputs->Loop();		// For logging
+#endif
 }
 
 
@@ -122,6 +131,7 @@ void Robot::DisabledInit()
 {
 	if (!StartedInAuto)
 	{
+#if 0
 		m_gyrodrive->Stop();
 		m_pneumatics->Stop();
 		m_vision->Stop();
@@ -129,6 +139,7 @@ void Robot::DisabledInit()
 		m_feeder->Stop();
 		m_turret->Stop();
 		m_controlpanel->Stop();
+#endif
 	}
 	g_log->closeLog();
 }
