@@ -279,7 +279,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 // Vision ---------------------------------------
 #define VIS_MOUNTING_ANGLE 18.0     // degrees
-#define VIS_MOUNTING_HEIGHT 21.75      // inches
+#define VIS_MOUNTING_HEIGHT 21.5      // inches, used to be 21.75
 #define VIS_TARGET_HEIGHT 98.25     // inches
 #define VIS_TARGET_SIZE 15          // inches
 

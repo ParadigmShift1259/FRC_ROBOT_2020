@@ -43,7 +43,7 @@ public:
 	void SetIntakePosition(IntakePosition pos) { m_intakeposition = pos; }
 	IntakePosition GetIntakePosition() { return m_intakeposition; }
 	bool IsIntakeUp() { return (GetIntakePosition() == kUp); }
-	void SetGathering(bool gathering) { m_gathering = gathering; }
+	void SetGathering(bool gathering);
 
 private:
 	bool NullCheck();

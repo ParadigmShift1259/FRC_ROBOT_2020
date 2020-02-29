@@ -151,11 +151,11 @@ void Autonomous::TrenchRun()
     case 2:
         m_turret->SetTurretState(Turret::TurretState::kVision);
 
-        if (m_timer.Get() > 0.5)
+        if (m_timer.Get() > 0.25)
         {
             m_stage++;
             m_turret->SetFireMode(Turret::FireMode::kShootWhenReady);
-            m_feeder->SetStuffTime(2.5);
+            m_feeder->SetStuffTime(1.5);
         }
         break;
 
@@ -177,7 +177,10 @@ void Autonomous::TrenchRun()
     
     case 5:
         if (m_gyrodrive->DriveStraight(156, 0.2, true))
+        {
+            m_intake->SetGathering(false);
             m_stage++;
+        }
         break;
     
     case 6:
@@ -191,7 +194,7 @@ void Autonomous::TrenchRun()
     case 7:
         m_turret->SetTurretState(Turret::TurretState::kVision);
 
-        if (m_timer.Get() > 0.5)
+        if (m_timer.Get() > 0.25)
         {
             m_stage++;
             m_turret->SetFireMode(Turret::FireMode::kShootWhenReady);

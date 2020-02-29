@@ -111,6 +111,9 @@ void Turret::Init()
     // use WPILIB simple motor feed forward class to pair with robot characterization
     m_flywheelPID->SetFF(0, 0);
     m_flywheelinitialfeedforward = 0;
+
+    m_timer.Start();
+    m_timer.Reset();
     
     // Turret
     // Set PID Values
@@ -293,7 +296,12 @@ void Turret::TurretStates()
             m_flywheelsetpoint = TUR_SHOOTER_RAMPUP_STATE_RPM;
             // Check xBox for field angle            
             if (!FindFieldXBox())
-                VisionFieldAngle();
+            {
+                if (!VisionFieldAngle())
+                {
+                    CalculateTurretFromField();
+                }
+            }
             else
             {
                 // maintain flywheel at last field angle
@@ -316,15 +324,30 @@ void Turret::TurretStates()
                 m_hoodservo->SetPosition(m_hoodangle);
 
                 // if certain errors are met, ready for shooting
-                if (TicksToDegrees(m_turretmotor->GetClosedLoopError()) <= TUR_TURRET_ERROR &&
-                    fabs(m_flywheelencoder->GetVelocity() * TUR_DIRECTION - m_flywheelsetpoint) <= TUR_SHOOTER_ERROR)
+                if ((TicksToDegrees(m_turretmotor->GetClosedLoopError()) <= TUR_TURRET_ERROR) &&
+                    (fabs(m_flywheelencoder->GetVelocity() * TUR_DIRECTION - m_flywheelsetpoint) <= TUR_SHOOTER_ERROR))
                 {
                     m_readytofire = true;
                     m_turretstate = kAllReady;
+                    //m_timer.Reset();
                 }
             }   
             break;
     
+        case kAllReadyWait:
+            if (m_timer.Get() > 0.10)
+            {
+                m_readytofire = true;
+                m_turretstate = kAllReady;
+            }
+            else
+            if (VisionFieldAngle())
+            {
+                CalculateHoodFlywheel(m_vision->GetDistance(), m_hoodangle, m_flywheelsetpoint);
+                m_hoodservo->SetPosition(m_hoodangle);
+            }
+            break;
+
         case kAllReady:
             m_vision->SetLED(true);
             VisionFieldAngle();
@@ -527,7 +550,7 @@ void Turret::CalculateHoodFlywheel(double distance, double &hoodangle, double &f
     flywheelspeed = 5711.094 + (2521.797 - 5711.094)/(1 + pow((distance/378.657), 2.567828));
     flywheelspeed += 100;       // artificially inflate flywheel speed by 100
     if (m_turretangle < 100)    // if turret is pointing out the front, increase flywheel speed by a bit more
-        flywheelspeed += 150;
+        flywheelspeed += 50;
 }
 
 

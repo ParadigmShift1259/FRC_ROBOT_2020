@@ -33,7 +33,7 @@ using namespace rev;
 class Turret
 {
 public:
-    enum TurretState {kIdle, kRampUp, kVision, kAllReady};
+    enum TurretState {kIdle, kRampUp, kVision, kAllReadyWait, kAllReady};
     enum FireMode {kForceShoot, kShootWhenReady, kHoldShoot};
     enum RampState {kMaintain, kIncrease, kDecrease};
 
@@ -90,6 +90,7 @@ private:
 
     SimpleMotorFeedforward<units::meters> *m_flywheelsimplemotorfeedforward;
     double m_flywheelinitialfeedforward;
+    Timer m_timer;
 
     // Turret
     WPI_TalonSRX *m_turretmotor;

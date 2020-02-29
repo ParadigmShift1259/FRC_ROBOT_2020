@@ -63,7 +63,8 @@ private:
     double m_distance;
     double m_horizontalangle;
 
-    double m_averagedistance[3];
+    vector<double> m_averagedistance;
+    double m_avgdistance;
     double m_averageangle[3];
 };
 
