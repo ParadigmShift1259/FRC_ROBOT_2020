@@ -26,6 +26,8 @@ void Robot::RobotInit()
 	m_chooser.SetDefaultOption(kszNoAuto, kszNoAuto);
 	m_chooser.AddOption(kszSimpleAuto, kszSimpleAuto);
 	m_chooser.AddOption(kszDriveStraight, kszDriveStraight);
+	m_chooser.AddOption(kszTrenchRun, kszTrenchRun);
+	m_chooser.AddOption(kszCenterRendezvous, kszCenterRendezvous);
 	SmartDashboard::PutData("Auto Modes", &m_chooser);
 
 	m_driverstation = &DriverStation::GetInstance();
@@ -136,6 +138,7 @@ void Robot::DisabledInit()
 void Robot::DisabledPeriodic()
 {
 	ReadChooser();
+	m_vision->SetLED(false);
 }
 
 
@@ -152,6 +155,12 @@ void Robot::ReadChooser()
 	else
 	if (m_autoSelected == kszDriveStraight)
 		automode = kDriveStraight;
+	else
+	if (m_autoSelected == kszTrenchRun)
+		automode = kTrenchRun;
+	else
+	if (m_autoSelected == kszCenterRendezvous)
+		automode = kCenterRendezvous;
 
 	SmartDashboard::PutNumber("AU1_automode", automode);
 }

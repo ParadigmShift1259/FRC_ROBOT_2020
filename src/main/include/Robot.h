@@ -54,6 +54,8 @@ private:
 	const string kszNoAuto = "No Auto";
 	const string kszSimpleAuto = "Simple";
 	const string kszDriveStraight = "DriveStraight";
+	const string kszTrenchRun = "TrenchRun";
+	const string kszCenterRendezvous = "CenterRendezvous";
 	string m_autoSelected;
 
 	void ReadChooser();

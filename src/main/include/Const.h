@@ -214,7 +214,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Max percent output that feeder can apply
 #define FDR_MAX_POWER 1.0
 #define FDR_TIMEOUT_TIME 4.0
-#define FDR_STUFF_TIME 4.0
+#define FDR_STUFF_TIME 3.0
 #define FDR_GEAR_RATIO 4.167
 #define FDR_INVERTED 1.0
 
@@ -230,10 +230,11 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_TIMEOUT_MS 30
 #define ENCODER_TICKS_PER_REV 4096.00
 #define MINUTES_TO_HUNDRED_MS 0.00166666
+#define TUR_DIRECTION -1.0
 // Shooter / Flywheel
 #define TUR_SHOOTER_RAMPING_RATE 100       // in rpm
-#define TUR_SHOOTER_IDLE_STATE_RPM 2000
-#define TUR_SHOOTER_RAMPUP_STATE_RPM 2500
+#define TUR_SHOOTER_IDLE_STATE_RPM 2000      // 2000
+#define TUR_SHOOTER_RAMPUP_STATE_RPM 2500   // 2500
 // kS, kV, kA values tuned using frc-characterization 2/20/20 for the Metal V2 Shooter Flywheel by Geoffrey
 #define TUR_SHOOTER_KS 0.0876
 #define TUR_SHOOTER_KV 0.124
@@ -277,15 +278,15 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TURRET_DEGREE_STOP_RANGE 0.25
 
 // Vision ---------------------------------------
-#define VIS_MOUNTING_ANGLE 20.0     // degrees
-#define VIS_MOUNTING_HEIGHT 21.375      // inches
+#define VIS_MOUNTING_ANGLE 18.0     // degrees
+#define VIS_MOUNTING_HEIGHT 21.75      // inches
 #define VIS_TARGET_HEIGHT 98.25     // inches
 #define VIS_TARGET_SIZE 15          // inches
 
 // Autonomous -----------------------------------
 enum AutoMode
 {
-    kNoAuto, kSimpleAuto, kDriveStraight
+    kNoAuto, kSimpleAuto, kDriveStraight, kTrenchRun, kCenterRendezvous
 };
 
 extern AutoMode automode;

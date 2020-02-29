@@ -30,6 +30,7 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake)
 
     m_loaded = false;
     m_stuffing = false;
+    m_stufftime = FDR_STUFF_TIME;
 }
 
 
@@ -52,6 +53,7 @@ void Feeder::Init()
     m_feederPIDvals[2] = FDR_D;
     m_loaded = false;
     m_stuffing = false;
+    m_stufftime = FDR_STUFF_TIME;
 
     if ((m_motor == nullptr) && (FDR_MOTOR != -1))
     {
@@ -141,10 +143,17 @@ void Feeder::Loop()
             m_loaded = true;
             m_feederstate = kIdle;
         }
+        else
+        if (m_stuffing)
+        {
+            m_timer.Reset();
+            m_intake->SetStuffing();
+            m_feederstate = kStuff;
+        }
         break;
 
     case kStuff:
-        if (m_timer.Get() > FDR_STUFF_TIME)
+        if (m_timer.Get() > m_stufftime)
         {
             m_motor->Set(0);
             m_loaded = false;

@@ -62,7 +62,7 @@ void Turret::Init()
         m_flywheelmotor = new CANSparkMax(TUR_SHOOTER_ID, CANSparkMax::MotorType::kBrushless);
         m_flywheelPID = new CANPIDController(*m_flywheelmotor);
         m_flywheelencoder = new CANEncoder(*m_flywheelmotor);
-        m_flywheelmotor->SetInverted(true);
+        //m_flywheelmotor->SetInverted(true);
         m_flywheelmotor->SetIdleMode(CANSparkMax::IdleMode::kCoast);
     }
     
@@ -201,6 +201,7 @@ void Turret::Stop()
     m_flywheelrampedsetpoint = 0;
     m_flywheelmotor->SetIdleMode(CANSparkMax::IdleMode::kCoast);
     m_turretmotor->SetNeutralMode(NeutralMode::Brake);
+    m_vision->SetLED(false);
 }
 
 
@@ -219,7 +220,7 @@ void Turret::Dashboard()
         SmartDashboard::PutNumber("TUR04_Encoder_Position in Native units", m_flywheelencoder->GetPosition());
         SmartDashboard::PutNumber("TUR05_Encoder_Velocity in Native Speed", m_flywheelencoder->GetVelocity());
         SmartDashboard::PutNumber("TUR06_SimpleMotorFeedforward", m_flywheelinitialfeedforward);
-        SmartDashboard::PutNumber("TUR07_Error", m_flywheelrampedsetpoint - m_flywheelencoder->GetVelocity());
+        SmartDashboard::PutNumber("TUR07_Error", m_flywheelrampedsetpoint - m_flywheelencoder->GetVelocity() * TUR_DIRECTION);
         SmartDashboard::PutNumber("TUR08_RampedSetpoint", m_flywheelrampedsetpoint);
         SmartDashboard::PutNumber("TUR09_RampState", m_flywheelrampstate);
         SmartDashboard::PutNumber("TUR10_PIDslot", m_PIDslot);
@@ -316,7 +317,7 @@ void Turret::TurretStates()
 
                 // if certain errors are met, ready for shooting
                 if (TicksToDegrees(m_turretmotor->GetClosedLoopError()) <= TUR_TURRET_ERROR &&
-                    fabs(m_flywheelencoder->GetVelocity() - m_flywheelsetpoint) <= TUR_SHOOTER_ERROR)
+                    fabs(m_flywheelencoder->GetVelocity() * TUR_DIRECTION - m_flywheelsetpoint) <= TUR_SHOOTER_ERROR)
                 {
                     m_readytofire = true;
                     m_turretstate = kAllReady;
@@ -519,9 +520,13 @@ bool Turret::VisionFieldAngle()
 
 void Turret::CalculateHoodFlywheel(double distance, double &hoodangle, double &flywheelspeed)
 {
+    if (m_distance < 80 || m_distance > 336)
+        return;
+
     hoodangle = -4.308317412 * pow(10,-12) * pow(distance, 5) + 5.194744002 * pow(10, -9) * pow(distance, 4) - 2.473275858 * pow(10, -6) * pow(distance, 3) + 5.807646984 * pow(10, -4) * pow(distance, 2)- 6.749202731 * pow(10, -2) * distance + 3.209018403;
-    flywheelspeed = 5711.094 + (2521.797 - 5711.094)/(1 + pow((distance/378.657), 2.567828)) + 100;
-    if (m_turretangle < 100)
+    flywheelspeed = 5711.094 + (2521.797 - 5711.094)/(1 + pow((distance/378.657), 2.567828));
+    flywheelspeed += 100;       // artificially inflate flywheel speed by 100
+    if (m_turretangle < 100)    // if turret is pointing out the front, increase flywheel speed by a bit more
         flywheelspeed += 150;
 }
 
@@ -552,7 +557,7 @@ void Turret::RampUpFlywheel()
         case kIncrease:
             m_PIDslot = 0;
             // Provided that the setpoint hasn't been reached and the ramping has already reached halfway
-            if ((m_flywheelsetpoint > m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() - m_flywheelrampedsetpoint > -1.0 * TUR_SHOOTER_RAMPING_RATE / 2))
+            if ((m_flywheelsetpoint > m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() * TUR_DIRECTION - m_flywheelrampedsetpoint > -1.0 * TUR_SHOOTER_RAMPING_RATE / 2))
             {
                 m_flywheelrampedsetpoint += TUR_SHOOTER_RAMPING_RATE;
 
@@ -574,7 +579,7 @@ void Turret::RampUpFlywheel()
         case kDecrease:
             m_PIDslot = 0;
             // Provided that the setpoint hasn't been reached and the ramping has already reached halfway
-            if ((m_flywheelsetpoint < m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() - m_flywheelrampedsetpoint < TUR_SHOOTER_RAMPING_RATE))
+            if ((m_flywheelsetpoint < m_flywheelrampedsetpoint) && (m_flywheelencoder->GetVelocity() * TUR_DIRECTION - m_flywheelrampedsetpoint < TUR_SHOOTER_RAMPING_RATE))
             {
                 m_flywheelrampedsetpoint -= TUR_SHOOTER_RAMPING_RATE;
 
@@ -598,7 +603,7 @@ void Turret::RampUpFlywheel()
     m_flywheelPID->SetFF(0);
     // Converting setpoint to rotations per second, plugging into simplemotorfeedforward calculate and converting to a double  
     // The feed forward is set immediately to setpoint as velocity control allows for it
-    m_flywheelPID->SetReference(m_flywheelrampedsetpoint, ControlType::kVelocity, m_PIDslot, m_flywheelinitialfeedforward);
+    m_flywheelPID->SetReference(m_flywheelrampedsetpoint * TUR_DIRECTION, ControlType::kVelocity, m_PIDslot, m_flywheelinitialfeedforward * TUR_DIRECTION);
 }
 
 

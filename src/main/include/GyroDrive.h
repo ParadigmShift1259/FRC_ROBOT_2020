@@ -25,7 +25,7 @@ class GyroDrive
 {
 public:
 	enum DriveState { kInit, kDrive };
-	enum DriveMode { kManual, kBallTrack };
+	enum DriveMode { kManual, kBallAngle, kBallTrack };
 
 	GyroDrive(OperatorInputs *inputs, Vision *vision);
 	~GyroDrive();
@@ -44,6 +44,8 @@ public:
 	void SetLowSpeed(bool enable) { m_drivetrain->SetLowSpeedMode(enable); }
 	void ZeroHeading() { m_gyro->ZeroHeading(); }
 	bool GetHeading(double &heading) { return m_gyro->GetHeading(heading); }
+
+	void SetDriveMode(DriveMode mode) { m_drivemode = mode; }
 
 protected:
 	OperatorInputs *m_inputs;
