@@ -53,6 +53,7 @@ private:
 	SendableChooser<string> m_chooser;
 	const string kszNoAuto = "No Auto";
 	const string kszSimpleAuto = "Simple";
+	const string kszDriveStraight = "DriveStraight";
 	string m_autoSelected;
 
 	void ReadChooser();

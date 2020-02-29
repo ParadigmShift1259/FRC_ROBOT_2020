@@ -47,7 +47,13 @@ void Autonomous::Loop()
         case kSimpleAuto:
             SimpleAuto();
             break;
+        
+        case kDriveStraight:
+            DriveStraight();
+            break;
     }
+
+    SmartDashboard::PutNumber("AUT0_Stage", m_stage);
 }
 
 
@@ -79,13 +85,40 @@ void Autonomous::SimpleAuto()
             m_turret->SetTurretState(Turret::TurretState::kVision);
 
         if (m_timer.Get() > 0.25)
+        {
             m_stage++;
+            m_turret->SetFireMode(Turret::FireMode::kShootWhenReady);
+        }
         break;
 
     case 3:
         if (m_turret->GetTurretState() == Turret::TurretState::kIdle)
             m_turret->SetTurretState(Turret::TurretState::kVision);
+        if (m_turret->IsFiring())
+            m_stage++;
+        break;
+    
+    case 4:
+        break;
+    }
+}
 
-        m_turret->SetFireMode(Turret::FireMode::kShootWhenReady);
+
+void Autonomous::DriveStraight()
+{
+    switch (m_stage)
+    {
+    case 0:
+        if (m_gyrodrive->StartMotion(1, 0, 0, 1, 0.5))
+            m_stage++;
+        break;
+    
+    case 1:
+        if (m_gyrodrive->StartMotion(2, 45, 0, 1, 0.5))
+            m_stage++;
+        break;
+    
+    case 2:
+        break;
     }
 }

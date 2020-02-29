@@ -153,18 +153,21 @@ void Turret::Loop()
     if (m_inputs->xBoxXButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
     {
         m_turretstate = kIdle;
+        m_vision->SetLED(false);
         m_readytofire = false;
     }
     else
     if (m_inputs->xBoxLeftY(1 * INP_DUAL) < -0.7)
     {
         m_turretstate = kVision;
+        m_vision->SetLED(true);
         m_readytofire = false;
     }
     else
     if (m_inputs->xBoxLeftY(1 * INP_DUAL) > 0.7 && (m_turretstate == kVision || m_turretstate == kAllReady))
     {
         m_turretstate = kIdle;
+        m_vision->SetLED(false);
         m_readytofire = false;
     }
 
@@ -264,6 +267,9 @@ void Turret::TurretStates()
     switch (m_turretstate)
     {
         case kIdle:
+            m_readytofire = false;
+            // Keep limelight lights off
+            m_vision->SetLED(false);
             // run flywheel at idle RPM
             m_flywheelsetpoint = TUR_SHOOTER_IDLE_STATE_RPM;
             // Check xBox for abs angle
@@ -279,46 +285,47 @@ void Turret::TurretStates()
             break;
 
         case kRampUp:
+            m_readytofire = false;
+            // Turn on limelight for turret angling
+            m_vision->SetLED(true);
+            // maintain turret at elevated speed
             m_flywheelsetpoint = TUR_SHOOTER_RAMPUP_STATE_RPM;
-            // Check xBox for field angle
-            FindFieldXBox();
-            // maintain flywheel at last field angle
-            CalculateTurretFromField();
+            // Check xBox for field angle            
+            if (!FindFieldXBox())
+                VisionFieldAngle();
+            else
+            {
+                // maintain flywheel at last field angle
+                CalculateTurretFromField();
+            }
             m_hoodservo->SetPosition(0);
 
-            if (m_feeder->GetBallCount() <= 5)
+            if (m_feeder->GetBallCount() < 5)
                 m_turretstate = kIdle;
-        
-            if (m_flywheelsetpoint == m_flywheelrampedsetpoint && !m_firing)
-                m_readytofire = true;
-            else
-                m_readytofire = false;
             break;
 
         case kVision:
+            // maintain lights on LED
+            m_vision->SetLED(true);
             m_readytofire = false;
-            if (!VisionFieldAngle())
-            {
-                m_turretstate = kIdle;
-                return;
-            }
-
             // automatically calculate turret angle, flywheel and hood
-            VisionFieldAngle();
-            CalculateHoodFlywheel(m_vision->GetDistance(), m_hoodangle, m_flywheelsetpoint);
-            m_hoodservo->SetPosition(m_hoodangle);
-
-            // if certain errors are met, ready for shooting
-            if (TicksToDegrees(m_turretmotor->GetClosedLoopError()) <= TUR_TURRET_ERROR &&
-                fabs(m_flywheelencoder->GetVelocity() - m_flywheelsetpoint) <= TUR_SHOOTER_ERROR)
+            if (VisionFieldAngle())
             {
-               m_readytofire = true;
-               m_turretstate = kAllReady;
-            }
-            
+                CalculateHoodFlywheel(m_vision->GetDistance(), m_hoodangle, m_flywheelsetpoint);
+                m_hoodservo->SetPosition(m_hoodangle);
+
+                // if certain errors are met, ready for shooting
+                if (TicksToDegrees(m_turretmotor->GetClosedLoopError()) <= TUR_TURRET_ERROR &&
+                    fabs(m_flywheelencoder->GetVelocity() - m_flywheelsetpoint) <= TUR_SHOOTER_ERROR)
+                {
+                    m_readytofire = true;
+                    m_turretstate = kAllReady;
+                }
+            }   
             break;
     
         case kAllReady:
+            m_vision->SetLED(true);
             VisionFieldAngle();
             CalculateHoodFlywheel(m_vision->GetDistance(), m_hoodangle, m_flywheelsetpoint);
             m_hoodservo->SetPosition(m_hoodangle);
@@ -390,12 +397,16 @@ void Turret::FireModes()
             else
             if (!m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
                 m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+            {
                 m_firemode = kShootWhenReady;
+                // Force set turret to vision to ensure quick firing 2/28/20
+                m_turretstate = kVision;
+            }
             break;
     }
 }
 
-
+/*
 void Turret::FindFieldXBox()
 {
     // allow for manual movement of absolute angle to find vision target
@@ -417,6 +428,32 @@ void Turret::FindFieldXBox()
         }
         SmartDashboard::PutNumber("TUR11_Absolute Angle", m_fieldangle);
     }
+}
+*/
+
+bool Turret::FindFieldXBox()
+{
+    // allow for manual movement of absolute angle to find vision target
+    // X and Y are flipped due to angles in tangent starting between Quad I and IV, not Quad II and I
+    if (fabs(m_inputs->xBoxRightX(1 * INP_DUAL)) > 0.8 || fabs(m_inputs->xBoxRightY(1 * INP_DUAL)) > 0.8)
+    {
+        // Prevent divide by 0 errors
+        if (m_inputs->xBoxRightY(1 * INP_DUAL) == 0)
+        {
+            m_fieldangle = m_inputs->xBoxRightX(1 * INP_DUAL) > 0 ? 90 : 270;
+        }
+        else
+        {
+            double radians = atan(m_inputs->xBoxRightX(1 * INP_DUAL) / m_inputs->xBoxRightY(1 * INP_DUAL)); // only between +- pi/2
+            double degrees = radians / 2 / 3.1415926535 * 360;   // 90 -> -90
+            m_fieldangle = m_inputs->xBoxRightY(1 * INP_DUAL) > 0 ? degrees : degrees + 180;   // -90 -> 270
+            m_fieldangle = m_fieldangle < 0 ? m_fieldangle + 360 : m_fieldangle;   // 0 -> 360
+            m_fieldangle = fmod(m_fieldangle, 360);   // just for safety
+        }
+        SmartDashboard::PutNumber("TUR11_Absolute Angle", m_fieldangle);
+        return true;
+    }
+    return false;
 }
 
 

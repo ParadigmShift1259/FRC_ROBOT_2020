@@ -25,6 +25,7 @@ void Robot::RobotInit()
 {
 	m_chooser.SetDefaultOption(kszNoAuto, kszNoAuto);
 	m_chooser.AddOption(kszSimpleAuto, kszSimpleAuto);
+	m_chooser.AddOption(kszDriveStraight, kszDriveStraight);
 	SmartDashboard::PutData("Auto Modes", &m_chooser);
 
 	m_driverstation = &DriverStation::GetInstance();
@@ -52,6 +53,7 @@ void Robot::AutonomousInit()
 
 	StartedInAuto = true;
 
+	m_autonomous->Init();
 	m_gyrodrive->Init();
 	m_pneumatics->Init();
 	m_vision->Init();
@@ -123,6 +125,11 @@ void Robot::DisabledInit()
 		m_turret->Stop();
 		m_controlpanel->Stop();
 	}
+	else
+	{
+		m_autonomous->Stop();
+	}
+	
 }
 
 
@@ -142,6 +149,9 @@ void Robot::ReadChooser()
 	else
 	if (m_autoSelected == kszSimpleAuto)
 		automode = kSimpleAuto;
+	else
+	if (m_autoSelected == kszDriveStraight)
+		automode = kDriveStraight;
 
 	SmartDashboard::PutNumber("AU1_automode", automode);
 }

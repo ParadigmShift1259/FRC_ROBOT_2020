@@ -19,6 +19,7 @@ Vision::Vision(OperatorInputs *inputs)
     m_networktable = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
     m_dashboard = nt::NetworkTableInstance::GetDefault().GetTable("SmartDashboard");
     m_camerachoice = 0;
+    m_led = true;
 }
 
 
@@ -47,6 +48,8 @@ void Vision::Init()
     m_averageangle[0] = 0;
     m_averageangle[1] = 0;
     m_averagedistance[2] = 0;
+
+    SetLED(true);
 }
 
 
@@ -55,6 +58,10 @@ void Vision::Loop()
     m_dashboard->PutNumber("cameraFeed", m_camerachoice);
 
     m_active = m_networktable->GetNumber("tv", 0);
+
+    if (!m_led)
+        m_active = false;
+
     if (!m_active)
     {
         m_averagedistance[0] = 0;
@@ -102,7 +109,8 @@ void Vision::Loop()
 
 void Vision::Stop()
 {
-
+    if (m_networktable != nullptr)
+        SetLED(false);
 }
 
 
@@ -121,6 +129,22 @@ double Vision::GetDistance()
 double Vision::GetAngle()
 {
     return m_horizontalangle;
+}
+
+
+void Vision::SetLED(bool on)
+{
+    m_led = on;
+    if (m_led)
+    {
+        // 3 forces limelight led on
+        m_networktable->PutNumber("ledMode", 3);
+    }
+    else
+    {
+        // 1 forces limelight led off
+        m_networktable->PutNumber("ledMode", 1);
+    }
 }
 
 

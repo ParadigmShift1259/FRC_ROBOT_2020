@@ -54,6 +54,7 @@ void GyroDrive::Init()
 	m_drivetrain->SetChangeDirButton(A_BUTTON);		
 
 	m_gyro->Init();
+	m_curveauto->Init();
 	ZeroHeading();
 	m_drivestate = kInit;
 	m_timer.Reset();
@@ -240,6 +241,8 @@ bool GyroDrive::DriveAngle(double angle, bool reset)
 
 bool GyroDrive::StartMotion(double distance, double angle, double targetvelocity, double maxvelocity, double maxacceleration)
 {
+	m_curveauto->Loop();
+
 	switch (m_drivestate)
 	{
 	case kInit:

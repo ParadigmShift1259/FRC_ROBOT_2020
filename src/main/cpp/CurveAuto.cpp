@@ -88,7 +88,7 @@ void CurveAuto::Init()
     
     m_setpoint = 0_m;
     m_setpointangle = 0_deg;
-    m_finished = true;
+    m_finished = false;
     m_start = false;
     m_prevvelocity = 0_mps;
 
@@ -122,6 +122,7 @@ void CurveAuto::Loop()
             }
             else
             {
+                m_finished = false;
                 //m_drivetrain->GetDrive()->ArcadeDrive(m_encoderfeedforward->Calculate(m_prevvelocity).to<double>() / 12, 0);
                 m_drivetrain->Drive(0, 0, false);
             }

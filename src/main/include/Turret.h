@@ -44,6 +44,7 @@ public:
     void Stop();
     void Dashboard();
 
+    bool IsFiring() { return m_firing; }
     void SetFireMode(FireMode mode) { m_firemode = mode; }
     void SetTurretState(TurretState state) { m_turretstate = state; }
     TurretState GetTurretState() { return m_turretstate; }
@@ -57,7 +58,8 @@ protected:
     // Takes the distance from the target and returns the hood angle and flywheel speed
     void CalculateHoodFlywheel(double distance, double &hoodangle, double &flywheelspeed);
     // Takes the XBox joystick and converts it into an field angle
-    void FindFieldXBox();
+    //void FindFieldXBox();
+    bool FindFieldXBox();
     // Calculates the turret angle based off of the field angle
     void CalculateTurretFromField();
     // Calculates the field angle needed based off of vision

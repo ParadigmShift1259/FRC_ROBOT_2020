@@ -32,6 +32,7 @@ public:
 
 protected:
 	void SimpleAuto();
+    void DriveStraight();
 
 protected:
     OperatorInputs *m_inputs;

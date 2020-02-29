@@ -32,6 +32,7 @@ public:
     bool GetActive();
     double GetDistance();
     double GetAngle();
+    void SetLED(bool on);
     void SetCamera(int camera) { m_camerachoice = camera; }
 
     void IntakeSensorUpdate(bool update);
@@ -48,6 +49,7 @@ private:
     int m_camerachoice;
     
     shared_ptr<NetworkTable> m_networktable;
+    bool m_led;
     double m_tx;
     double m_ty;
     double m_ta;

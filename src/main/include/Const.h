@@ -99,10 +99,10 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define ENC_TYPE_1 FeedbackDevice::IntegratedSensor
 #define ENC_PRESENT_2 false
 #define ENC_TYPE_2 FeedbackDevice::IntegratedSensor
-#define CODES_PER_REV 1382.0
-#define CODES_PER_INCH 73.317
+#define CODES_PER_REV 12513.28
+#define CODES_PER_INCH 663.85
 #define WHEEL_DIAMETER 6.0
-#define WHEEL_TRACK 23.50
+#define WHEEL_TRACK 25
 // Ball Tracking
 #define DT_TRACKING_SPEED 0.3
 #define DT_TRACKING_P (0.45 / 36)        // max speed is 0.5, max angle is 36
@@ -150,9 +150,9 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 // Autonomous ---------------------------------------
 //   PID Constants
-#define AUT_P 0.05              // 0.1
+#define AUT_P 0.0125              // 0.05
 #define AUT_I 0.0001            // 0.0003
-#define AUT_D 0.11              // 0.11
+#define AUT_D 0              // 0.11
 
 
 // ControlPanel ---------------------------------------
@@ -285,7 +285,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Autonomous -----------------------------------
 enum AutoMode
 {
-    kNoAuto, kSimpleAuto
+    kNoAuto, kSimpleAuto, kDriveStraight
 };
 
 extern AutoMode automode;
