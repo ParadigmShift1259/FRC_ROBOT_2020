@@ -72,10 +72,9 @@ void Turret::Init()
 
     m_fieldangle = 180;
     m_robotangle = 0;
-    m_turretmotor->SetSelectedSensorPosition(DegreesToTicks(135), 0, TUR_TIMEOUT_MS);
-    m_turretangle = 135;      // Change these when starting orientation is different
-    m_turretrampedangle = 135;
-
+    m_turretangle = 0;      // Change these when starting orientation is different
+    m_turretrampedangle = m_turretangle;
+    m_turretmotor->SetSelectedSensorPosition(DegreesToTicks(m_turretangle), 0, TUR_TIMEOUT_MS);
     m_turretinitialfeedforward = 0;
 
     m_turretrampstate = kMaintain;
@@ -87,10 +86,9 @@ void Turret::Loop()
     if (!NullCheck())
         return;
 
-    FindFieldXBox();
-    CalculateTurretFromField();
-
-    RampUpTurret();
+    // FindFieldXBox();
+    // CalculateTurretFromField();
+    // RampUpTurret();
 
     Dashboard();
 }
@@ -105,17 +103,10 @@ void Turret::Stop()
 void Turret::Dashboard()
 {
     SmartDashboard::PutNumber("TUR00_State", m_turretstate);
-    SmartDashboard::PutBoolean("TUR01_ReadytoFire", m_readytofire);
-    SmartDashboard::PutBoolean("TUR02_Targeting", (m_turretstate == kVision));
-
-    if (Debug)
-    {
-        SmartDashboard::PutNumber("TUR11_Turret Degrees", TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()));
-        SmartDashboard::PutNumber("TUR12_Setpoint Angle", m_turretmotor->GetClosedLoopTarget(0));
-        SmartDashboard::PutNumber("TUR14_Turret Angle", m_turretangle);
-        SmartDashboard::PutNumber("TUR15_Firing", m_firing);
-        SmartDashboard::PutNumber("TUR16_Ready to Fire", m_readytofire);
-    }
+    SmartDashboard::PutNumber("TUR11_Turret Degrees", TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()));
+    SmartDashboard::PutNumber("TUR12_Setpoint Angle", m_turretmotor->GetClosedLoopTarget(0));
+    SmartDashboard::PutNumber("TUR14_Turret Angle", m_turretangle);
+    SmartDashboard::PutNumber("TUR14_Turret RampedAngle", m_turretrampedangle);
 }
 
 
@@ -200,6 +191,18 @@ bool Turret::VisionFieldAngle()
 {
 }
 
+
+void Turret::SetTurretAngle(double angle)
+    {
+    m_turretangle = -angle; // turret angle is backwards (increasing CW)!
+    m_turretmotor->Set(ControlMode::Position, DegreesToTicks(m_turretangle));
+    }
+
+double Turret::GetTurretAngle(void)
+    {
+    // turret angle is backwards (increasing CW)!
+    return -TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()); 
+    }
 
 void Turret::RampUpTurret()
 {

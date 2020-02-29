@@ -21,7 +21,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define INP_XBOX_2 1
 //   Set to 1.0 or -1.0
 #define INVERT_Y_AXIS 1.0
-#define INVERT_X_AXIS -1.0
+#define INVERT_X_AXIS 1.0
 //   XBox Controller Buttons
 #define A_BUTTON  1
 #define B_BUTTON  2
@@ -57,8 +57,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 
 // Drivetrain
-#define INVERT_LEFT true
-#define INVERT_RIGHT true
+#define INVERT_LEFT false
+#define INVERT_RIGHT false
 //   SparkMax Ports
 //#define SIX_WHEEL_DRIVE false
 #define CAN_LEFT_PORT_1 2       // Changed for test bot 2/9/19

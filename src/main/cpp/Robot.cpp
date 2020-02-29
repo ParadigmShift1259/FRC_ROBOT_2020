@@ -45,11 +45,17 @@ void Robot::TeleopInit()
     m_turret->Init();
     m_odo->ResetPosition(Pose2d(0_m, 0_m, 0_rad), Rotation2d(0_deg));
     
-    m_targetPose = Pose2d(0_m, 3_m, 0_rad);  // target initial position 3 meters left of robot (target rotation is meaningless)
+    // target pose on field x, y (rotation of target pose is meaningless)  
+    //m_targetPose = Pose2d(10_m, 1_m, 0_rad);  // target initial position 10 meters ahead and 1 m left of robot ~6 deg bearing
+    // m_targetPose = Pose2d(3_m, _m, 0_rad);  // target initial position 3 meters ahead of robot 0 deg bearing
+    m_targetPose = Pose2d(-3_m, 0_m, 0_rad);  // target initial position 3 meters behind robot 180 deg bearing
+    // m_targetPose = Pose2d(0_m, 3_m, 0_rad);  // target initial position 3 meters left of robot 90 deg bearing
 
     // m_PoseHist->clear() may delatocate memory so instead delete and create new pre-allocating size-10k...
     delete m_StateHist;
     m_StateHist = new vector<Trajectory::State> (10000);
+    SmartDashboard::PutNumber("Current Turret Angle", 0);
+
 }
 
 
@@ -59,8 +65,6 @@ void Robot::TeleopPeriodic()
     // m_turret->Loop();
 
     m_gyro->Loop(); // is this needed????
-
-    m_turret->Loop();
 
     double gyroHeadingDegs;
     m_gyro->GetHeading(gyroHeadingDegs);
@@ -78,7 +82,12 @@ void Robot::TeleopPeriodic()
     m_StateHist->push_back(state);
 
     m_targetRange = (double)(m_targetPose - pose).Translation().Norm();
-    m_targetBearing = 180/3.14159 * atan2((double)(m_targetPose - pose).Translation().Y(), (double)(m_targetPose - pose).Translation().X());
+    double theta = 180/3.14159 * atan2((double)(m_targetPose - pose).Translation().Y(), (double)(m_targetPose - pose).Translation().X());
+
+	m_targetBearing = fmod(theta+360, 360);
+
+	m_turret->SetTurretAngle(m_targetBearing);
+	//m_turret->Loop();
 
     SmartDashboard::PutNumber("Field X", (double)pose.Translation().X());
     SmartDashboard::PutNumber("Field Y", (double)pose.Translation().Y());
@@ -86,7 +95,12 @@ void Robot::TeleopPeriodic()
     SmartDashboard::PutNumber("Gyro Heading", gyroHeadingDegs);
     SmartDashboard::PutNumber("Target range", m_targetRange);
     SmartDashboard::PutNumber("Target bearing", m_targetBearing);
-
+	 SmartDashboard::PutNumber("Current Turret Angle", m_turret->GetTurretAngle());
+    /*
+    double cmdAngle = SmartDashboard::GetNumber("Current Turret Angle", 0);
+    cout << cmdAngle << endl;
+    m_turret->SetTurretAngle(cmdAngle);
+    */
  //   cout << "t: " << state.t << "  X: " << state.pose.Translation().X() << "  Y: " << state.pose.Translation().Y() << "  Heading: " << state.pose.Rotation().Degrees() << "  Speed: " << state.velocity() << "  Accel: " << state.acceleration() << endl;
 }
 
