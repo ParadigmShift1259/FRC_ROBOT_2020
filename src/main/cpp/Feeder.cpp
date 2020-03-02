@@ -105,7 +105,8 @@ void Feeder::Loop()
     {
     case kIdle:
         if ((!m_loaded && m_intake->CanRefresh()) ||
-            m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+            (!m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
+            m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL)))
         {
             m_goal = FDR_REFRESH_DISTANCE * 1_in;
             m_motor->SetSelectedSensorPosition(0);
@@ -116,7 +117,9 @@ void Feeder::Loop()
         }
         else
         // troubleshooting to stuff
-        if (m_stuffing || m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        if (m_stuffing || 
+            (!m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
+            m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL)))
         {
             m_timer.Reset();
             m_intake->SetStuffing();

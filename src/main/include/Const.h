@@ -150,9 +150,9 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 // Autonomous ---------------------------------------
 //   PID Constants
-#define AUT_P 0.0125              // 0.05
+#define AUT_P 0.025              // 0.05
 #define AUT_I 0.0001            // 0.0003
-#define AUT_D 0              // 0.11
+#define AUT_D 0.05              // 0.11
 
 
 // ControlPanel ---------------------------------------
@@ -200,7 +200,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Feeder ---------------------------------------
 #define FDR_ENABLED 1           // set to 1 to enable feeder motor
 #define FDR_MOTOR ENABLED(FDR_ENABLED, 9)
-#define FDR_STUFF_SPEED 0.5
+#define FDR_STUFF_SPEED 0.3
 #define FDR_HIGH_NUMBER 10000
 #define FDR_WHEEL_SIZE 4
 #define FDR_FEED_FORWARD 0.0681
@@ -275,7 +275,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_TURRET_SPINNER 29.845
 #define REV_TO_TURRET_REV (TUR_PULLEY / TUR_TURRET_SPINNER) 
 #define TURRET_REV_TO_DEGREES 360
-#define TURRET_DEGREE_STOP_RANGE 0.25
+#define TURRET_DEGREE_STOP_RANGE 0.125
 
 // Vision ---------------------------------------
 #define VIS_MOUNTING_ANGLE 18.0     // degrees

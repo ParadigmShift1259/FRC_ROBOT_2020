@@ -88,6 +88,9 @@ private:
     double m_flywheelsetpoint;
     double m_flywheelrampedsetpoint;
 
+    double m_flywheelspeedinc;
+    double m_hoodangleinc;
+
     SimpleMotorFeedforward<units::meters> *m_flywheelsimplemotorfeedforward;
     double m_flywheelinitialfeedforward;
     Timer m_timer;

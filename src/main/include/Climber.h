@@ -31,8 +31,7 @@ public:
 
 protected:
     OperatorInputs *m_inputs;
-    Spark *m_motor;
-	Solenoid *m_solenoid;
+    WPI_TalonSRX *m_motor;
 };
 
 

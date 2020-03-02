@@ -95,6 +95,8 @@ void Vision::Loop()
     {
         m_averageangle[i] = m_averageangle[i + 1];
     }
+    if ((m_distance < 110) || (m_distance > 380))
+        m_active = false;
 
     m_averageangle[2] = m_horizontalangle;
 

@@ -21,7 +21,7 @@ Climber::Climber(OperatorInputs *inputs)
     m_motor = nullptr;
 
     if (CLM_MOTOR != -1)
-        m_motor = new Spark(CLM_MOTOR);
+        m_motor = new WPI_TalonSRX(CLM_MOTOR);
 }
 
 
@@ -30,15 +30,13 @@ Climber::~Climber()
    
     if (m_motor != nullptr)
         delete m_motor;
-    if (m_solenoid != nullptr)
-        delete m_solenoid;
         
 }
 
 
 void Climber::Init()
 {
-    if (m_motor == nullptr || m_solenoid == nullptr)
+    if (m_motor == nullptr)
         return;
   
 }
@@ -46,12 +44,15 @@ void Climber::Init()
 
 void Climber::Loop()
 {
-    if (m_motor == nullptr || m_solenoid == nullptr)
+    if (m_motor == nullptr)
         return;
-     if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-         m_solenoid->Set(true);  
-     if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
-         m_solenoid->Set(false); 
+
+    if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
+        m_motor->Set(1);
+    if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
+        m_motor->Set(-1);
+    else
+        m_motor->StopMotor();
 
     Dashboard(); 
 }
@@ -59,13 +60,13 @@ void Climber::Loop()
 
 void Climber::Stop()
 {
-    if (m_motor == nullptr || m_solenoid == nullptr)
+    if (m_motor == nullptr)
         return;
 }
 
 
 void Climber::Dashboard()
 {
-    if (m_motor == nullptr || m_solenoid == nullptr)
+    if (m_motor == nullptr)
         return;
 }

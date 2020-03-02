@@ -116,10 +116,12 @@ void Intake::Loop()
     m_vision->IntakeSensorUpdate(m_rollersensor->Get());
 
     // teleop inputs to set intake position
-    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+    if (!m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
+        m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         SetIntakePosition(kUp);
     else
-    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+    if (!m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
+        m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         SetIntakePosition(kDown);
 
     // Setting intake position 
