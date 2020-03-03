@@ -164,6 +164,7 @@ void Turret::Loop()
         m_turretstate = kIdle;
         m_vision->SetLED(false);
         m_readytofire = false;
+        m_firemode = kHoldShoot;
     }
     else
     if (m_inputs->xBoxLeftY(1 * INP_DUAL) < -0.7)
@@ -178,6 +179,7 @@ void Turret::Loop()
         m_turretstate = kIdle;
         m_vision->SetLED(false);
         m_readytofire = false;
+        m_firemode = kHoldShoot;
     }
 
     TurretStates();
@@ -401,6 +403,12 @@ void Turret::FireModes()
                 m_feeder->SetStuffing();
                 m_firemode = kForceShoot;
                 m_firing = false;
+            }
+            else
+            if (!m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) && 
+                m_inputs->xBoxYButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+            {
+                m_turretstate = kVision;
             }
 
             if (m_firing && !m_feeder->IsStuffing())
