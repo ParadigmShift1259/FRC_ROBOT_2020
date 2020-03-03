@@ -41,6 +41,7 @@ void Robot::TestPeriodic(){}
 void Robot::TeleopInit()
 {
     m_drivetrain->Init();
+    m_drivemode = kManual;
     m_gyro->Init();
     m_turret->Init();
     m_odo->ResetPosition(Pose2d(0_m, 0_m, 0_rad), Rotation2d(0_deg));
@@ -61,7 +62,39 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
-    m_drivetrain->Loop();
+    if (m_operatorinputs->xBoxLeftTrigger(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+		m_drivemode = kTracking;
+	else
+	if (m_operatorinputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
+		m_drivemode = kManual;
+
+	double ballangle = SmartDashboard::GetNumber("XAngle", 0);
+	double balldistance = SmartDashboard::GetNumber("ZDistance", 0);
+
+    switch (m_drivemode)
+    {
+    case kManual:
+        m_drivetrain->Loop();
+        break;
+
+    case kTracking:
+		if ((balldistance <= 0) || (fabs(ballangle) > 36.0))
+		{
+			//m_drivemode = kManual;
+		}
+		else
+		{
+            double sign = abs(ballangle) / ballangle;
+			m_drivetrain->Drive(DT_TRACKING_P * ballangle + DT_TRACKING_FF * sign, m_operatorinputs->xBoxLeftY(0 * INP_DUAL));
+		}
+        break;
+    }
+
+    SmartDashboard::PutNumber("DT_DriveMode", m_drivemode);
+    SmartDashboard::PutNumber("DT_BallAngle", ballangle);
+    SmartDashboard::PutNumber("DT_Distance", balldistance);
+    SmartDashboard::PutNumber("DT_Power", DT_TRACKING_P * ballangle);
+
     // m_turret->Loop();
 
     m_gyro->Loop(); // is this needed????

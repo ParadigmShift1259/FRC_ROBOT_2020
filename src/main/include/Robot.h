@@ -18,6 +18,9 @@ using namespace frc;
 class Robot : public TimedRobot
 {
 public:
+
+    enum DriveMode {kManual, kTracking};
+
     virtual void RobotInit();
     virtual void RobotPeriodic();
     virtual void AutonomousInit();
@@ -40,6 +43,8 @@ protected:
     Pose2d m_targetPose;
     double m_targetRange;
     double m_targetBearing;
+
+    DriveMode m_drivemode;
 private: 
     
 };

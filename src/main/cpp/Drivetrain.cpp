@@ -234,6 +234,15 @@ void Drivetrain::Stop()
 }
 
 
+void Drivetrain::Drive(double x, double y)
+{
+    if (!m_inited)
+    return;
+
+    m_drive->ArcadeDrive(y, x);
+}
+
+
 void Drivetrain::SetInvert(bool left, bool right)
 {
     if (!m_inited)

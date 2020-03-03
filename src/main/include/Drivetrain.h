@@ -34,6 +34,8 @@ public:
     void Loop();
     void Stop();
 
+    void Drive(double x, double y);
+
     // init settings
     void SetRampRate(double rate);
     double GetRampRate() { return m_ramprate; }    

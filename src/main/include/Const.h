@@ -74,6 +74,9 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Xbox Joystick Scaling (Note: Xbox Y axis corresponds to X speed in Robot Y axis and Xbox X axis corresponds to turning) 
 #define X_SCALING  0.35 // 0.5 
 #define Y_SCALING 0.5 // 1.0
+// new 3/2/20
+#define DT_TRACKING_P 0.0125
+#define DT_TRACKING_FF (0.800 / 12)
 
 //   Encoders
 #define ENC_PRESENT_1 true
