@@ -201,7 +201,11 @@ void Turret::Loop()
     if (m_climber->DeployRequest())
     {
         m_turretangle = 225;
-        m_climber->CanDeploy((m_turretrampedangle == 225));
+        //m_climber->CanDeploy((m_turretrampedangle == 225));
+        if (fabs(TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()) - m_turretangle) < TUR_TURRET_RAMPING_RATE)
+            m_climber->CanDeploy(true);
+        else
+            m_climber->CanDeploy(false);
     }
 
     RampUpFlywheel();

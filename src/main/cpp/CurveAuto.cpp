@@ -95,6 +95,7 @@ void CurveAuto::Init()
 
     m_autostate = kIdle;
 
+    /*
 	SmartDashboard::PutNumber("Gyro P",         m_gyroPIDvals[0]);
     SmartDashboard::PutNumber("Gyro I",         m_gyroPIDvals[1]);
     SmartDashboard::PutNumber("Gyro D",         m_gyroPIDvals[2]);
@@ -106,6 +107,7 @@ void CurveAuto::Init()
     SmartDashboard::PutNumber("Encoder Max Velocity",       m_encoderconstraints.maxVelocity.to<double>());
     SmartDashboard::PutNumber("Encoder Max Acceleration",   m_encoderconstraints.maxAcceleration.to<double>());
     SmartDashboard::PutNumber("Encoder Goal Tolerance",     m_encodertolerance.to<double>());
+    */
 }
 
 
