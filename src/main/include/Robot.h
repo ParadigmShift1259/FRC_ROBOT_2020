@@ -9,6 +9,7 @@
 #include "Const.h"
 #include "OperatorInputs.h"
 #include "GyroDrive.h"
+#include "Climber.h"
 #include "Pneumatics.h"
 #include "Turret.h"
 #include "ControlPanel.h"
@@ -46,6 +47,7 @@ protected:
 	Feeder *m_feeder;
 	Turret *m_turret;
 	ControlPanel *m_controlpanel;
+	Climber *m_climber;
 	Autonomous *m_autonomous;
 	DriverStation *m_driverstation;
 

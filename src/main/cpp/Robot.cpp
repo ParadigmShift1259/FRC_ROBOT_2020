@@ -39,7 +39,8 @@ void Robot::RobotInit()
 	m_intake = new Intake(m_operatorinputs, m_vision);
 	m_feeder = new Feeder(m_operatorinputs, m_intake);
 	m_controlpanel = new ControlPanel(m_operatorinputs, m_gyrodrive, m_intake);
-	m_turret = new Turret(m_operatorinputs, m_gyrodrive, m_intake, m_feeder, m_controlpanel, m_vision);
+	m_climber = new Climber(m_operatorinputs);
+	m_turret = new Turret(m_operatorinputs, m_gyrodrive, m_intake, m_feeder, m_controlpanel, m_climber, m_vision);
 	m_autonomous = new Autonomous(m_gyrodrive, m_intake, m_feeder, m_turret, m_vision);
 }
 
@@ -64,6 +65,7 @@ void Robot::AutonomousInit()
 	m_feeder->SetLoaded(true);		// ensure feeder state is loaded before loop runs
 	m_turret->Init();
 	m_controlpanel->Init();
+	m_climber->Init();
 }
 
 
@@ -99,6 +101,7 @@ void Robot::TeleopInit()
 		m_feeder->Init();
 		m_turret->Init();
 		m_controlpanel->Init();
+		m_climber->Init();
 	}
 }
 
@@ -112,6 +115,7 @@ void Robot::TeleopPeriodic()
 	m_feeder->Loop();
 	m_turret->Loop();
 	m_controlpanel->Loop();
+	m_climber->Loop();
 }
 
 
@@ -126,6 +130,7 @@ void Robot::DisabledInit()
 		m_feeder->Stop();
 		m_turret->Stop();
 		m_controlpanel->Stop();
+		m_climber->Stop();
 	}
 	else
 	{

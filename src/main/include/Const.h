@@ -157,7 +157,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 
 // ControlPanel ---------------------------------------
 #define CPL_ENABLED 1           // set to 1 to enable control panel motor
-#define CPL_MOTOR ENABLED(CPL_ENABLED, 11)
+#define CPL_MOTOR ENABLED(CPL_ENABLED, 13)     // changed 3/3/20
 #define CPL_SOLENOID ENABLED(CPL_ENABLED, 1)
 // ControlPanel
 #define CPL_COUNTS_PER_CW_REV (4096 * 32 / 4)
@@ -219,8 +219,10 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define FDR_INVERTED 1.0
 
 // Climber ---------------------------------------
-#define CLM_ENABLED 0           // set to 1 to enable intake motor
-#define CLM_MOTOR ENABLED(CLM_ENABLED, 10)
+#define CLM_ENABLED 1           // set to 1 to enable intake motor
+#define CLM_MOTOR ENABLED(CLM_ENABLED, 11)
+#define CLM_MOTOR_SPEED 0.25
+#define CLM_RAMP_RATE 0.5
 
 //  Turret ---------------------------------------
 #define TUR_ENABLED 1

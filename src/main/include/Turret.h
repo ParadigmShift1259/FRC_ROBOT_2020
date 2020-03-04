@@ -13,6 +13,7 @@
 #include "Vision.h"
 #include "Feeder.h"
 #include "ControlPanel.h"
+#include "Climber.h"
 #include "GyroDrive.h"
 
 #include <rev\CANSparkMax.h>
@@ -37,7 +38,7 @@ public:
     enum FireMode {kForceShoot, kShootWhenReady, kHoldShoot};
     enum RampState {kMaintain, kIncrease, kDecrease};
 
-    Turret(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake, Feeder *feeder, ControlPanel *controlpanel, Vision *vision);
+    Turret(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake, Feeder *feeder, ControlPanel *controlpanel, Climber *climber, Vision *vision);
     ~Turret();
     void Init();
     void Loop();
@@ -77,6 +78,7 @@ private:
     Intake *m_intake;
     Feeder *m_feeder;
     ControlPanel *m_controlpanel;
+    Climber *m_climber;
     Vision *m_vision;
 
     // Flywheel

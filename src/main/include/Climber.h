@@ -12,8 +12,6 @@
 
 #include "OperatorInputs.h" 
 #include <ctre\Phoenix.h>
-#include <frc\Solenoid.h>
-#include <frc/Spark.h>
 
 
 using namespace frc;
@@ -29,9 +27,15 @@ public:
 	void Stop();
 	void Dashboard();
 
+	bool DeployRequest();
+	void CanDeploy(bool deploy = false);
+
 protected:
     OperatorInputs *m_inputs;
     WPI_TalonSRX *m_motor;
+
+	bool m_deployrequest;
+	bool m_deployready;
 };
 
 

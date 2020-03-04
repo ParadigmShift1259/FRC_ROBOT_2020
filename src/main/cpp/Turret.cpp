@@ -14,7 +14,7 @@
 using namespace std;
 
 
-Turret::Turret(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake, Feeder *feeder, ControlPanel *controlpanel, Vision *vision)
+Turret::Turret(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake, Feeder *feeder, ControlPanel *controlpanel, Climber *climber, Vision *vision)
 {
     if (TUR_ENABLED != 1)
     {
@@ -27,6 +27,7 @@ Turret::Turret(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake, Fee
     m_intake = intake;
     m_feeder = feeder;
     m_controlpanel = controlpanel;
+    m_climber = climber;
 
     m_flywheelmotor = nullptr;
     m_flywheelPID = nullptr;
@@ -195,6 +196,12 @@ void Turret::Loop()
     {
         if (m_turretangle > 235)
             m_turretangle = 235;
+    }
+    else
+    if (m_climber->DeployRequest())
+    {
+        m_turretangle = 135;
+        m_climber->CanDeploy(m_turretrampedangle == 135);
     }
 
     RampUpFlywheel();
