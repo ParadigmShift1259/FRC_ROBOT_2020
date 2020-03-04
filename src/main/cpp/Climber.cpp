@@ -35,6 +35,7 @@ void Climber::Init()
     {
         m_motor = new WPI_TalonSRX(CLM_MOTOR);
         m_motor->SetNeutralMode(NeutralMode::Brake);
+        m_motor->SetInverted(false);
         /*
         m_motor->ConfigPeakOutputForward(1);
         m_motor->ConfigPeakOutputReverse(-1);
@@ -43,6 +44,8 @@ void Climber::Init()
         */
         //m_motor->ConfigOpenloopRamp(CLM_RAMP_RATE);
     }
+    
+    m_motor->SetSelectedSensorPosition(0);
     
     m_deployready = false;
     m_deployrequest = false;
@@ -100,6 +103,7 @@ void Climber::Dashboard()
 
     SmartDashboard::PutBoolean("CLM0_DeployRequest", m_deployrequest);
     SmartDashboard::PutBoolean("CLM1_DeployReady", m_deployready);
+    SmartDashboard::PutNumber("CLM2_Motor Encoder", m_motor->GetSelectedSensorPosition());
 }
 
 

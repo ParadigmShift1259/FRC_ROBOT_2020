@@ -65,7 +65,7 @@ private:
 	TalonSRX *m_spinner;
 	Solenoid *m_solenoid;
 	ColorSensorV3 *m_colorsensor;
-	Timer *m_timer;
+	Timer m_timer;
 	int m_redCount;
 	int m_blueCount;
 	SpinnerState m_spinnerstate;

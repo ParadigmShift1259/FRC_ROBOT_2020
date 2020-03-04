@@ -18,19 +18,16 @@ using namespace std;
 
 
 ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake)
-#ifdef USE_LOGGER
-	: m_log("home/cplogfile.csv", true)
-#endif
 {
 	m_inputs = inputs;
 	m_gyrodrive = gyrodrive;
 	m_intake = intake;
 	
 	m_spinner = nullptr;
-
 	if (CPL_MOTOR != -1)
 		m_spinner = new TalonSRX(CPL_MOTOR);
-	
+
+	m_solenoid = nullptr;	
 	if (CPL_SOLENOID != -1)
 		m_solenoid = new Solenoid(CPL_SOLENOID);
 	
@@ -40,32 +37,9 @@ ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake 
 	m_color[3] = "green" ;
 	m_color[4] = "blue"  ;
 
-#ifdef USE_LOGGER
-/*
-	m_log.logMsg(eInfo, __FUNCTION__, __LINE__, "currentcolor,previouscolor,targetcolor,redCount,blueCount,direction,currentencodervalue,startencodervalue,spinnersetpoint");
-	m_dataInt.push_back((int*)&m_currentcolor);
-	m_dataInt.push_back((int*)&m_previouscolor);
-	m_dataInt.push_back(&m_redCount);
-	m_dataInt.push_back(&m_blueCount);
-	m_dataInt.push_back(&m_currentencodervalue);
-	m_dataDouble.push_back(&m_spinnersetpoint);
-			std::cout 	<< m_currentcolor << ", " 
-						<< m_previouscolor << ", " 
-						<< m_targetcolor << ", " 
-						<< m_redCount << ", " 
-						<< m_blueCount << ", " 
-						<< m_direction << ", " 
-						<< m_currentencodervalue << ", " 
-						<< m_startencodervalue << "," 
-						<< CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta 
-						<< m_spinnersetpoint << ", " 
-						<< endl;
-	*/
-#endif
-
 	// Integrate color sensor TAG
-	m_colorsensor = new ColorSensorV3(I2C::Port::kOnboard);
-	m_timer = new Timer();
+	m_colorsensor = nullptr;
+	//m_colorsensor = new ColorSensorV3(I2C::Port::kOnboard);
 
 	m_stop = false;
 
@@ -79,8 +53,6 @@ ControlPanel::~ControlPanel()
 		delete m_colorsensor;
 	if (m_spinner != nullptr)
 		delete m_spinner;
-	if (m_timer != nullptr)
-		delete m_timer;
 }
 
 
@@ -146,9 +118,9 @@ void ControlPanel::ControlPanelStates()
 		break;
 
 	case kRotationControl:
-		cout << "In Rotation Control" << endl;
+		//cout << "In Rotation Control" << endl;
 		m_currentcolor = GetColor();	
-		cout  << "Got Color" << endl;
+		//cout  << "Got Color" << endl;
 		
 			if (m_currentcolor == kRed && m_previouscolor != kRed)
 			{
@@ -165,9 +137,9 @@ void ControlPanel::ControlPanelStates()
 		if (m_stop)
 		{
 			// Once stopped, use Xbox Back button to restart. (TO DO: Move reading user inputs to a higher level robot class)
-			cout << "Going to set spinner" << endl;
+			//cout << "Going to set spinner" << endl;
 			m_spinner->Set(ControlMode::Velocity, 0);
-			cout << "Started spinning" << endl;
+			//cout << "Started spinning" << endl;
 		}
 		else
 		{
@@ -175,23 +147,6 @@ void ControlPanel::ControlPanelStates()
 			m_spinnersetpoint = CPL_ROTATION_CONTROL_FAST;
 			m_spinner->Set(ControlMode::Velocity, m_spinnersetpoint); 
 			m_currentencodervalue = m_spinner->GetSelectedSensorPosition(0);
-#ifdef USE_LOGGER
-			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
-#else
-/*
-			std::cout 	<< m_currentcolor << ", " 
-						<< m_previouscolor << ", " 
-						<< m_targetcolor << ", " 
-						<< m_redCount << ", " 
-						<< m_blueCount << ", " 
-						<< m_direction << ", " 
-						<< m_currentencodervalue << ", " 
-						<< m_startencodervalue << "," 
-						<< CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta 
-						<< m_spinnersetpoint << ", " 
-						<< endl;
-*/
-#endif
 		}
 
 		// (TO DO: Move reading user inputs to a higher level robot class)
@@ -219,13 +174,7 @@ void ControlPanel::ControlPanelStates()
 					m_direction = 1;
 				// Set motor speed	
 				m_spinnersetpoint = CPL_POSITION_CONTROL_FAST;
-#ifdef USE_LOGGER
-			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
-#else
-			//std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
-#endif
-				cout<< "Target Color =" << m_targetcolor <<endl;
-
+				//cout<< "Target Color =" << m_targetcolor <<endl;
 				}
 			}
 		
@@ -234,23 +183,13 @@ void ControlPanel::ControlPanelStates()
 			m_spinnersetpoint = CPL_POSITION_CONTROL_SLOW;
 			if (m_startencodervalue == 0)
 				{
-#ifdef USE_LOGGER
-			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
-#else
-			//std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
-#endif
-				cout << "found target color!" << endl;
+				//cout << "found target color!" << endl;
 				// Record the current encoder value
 				m_startencodervalue = m_spinner->GetSelectedSensorPosition(0);
 				}
 			else if (abs(m_currentencodervalue - m_startencodervalue) >= CPL_COUNTS_PER_CW_SECTOR/2 )
 				{
-#ifdef USE_LOGGER
-			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
-#else
-			//std::cout << m_currentcolor << ", " << m_previouscolor << ", " << m_redCount << ", " << m_blueCount << ", " << m_spinnersetpoint << ", " << m_currentencodervalue << std::endl;
-#endif
-				cout << "done!" << endl;
+				//cout << "done!" << endl;
 				// if the wheel has spun half a sector, then stop the motor
 				m_stop = true;
 				}
@@ -274,23 +213,6 @@ void ControlPanel::ControlPanelStates()
 			//If not stopped command motor according to setpoint and direction
 			m_spinner->Set(ControlMode::Velocity, m_spinnersetpoint * m_direction); 
 			int encoderdelta = abs(m_currentencodervalue - m_startencodervalue);
-#ifdef USE_LOGGER
-			m_log.logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
-#else
-/*
-			std::cout 	<< m_currentcolor << ", " 
-						<< m_previouscolor << ", " 
-						<< m_targetcolor << ", " 
-						<< m_redCount << ", " 
-						<< m_blueCount << ", " 
-						<< m_direction << ", " 
-						<< m_currentencodervalue << ", " 
-						<< m_startencodervalue << "," 
-						<< CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta 
-						<< m_spinnersetpoint << ", " 
-						<< endl;
-*/
-#endif
 		}
 		
 		break;
@@ -388,7 +310,7 @@ void ControlPanel::ChangeSpinnerState()
 	// back button enables 3 - 5 spin
 	if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 	{
-		cout<<"Back Button Pressed"<<endl;
+		//cout<<"Back Button Pressed"<<endl;
 		m_spinnerstate = kRotationControl;
 		m_stop = false;
 		m_redCount = 0;
@@ -411,12 +333,15 @@ void ControlPanel::ChangeSpinnerState(SpinnerState state)
 
 void ControlPanel::Dashboard()
 {
-	SmartDashboard::PutNumber("CPL1_Encoder_Position in Revolutions", m_spinner->GetSelectedSensorPosition(0) / CPL_COUNTS_PER_CW_REV);
-	SmartDashboard::PutNumber("CPL2_Encoder_Velocity in RPM", m_spinner->GetSelectedSensorVelocity(0) / MINUTES_TO_HUNDRED_MS / CPL_COUNTS_PER_CW_REV);
-	SmartDashboard::PutNumber("CPL3_Motor Voltage", m_spinner->GetMotorOutputVoltage());
-	SmartDashboard::PutNumber("CPL4_Registered Red Count", m_redCount);
-	SmartDashboard::PutNumber("CPL5_Registered Blue Count", m_blueCount);
+	if (Debug)
+	{
+		SmartDashboard::PutNumber("CPL1_Encoder_Position in Revolutions", m_spinner->GetSelectedSensorPosition(0) / CPL_COUNTS_PER_CW_REV);
+		SmartDashboard::PutNumber("CPL2_Encoder_Velocity in RPM", m_spinner->GetSelectedSensorVelocity(0) / MINUTES_TO_HUNDRED_MS / CPL_COUNTS_PER_CW_REV);
+		SmartDashboard::PutNumber("CPL3_Motor Voltage", m_spinner->GetMotorOutputVoltage());
+		SmartDashboard::PutNumber("CPL4_Registered Red Count", m_redCount);
+		SmartDashboard::PutNumber("CPL5_Registered Blue Count", m_blueCount);
 
-	SmartDashboard::PutString("CPL6_CurrentColor", m_color[m_currentcolor]);
+		SmartDashboard::PutString("CPL6_CurrentColor", m_color[m_currentcolor]);
+	}
 
 }

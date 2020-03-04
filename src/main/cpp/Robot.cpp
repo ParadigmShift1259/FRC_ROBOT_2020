@@ -15,7 +15,7 @@
 
 
 
-bool Debug = true;
+bool Debug = false;
 bool StartedInAuto = false;
 
 AutoMode automode = kNoAuto;
@@ -64,7 +64,7 @@ void Robot::AutonomousInit()
 	m_feeder->Init();
 	m_feeder->SetLoaded(true);		// ensure feeder state is loaded before loop runs
 	m_turret->Init();
-	m_controlpanel->Init();
+	//m_controlpanel->Init();
 	m_climber->Init();
 }
 
@@ -100,7 +100,7 @@ void Robot::TeleopInit()
 		m_intake->Init();
 		m_feeder->Init();
 		m_turret->Init();
-		m_controlpanel->Init();
+		//m_controlpanel->Init();
 		m_climber->Init();
 	}
 }
@@ -114,7 +114,7 @@ void Robot::TeleopPeriodic()
 	m_intake->Loop();
 	m_feeder->Loop();
 	m_turret->Loop();
-	m_controlpanel->Loop();
+	//m_controlpanel->Loop();
 	m_climber->Loop();
 }
 
@@ -129,7 +129,7 @@ void Robot::DisabledInit()
 		m_intake->Stop();
 		m_feeder->Stop();
 		m_turret->Stop();
-		m_controlpanel->Stop();
+		//m_controlpanel->Stop();
 		m_climber->Stop();
 	}
 	else
