@@ -125,10 +125,12 @@ void Intake::Loop()
     m_vision->IntakeSensorUpdate(m_rollersensor->Get());
 
     // teleop inputs to set intake position
-    if (m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+    if (!m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
+        m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         SetIntakePosition(kUp);
     else
-    if (m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+    if (!m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
+        m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         SetIntakePosition(kDown);
 
     // Setting intake position 
@@ -157,12 +159,7 @@ void Intake::Loop()
         if (m_inputs->xBoxAButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) &&
             !m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
         {
-            m_gathering = true;
-            m_intakestate = kGather;
-            m_solenoid->Set(true);
-            m_intakeposition = kDown;
-            m_rollermotor->Feed();
-            m_wheelmotor->Feed();
+            SetGathering(true);
         }
         else
         // if B button is pressed, ensure gathering is false
@@ -174,11 +171,7 @@ void Intake::Loop()
         // If previously gathering and less balls, go back to gathering
         if (m_gathering && (m_ballcount < 3))
         {
-            m_intakestate = kGather;
-            m_solenoid->Set(true);
-            m_intakeposition = kDown;
-            m_rollermotor->Feed();
-            m_wheelmotor->Feed();
+            SetGathering(true);
         }
         // Otherwise, stop all motors
         else
@@ -201,18 +194,15 @@ void Intake::Loop()
         if (m_inputs->xBoxBButton(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL) &&
             !m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL))
         {
-            m_gathering = false;
-            m_intakestate = kIdle;
-            m_rollermotor->Set(0);
-            m_wheelmotor->Set(0);
+            SetGathering(false);
         }
         // Otherwise, gather the balls
         else
         // if ball count is one less from full, slow down speed
         if (m_ballcount >= 2)
         {
-            m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED * 0.67);
-            m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED * 0.67);
+            m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED * 0.75);
+            m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED * 0.75);
         }
         else
         {
@@ -390,4 +380,25 @@ bool Intake::CanRefresh()
 {
     // if chute has 2 balls, then we can refresh
     return (m_ballcount >= 2);
+}
+
+
+void Intake::SetGathering(bool gathering)
+{
+    if (gathering)
+    {
+        m_gathering = true;
+        m_intakestate = kGather;
+        m_solenoid->Set(true);
+        m_intakeposition = kDown;
+        m_rollermotor->Feed();
+        m_wheelmotor->Feed();
+    }
+    else
+    {
+        m_gathering = false;
+        m_intakestate = kIdle;
+        m_rollermotor->Set(0);
+        m_wheelmotor->Set(0);
+    }
 }

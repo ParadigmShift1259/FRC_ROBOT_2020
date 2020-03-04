@@ -51,7 +51,8 @@ ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake 
 	m_dataDouble.push_back(&m_spinnersetpoint);
 
 	// Integrate color sensor TAG
-	m_colorsensor = new ColorSensorV3(I2C::Port::kOnboard);
+	m_colorsensor = nullptr;
+	//m_colorsensor = new ColorSensorV3(I2C::Port::kOnboard);
 	m_timer = new Timer();
 
 	m_stop = false;
@@ -362,12 +363,15 @@ void ControlPanel::ChangeSpinnerState(SpinnerState state)
 
 void ControlPanel::Dashboard()
 {
-	SmartDashboard::PutNumber("CPL1_Encoder_Position in Revolutions", m_spinner->GetSelectedSensorPosition(0) / CPL_COUNTS_PER_CW_REV);
-	SmartDashboard::PutNumber("CPL2_Encoder_Velocity in RPM", m_spinner->GetSelectedSensorVelocity(0) / MINUTES_TO_HUNDRED_MS / CPL_COUNTS_PER_CW_REV);
-	SmartDashboard::PutNumber("CPL3_Motor Voltage", m_spinner->GetMotorOutputVoltage());
-	SmartDashboard::PutNumber("CPL4_Registered Red Count", m_redCount);
-	SmartDashboard::PutNumber("CPL5_Registered Blue Count", m_blueCount);
+	if (Debug)
+	{
+		SmartDashboard::PutNumber("CPL1_Encoder_Position in Revolutions", m_spinner->GetSelectedSensorPosition(0) / CPL_COUNTS_PER_CW_REV);
+		SmartDashboard::PutNumber("CPL2_Encoder_Velocity in RPM", m_spinner->GetSelectedSensorVelocity(0) / MINUTES_TO_HUNDRED_MS / CPL_COUNTS_PER_CW_REV);
+		SmartDashboard::PutNumber("CPL3_Motor Voltage", m_spinner->GetMotorOutputVoltage());
+		SmartDashboard::PutNumber("CPL4_Registered Red Count", m_redCount);
+		SmartDashboard::PutNumber("CPL5_Registered Blue Count", m_blueCount);
 
-	SmartDashboard::PutString("CPL6_CurrentColor", m_color[m_currentcolor]);
+		SmartDashboard::PutString("CPL6_CurrentColor", m_color[m_currentcolor]);
+	}
 
 }

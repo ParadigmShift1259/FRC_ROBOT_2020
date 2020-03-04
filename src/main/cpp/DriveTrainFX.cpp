@@ -668,7 +668,7 @@ double DriveTrainFX::GetMaxDistance(int encoder)
 {
 	double maxleft = GetLeftDistance(encoder);
 	double maxright = GetRightDistance(encoder);
-	return abs(maxleft) > abs(maxright) ? -maxleft : maxright;
+	return abs(maxleft) > abs(maxright) ? maxleft : -maxright;
 }
 
 
@@ -684,7 +684,7 @@ double DriveTrainFX::GetMaxVelocity(int encoder)
 {
 	double maxleft = GetLeftVelocity(encoder);
 	double maxright = GetRightVelocity(encoder);
-	return abs(abs(maxleft) > abs(maxright) ? -maxleft : maxright);
+	return abs(abs(maxleft) > abs(maxright) ? maxleft : -maxright);
 }
 
 
@@ -699,5 +699,14 @@ double DriveTrainFX::GetMaxDeltaDistance(int encoder)
 {
 	double maxleft = GetLeftDistance(encoder) - m_prevleftdistance;
 	double maxright = GetRightDistance(encoder) - m_prevrightdistance;
-	return abs(maxleft) > abs(maxright) ? -maxleft : maxright;
+	return abs(maxleft) > abs(maxright) ? maxleft : -maxright;
+}
+
+
+// added 2/28/20 by Geoffrey for curve auto
+double DriveTrainFX::GetAverageDeltaDistance(int encoder)
+{
+	double maxleft = GetLeftDistance(encoder) - m_prevleftdistance;
+	double maxright = GetRightDistance(encoder) - m_prevrightdistance;
+	return (abs(maxleft) + abs(maxright)) / 2;
 }

@@ -101,13 +101,13 @@ extern Logger *g_log;               // Global logging object pointer
 #define ENC_TYPE_1 FeedbackDevice::IntegratedSensor
 #define ENC_PRESENT_2 false
 #define ENC_TYPE_2 FeedbackDevice::IntegratedSensor
-#define CODES_PER_REV 1382.0
-#define CODES_PER_INCH 73.317
+#define CODES_PER_REV 12513.28
+#define CODES_PER_INCH 663.85
 #define WHEEL_DIAMETER 6.0
-#define WHEEL_TRACK 23.50
+#define WHEEL_TRACK 25
 // Ball Tracking
 #define DT_TRACKING_SPEED 0.3
-#define DT_TRACKING_P (0.45 / 36)        // max speed is 0.5, max angle is 36
+#define DT_TRACKING_P 0.0125        // max speed is 0.5, max angle is 36
 // Arbitrary and feed forward values
 #define INITIAL_FEEDFORWARD_DRIVE (0.393 / 12)
 #define VELOCITY_FEEDFORWARD_DRIVE (1 / 12)
@@ -152,14 +152,14 @@ extern Logger *g_log;               // Global logging object pointer
 
 // Autonomous ---------------------------------------
 //   PID Constants
-#define AUT_P 0.05              // 0.1
+#define AUT_P 0.025              // 0.05
 #define AUT_I 0.0001            // 0.0003
-#define AUT_D 0.11              // 0.11
+#define AUT_D 0.05              // 0.11
 
 
 // ControlPanel ---------------------------------------
 #define CPL_ENABLED 1           // set to 1 to enable control panel motor
-#define CPL_MOTOR ENABLED(CPL_ENABLED, 11)
+#define CPL_MOTOR ENABLED(CPL_ENABLED, 13)     // changed 3/3/20
 #define CPL_SOLENOID ENABLED(CPL_ENABLED, 1)
 // ControlPanel
 #define CPL_COUNTS_PER_CW_REV (4096 * 32 / 4)
@@ -202,10 +202,11 @@ extern Logger *g_log;               // Global logging object pointer
 // Feeder ---------------------------------------
 #define FDR_ENABLED 1           // set to 1 to enable feeder motor
 #define FDR_MOTOR ENABLED(FDR_ENABLED, 9)
-#define FDR_STUFF_SPEED 0.5
+#define FDR_STUFF_SPEED 0.3
 #define FDR_HIGH_NUMBER 10000
 #define FDR_WHEEL_SIZE 4
 #define FDR_FEED_FORWARD 0.0681
+#define FDR_MAX_CURRENT 30      // change later 2/27/20
 // PID values for ball
 #define FDR_P 0.0795
 #define FDR_I 0.005
@@ -215,13 +216,15 @@ extern Logger *g_log;               // Global logging object pointer
 // Max percent output that feeder can apply
 #define FDR_MAX_POWER 1.0
 #define FDR_TIMEOUT_TIME 4.0
-#define FDR_STUFF_TIME 4.0
+#define FDR_STUFF_TIME 3.0
 #define FDR_GEAR_RATIO 4.167
 #define FDR_INVERTED 1.0
 
 // Climber ---------------------------------------
-#define CLM_ENABLED 0           // set to 1 to enable intake motor
-#define CLM_MOTOR ENABLED(CLM_ENABLED, 10)
+#define CLM_ENABLED 1           // set to 1 to enable intake motor
+#define CLM_MOTOR ENABLED(CLM_ENABLED, 11)
+#define CLM_MOTOR_SPEED 0.25
+#define CLM_RAMP_RATE 0.5
 
 //  Turret ---------------------------------------
 #define TUR_ENABLED 1
@@ -231,10 +234,11 @@ extern Logger *g_log;               // Global logging object pointer
 #define TUR_TIMEOUT_MS 30
 #define ENCODER_TICKS_PER_REV 4096.00
 #define MINUTES_TO_HUNDRED_MS 0.00166666
+#define TUR_DIRECTION -1.0
 // Shooter / Flywheel
 #define TUR_SHOOTER_RAMPING_RATE 100       // in rpm
-#define TUR_SHOOTER_IDLE_STATE_RPM 2000
-#define TUR_SHOOTER_RAMPUP_STATE_RPM 2500
+#define TUR_SHOOTER_IDLE_STATE_RPM 2000      // 2000
+#define TUR_SHOOTER_RAMPUP_STATE_RPM 2500   // 2500
 // kS, kV, kA values tuned using frc-characterization 2/20/20 for the Metal V2 Shooter Flywheel by Geoffrey
 #define TUR_SHOOTER_KS 0.0876
 #define TUR_SHOOTER_KV 0.124
@@ -275,18 +279,18 @@ extern Logger *g_log;               // Global logging object pointer
 #define TUR_TURRET_SPINNER 29.845
 #define REV_TO_TURRET_REV (TUR_PULLEY / TUR_TURRET_SPINNER) 
 #define TURRET_REV_TO_DEGREES 360
-#define TURRET_DEGREE_STOP_RANGE 0.25
+#define TURRET_DEGREE_STOP_RANGE 0.125
 
 // Vision ---------------------------------------
-#define VIS_MOUNTING_ANGLE 20.0     // degrees
-#define VIS_MOUNTING_HEIGHT 21.375      // inches
+#define VIS_MOUNTING_ANGLE 18.0     // degrees
+#define VIS_MOUNTING_HEIGHT 21.5      // inches, used to be 21.75
 #define VIS_TARGET_HEIGHT 98.25     // inches
 #define VIS_TARGET_SIZE 15          // inches
 
 // Autonomous -----------------------------------
 enum AutoMode
 {
-    kNoAuto, kSimpleAuto
+    kNoAuto, kSimpleAuto, kDriveStraight, kTrenchRun, kCenterRendezvous
 };
 
 extern AutoMode automode;

@@ -34,6 +34,7 @@ public:
 	void Stop();
 	void Dashboard();
 
+	void SetStuffTime(double stufftime) { m_stufftime = stufftime; }
 	void SetStuffing(bool stuff = true);
 	bool IsStuffing();
 	int GetBallCount();
@@ -54,6 +55,7 @@ protected:
 	units::inch_t m_goal;
 	bool m_loaded;
 	bool m_stuffing;
+	double m_stufftime;
 
 	FeederState m_feederstate;
 

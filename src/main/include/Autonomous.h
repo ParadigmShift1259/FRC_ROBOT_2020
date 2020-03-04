@@ -32,6 +32,8 @@ public:
 
 protected:
 	void SimpleAuto();
+    void DriveStraight();
+    void TrenchRun();
 
 protected:
     OperatorInputs *m_inputs;

@@ -27,6 +27,8 @@ public:
 	bool GetHeading(double &heading);
 	void Dashboard();
 	void ZeroHeading();
+	void ResetDeltaHeading();
+	double GetDeltaHeading();
 
 protected:
 	PigeonIMU *m_pigeon1;
@@ -37,6 +39,7 @@ protected:
 	double m_heading2;
 	bool m_gyrovalid1;
 	bool m_gyrovalid2;
+	double m_prevheading;
 
 	Logger *m_log;
 	vector<int*> m_dataInt;

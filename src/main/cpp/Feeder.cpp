@@ -31,6 +31,7 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake)
 
     m_loaded = false;
     m_stuffing = false;
+    m_stufftime = FDR_STUFF_TIME;
 
 	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "feederstate,feederPID,loaded,stuffing,tolerance,feederPIDvals[0],feederPIDvals[1],feederPIDvals[2],goal");
     m_dataInt.push_back((int*)&m_feederstate);
@@ -65,6 +66,7 @@ void Feeder::Init()
     m_feederPIDvals[2] = FDR_D;
     m_loaded = false;
     m_stuffing = false;
+    m_stufftime = FDR_STUFF_TIME;
 
     if ((m_motor == nullptr) && (FDR_MOTOR != -1))
     {
@@ -91,6 +93,9 @@ void Feeder::Init()
     m_motor->Set(ControlMode::PercentOutput, 0);
     m_motor->SetSelectedSensorPosition(0);
     m_motor->SetSensorPhase(true);
+    // added 2/27/2020 after motor stall
+    m_motor->ConfigPeakCurrentLimit(FDR_MAX_CURRENT);
+    m_motor->EnableCurrentLimit(true);
     
     //m_motor->ConfigNominalOutputForward(0);
     m_motor->ConfigNominalOutputReverse(0);
@@ -113,7 +118,8 @@ void Feeder::Loop()
     {
     case kIdle:
         if ((!m_loaded && m_intake->CanRefresh()) ||
-            m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+            (!m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
+            m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL)))
         {
             m_goal = FDR_REFRESH_DISTANCE * 1_in;
             m_motor->SetSelectedSensorPosition(0);
@@ -124,7 +130,9 @@ void Feeder::Loop()
         }
         else
         // troubleshooting to stuff
-        if (m_stuffing || m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        if (m_stuffing || 
+            (!m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
+            m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL)))
         {
             m_timer.Reset();
             m_intake->SetStuffing();
@@ -151,10 +159,17 @@ void Feeder::Loop()
             m_loaded = true;
             m_feederstate = kIdle;
         }
+        else
+        if (m_stuffing)
+        {
+            m_timer.Reset();
+            m_intake->SetStuffing();
+            m_feederstate = kStuff;
+        }
         break;
 
     case kStuff:
-        if (m_timer.Get() > FDR_STUFF_TIME)
+        if (m_timer.Get() > m_stufftime)
         {
             m_motor->Set(0);
             m_loaded = false;

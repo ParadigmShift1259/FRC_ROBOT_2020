@@ -13,6 +13,7 @@
 #include "Vision.h"
 #include "Feeder.h"
 #include "ControlPanel.h"
+#include "Climber.h"
 #include "GyroDrive.h"
 #include "Logger.h"
 
@@ -34,20 +35,23 @@ using namespace rev;
 class Turret
 {
 public:
-    enum TurretState {kIdle, kRampUp, kVision, kAllReady};
+    enum TurretState {kIdle, kRampUp, kVision, kAllReadyWait, kAllReady};
     enum FireMode {kForceShoot, kShootWhenReady, kHoldShoot};
     enum RampState {kMaintain, kIncrease, kDecrease};
 
-    Turret(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake, Feeder *feeder, ControlPanel *controlpanel, Vision *vision);
+    Turret(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake, Feeder *feeder, ControlPanel *controlpanel, Climber *climber, Vision *vision);
     ~Turret();
     void Init();
     void Loop();
     void Stop();
     void Dashboard();
 
+    bool IsFiring() { return m_firing; }
     void SetFireMode(FireMode mode) { m_firemode = mode; }
     void SetTurretState(TurretState state) { m_turretstate = state; }
     TurretState GetTurretState() { return m_turretstate; }
+    void SetTurretAngle(double angle);
+    double GetTurretAngle(void);
 
 protected:
     bool NullCheck();
@@ -58,7 +62,8 @@ protected:
     // Takes the distance from the target and returns the hood angle and flywheel speed
     void CalculateHoodFlywheel(double distance, double &hoodangle, double &flywheelspeed);
     // Takes the XBox joystick and converts it into an field angle
-    void FindFieldXBox();
+    //void FindFieldXBox();
+    bool FindFieldXBox();
     // Calculates the turret angle based off of the field angle
     void CalculateTurretFromField();
     // Calculates the field angle needed based off of vision
@@ -76,6 +81,7 @@ private:
     Intake *m_intake;
     Feeder *m_feeder;
     ControlPanel *m_controlpanel;
+    Climber *m_climber;
     Vision *m_vision;
 
     // Flywheel
@@ -87,8 +93,11 @@ private:
     double m_flywheelsetpoint;
     double m_flywheelrampedsetpoint;
 
+    double m_flywheelspeedinc;
+    double m_hoodangleinc;
     SimpleMotorFeedforward<units::meters> *m_flywheelsimplemotorfeedforward;
     double m_flywheelinitialfeedforward;
+    Timer m_timer;
 
     // Turret
     WPI_TalonSRX *m_turretmotor;

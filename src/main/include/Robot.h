@@ -9,6 +9,7 @@
 #include "Const.h"
 #include "OperatorInputs.h"
 #include "GyroDrive.h"
+#include "Climber.h"
 #include "Pneumatics.h"
 #include "Turret.h"
 #include "ControlPanel.h"
@@ -17,6 +18,10 @@
 #include "Vision.h"
 #include "Autonomous.h"
 
+#ifdef USE_ODO
+#include <frc/kinematics/DifferentialDriveOdometry.h>
+#include <frc/kinematics/DifferentialDriveKinematics.h>
+#endif
 
 using namespace frc;
 using namespace std;
@@ -46,13 +51,26 @@ protected:
 	Feeder *m_feeder;
 	Turret *m_turret;
 	ControlPanel *m_controlpanel;
+	Climber *m_climber;
 	Autonomous *m_autonomous;
 	DriverStation *m_driverstation;
+
+#ifdef USE_ODO
+    DifferentialDriveOdometry *m_odo;
+    vector<frc::Trajectory::State> *m_StateHist;
+    Pose2d m_targetPose;
+
+    double m_targetRange;
+    double m_targetBearing;
+#endif
 
 private:
 	SendableChooser<string> m_chooser;
 	const string kszNoAuto = "No Auto";
 	const string kszSimpleAuto = "Simple";
+	const string kszDriveStraight = "DriveStraight";
+	const string kszTrenchRun = "TrenchRun";
+	const string kszCenterRendezvous = "CenterRendezvous";
 	string m_autoSelected;
 
 	void ReadChooser();

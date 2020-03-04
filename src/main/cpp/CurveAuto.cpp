@@ -23,8 +23,8 @@ CurveAuto::CurveAuto(DriveTrainFX *drivetrain, DualGyro *gyro)
     m_gyroPIDvals[1] = 0;
     m_gyroPIDvals[2] = 0;
     // These values will be scaled based on the input, so doens't really matter here
-    m_gyroconstraints.maxVelocity = 5_mps;
-    m_gyroconstraints.maxAcceleration = 5_mps / 1_s;
+    m_gyroconstraints.maxVelocity = 5_in / 1_s;
+    m_gyroconstraints.maxAcceleration = 5_in / 1_s / 1_s;
     m_gyrotolerance = 2_deg;
 
     m_encoderPIDController = nullptr;
@@ -32,11 +32,11 @@ CurveAuto::CurveAuto(DriveTrainFX *drivetrain, DualGyro *gyro)
     m_encoderPIDvals[0] = 0.33;
     m_encoderPIDvals[1] = 0.0079;
     m_encoderPIDvals[2] = 0.00295;
-    m_encoderconstraints.maxVelocity = 4_mps;
-    m_encoderconstraints.maxAcceleration = 2_mps / 1_s;
-    m_encodertolerance = 0.5_m;
+    m_encoderconstraints.maxVelocity = 4_in / 1_s;
+    m_encoderconstraints.maxAcceleration = 2_in / 1_s / 1_s;
+    m_encodertolerance = 4_in;
 
-    m_setpoint = 0_m;
+    m_setpoint = 0_in;
     m_finished = false;
 
     m_autostate = kIdle;
@@ -70,27 +70,28 @@ void CurveAuto::Init()
 
     m_encoderfeedforward = new SimpleMotorFeedforward<units::meters>(
         units::volt_t{INITIAL_FEEDFORWARD_DRIVE * 12},
-        VELOCITY_FEEDFORWARD_DRIVE * 12 * 1_V * 1_s / 1_m,
-        0 * 1_V * 1_s * 1_s / 1_m
+        VELOCITY_FEEDFORWARD_DRIVE * 12 * 1_V * 1_s / 1_in,
+        0 * 1_V * 1_s * 1_s / 1_in
     );
 
     m_gyrotolerance = 3_deg;
 
     m_gyroPIDController->SetPID(m_gyroPIDvals[0], m_gyroPIDvals[1], m_gyroPIDvals[2]);
-    m_gyroPIDController->SetTolerance(units::meter_t{m_gyrotolerance.to<double>()}, units::meters_per_second_t{DT_HIGH_NUMBER});
+    m_gyroPIDController->SetTolerance(units::inch_t{m_gyrotolerance.to<double>()}, DT_HIGH_NUMBER * 1_in / 1_s);
 
-    m_encodertolerance = 0.05_m;
+    m_encodertolerance = 4_in;
 
     m_encoderPIDController->SetConstraints(m_encoderconstraints);
 
-    m_encoderPIDController->SetTolerance(0_m, units::meters_per_second_t{0.1});
+    // NOTE Not using encoder tolerance
+    m_encoderPIDController->SetTolerance(0_m, units::meters_per_second_t{4 * 1_in / 1_s});
     m_encoderPIDController->SetPID(m_encoderPIDvals[0], m_encoderPIDvals[1], m_encoderPIDvals[2]);
     
-    m_setpoint = 0_m;
+    m_setpoint = 0_in;
     m_setpointangle = 0_deg;
-    m_finished = true;
+    m_finished = false;
     m_start = false;
-    m_prevvelocity = 0_mps;
+    m_prevvelocity = 0_in / 1_s;
 
     m_autostate = kIdle;
 
@@ -117,7 +118,7 @@ void CurveAuto::Loop()
             {
                 m_autostate = kDrive;
                 m_finished = false;
-                m_gyro->ZeroHeading();
+                m_gyro->ResetDeltaHeading();
                 m_drivetrain->ResetDeltaDistance();
             }
             else
@@ -129,19 +130,19 @@ void CurveAuto::Loop()
         case kDrive:
             // Z deviance of drive, with error being degrees
             // (TAG) Make sure to check this is in the right direction, else flip gyro in Drivetrain or flip here
-            double temp;
-            m_gyro->GetHeading(temp);
-            units::degree_t heading = units::degree_t{temp * DT_GYRO_INVERTED};
+            units::degree_t heading = units::degree_t{m_gyro->GetDeltaHeading() * DT_GYRO_INVERTED};
             // Currangle is technically currangle + prevgoal, but to make things relative to 0, prevgoal must be subtracted
             SmartDashboard::PutNumber("CurrAngle", heading.to<double>());
-            double z = m_gyroPIDController->Calculate(units::meter_t{heading.to<double>()});
-            // X deviance of drive, with error being meters
+            double z = m_gyroPIDController->Calculate(units::inch_t{heading.to<double>()});
+            // X deviance of drive, with error being inches
             // (TAG) Make sure a positive motor ouput results in a positive encoder velocity, else flip encoder
             // (TAG) Make sure the robot drives in the right direction, else flip motor
-            double encoder1 = m_drivetrain->GetLeftPosition() / DT_TICKS_PER_METER;
-            double encoder2 = m_drivetrain->GetRightPosition() / DT_TICKS_PER_METER * DT_ENCODER_INVERTED;
+        
+            //double encoder1 = m_drivetrain->GetLeftPosition() / DT_TICKS_PER_METER;
+            //double encoder2 = m_drivetrain->GetRightPosition() / DT_TICKS_PER_METER * DT_ENCODER_INVERTED;
             // averaging two encoders to obtain final value
-            units::meter_t currdist = units::meter_t{(encoder1 + encoder2) / 2};
+        
+            units::inch_t currdist = m_drivetrain->GetAverageDeltaDistance() * 1_in;
             // Currdist is techincally currdist + prevgoal, but to make things relative to 0, prevgoal must be subtracted
             SmartDashboard::PutNumber("Currdist", currdist.to<double>());
             double x = m_encoderPIDController->Calculate(currdist);
@@ -164,16 +165,14 @@ void CurveAuto::Loop()
                 m_autostate = kIdle;
                 m_finished = true;
                 m_start = false;
-                m_prevvelocity = units::meters_per_second_t{avvelocity};
+                m_prevvelocity = avvelocity * 1_in / 1_s;
             }
             SmartDashboard::PutNumber("Robot Average Velocity", avvelocity);
             break;
     }
     SmartDashboard::PutNumber("Autostate", m_autostate);
-    SmartDashboard::PutNumber("Robot Encoders", m_drivetrain->GetLeftPosition() / DT_TICKS_PER_METER);
-    double temp;
-    m_gyro->GetHeading(temp);
-    SmartDashboard::PutNumber("Robot Gyro", temp);
+    SmartDashboard::PutNumber("Robot Encoders", m_drivetrain->GetAverageDeltaDistance() / DT_TICKS_PER_METER);
+    SmartDashboard::PutNumber("Robot Gyro", m_gyro->GetDeltaHeading() * DT_GYRO_INVERTED);
     SmartDashboard::PutNumber("Encoder Error", m_encoderPIDController->GetPositionError().to<double>());
     SmartDashboard::PutNumber("Encoder Velocity Error", m_encoderPIDController->GetVelocityError().to<double>());
     SmartDashboard::PutNumber("Encoder Position Setpoint", m_encoderPIDController->GetSetpoint().position.to<double>());
@@ -190,8 +189,8 @@ void CurveAuto::Stop()
 
 void CurveAuto::ConfigureProfiles()
 {
-    units::meters_per_second_t v = units::meters_per_second_t{ SmartDashboard::GetNumber("Encoder Max Velocity", 0)};
-    units::meters_per_second_squared_t a = units::meters_per_second_squared_t{ SmartDashboard::GetNumber("Encoder Max Acceleration", 0)};
+    units::meters_per_second_t v = SmartDashboard::GetNumber("Encoder Max Velocity", 0) * 1_in / 1_s;
+    units::meters_per_second_squared_t a = SmartDashboard::GetNumber("Encoder Max Acceleration", 0) * 1_in / 1_s / 1_s;
 
     if (v != m_encoderconstraints.maxVelocity) 
     {
@@ -219,7 +218,7 @@ void CurveAuto::ConfigureGyroPID()
     if (t != m_gyrotolerance)
     {
         m_gyrotolerance = t;
-        m_gyroPIDController->SetTolerance(units::meter_t{m_gyrotolerance.to<double>()}, units::meters_per_second_t{DT_HIGH_NUMBER});
+        m_gyroPIDController->SetTolerance(units::inch_t{m_gyrotolerance.to<double>()}, DT_HIGH_NUMBER * 1_in / 1_s);
     }
 }
 
@@ -229,7 +228,7 @@ void CurveAuto::ConfigureEncoderPID()
     double p = SmartDashboard::GetNumber("Encoder P", 0);
     double i = SmartDashboard::GetNumber("Encoder I", 0);
     double d = SmartDashboard::GetNumber("Encoder D", 0);
-    units::meter_t t = units::meter_t{ SmartDashboard::GetNumber("Encoder Goal Tolerance", 0)};
+    units::inch_t t = units::inch_t{ SmartDashboard::GetNumber("Encoder Goal Tolerance", 0)};
 
     if((p != m_encoderPIDvals[0])) { m_encoderPIDController->SetP(p); m_encoderPIDvals[0] = p; }
     if((i != m_encoderPIDvals[1])) { m_encoderPIDController->SetI(i); m_encoderPIDvals[1] = i; }
@@ -237,24 +236,24 @@ void CurveAuto::ConfigureEncoderPID()
     if (t != m_encodertolerance)
     {
         m_encodertolerance = t;
-        m_encoderPIDController->SetTolerance(m_encodertolerance, units::meters_per_second_t{DT_HIGH_NUMBER});
+        m_encoderPIDController->SetTolerance(m_encodertolerance, DT_HIGH_NUMBER * 1_in / 1_s);
     }
 }
 
 
 void CurveAuto::StartMotion(double distance, double angle, double targetvelocity, double maxvelocity, double maxacceleration)
 {
-    m_setpoint = units::meter_t{distance};
+    m_setpoint = units::inch_t{distance};
     m_setpointangle = units::degree_t{angle};
     // Reset Motion Profile and Gyro
     m_gyro->ZeroHeading();
-    m_gyroPIDController->Reset(0_m);
+    m_gyroPIDController->Reset(0_in);
     // Reset Motion Profile and Encoders
     m_drivetrain->ResetDeltaDistance();
-    m_encoderPIDController->Reset(0_m, m_prevvelocity);
+    m_encoderPIDController->Reset(0_in, m_prevvelocity);
 
-    m_encoderconstraints.maxVelocity = units::meters_per_second_t{maxvelocity};
-    m_encoderconstraints.maxAcceleration = units::meters_per_second_squared_t{maxacceleration};
+    m_encoderconstraints.maxVelocity = maxvelocity * 1_in / 1_s;
+    m_encoderconstraints.maxAcceleration = maxacceleration * 1_in / 1_s / 1_s;
 
     m_encoderPIDController->SetConstraints(m_encoderconstraints);
 
@@ -262,18 +261,18 @@ void CurveAuto::StartMotion(double distance, double angle, double targetvelocity
     // Take the encoderconstraints and scale it up to the gyro setpointangle
     m_gyroconstraints.maxVelocity = (
         m_encoderconstraints.maxVelocity.to<double>() / fabs(m_setpoint.to<double>()) * fabs(m_setpointangle.to<double>()))
-        * 1_m / 1_s;
+        * 1_in / 1_s;
     m_gyroconstraints.maxAcceleration = (
         m_encoderconstraints.maxAcceleration.to<double>() / fabs(m_setpoint.to<double>()) * fabs(m_setpointangle.to<double>()))
-        * 1_m / 1_s / 1_s;
+        * 1_in / 1_s / 1_s;
 
     m_gyroPIDController->SetConstraints(m_gyroconstraints);
 
-    TrapezoidProfile<units::meters>::State goal = {m_setpoint, units::meters_per_second_t{targetvelocity}};
+    TrapezoidProfile<units::meters>::State goal = {m_setpoint, targetvelocity * 1_in / 1_s};
 
     m_encoderPIDController->SetGoal(goal);
-    m_gyroPIDController->SetGoal(units::meter_t{m_setpointangle.to<double>()});
+    m_gyroPIDController->SetGoal(units::inch_t{m_setpointangle.to<double>()});
     m_finished = false;
     m_start = true;
-    //m_prevvelocity = units::meters_per_second_t{targetvelocity};
+    //m_prevvelocity = targetvelocity * 1_in / 1_s;
 }

@@ -33,6 +33,7 @@ public:
     bool GetActive();
     double GetDistance();
     double GetAngle();
+    void SetLED(bool on);
     void SetCamera(int camera) { m_camerachoice = camera; }
 
     void IntakeSensorUpdate(bool update);
@@ -49,6 +50,7 @@ private:
     int m_camerachoice;
     
     shared_ptr<NetworkTable> m_networktable;
+    bool m_led;
     double m_tx;
     double m_ty;
     double m_ta;
@@ -62,7 +64,8 @@ private:
     double m_distance;
     double m_horizontalangle;
 
-    double m_averagedistance[3];
+    vector<double> m_averagedistance;
+    double m_avgdistance;
     double m_averageangle[3];
 
 	Logger *m_log;
