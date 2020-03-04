@@ -221,7 +221,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Climber ---------------------------------------
 #define CLM_ENABLED 1           // set to 1 to enable intake motor
 #define CLM_MOTOR ENABLED(CLM_ENABLED, 11)
-#define CLM_MOTOR_SPEED 0.25
+#define CLM_MOTOR_SPEED -1
 #define CLM_RAMP_RATE 0.5
 
 //  Turret ---------------------------------------

@@ -200,8 +200,8 @@ void Turret::Loop()
     else
     if (m_climber->DeployRequest())
     {
-        m_turretangle = 180;
-        m_climber->CanDeploy((m_turretrampedangle == 180));
+        m_turretangle = 225;
+        m_climber->CanDeploy((m_turretrampedangle == 225));
     }
 
     RampUpFlywheel();

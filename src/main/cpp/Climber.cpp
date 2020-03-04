@@ -57,35 +57,27 @@ void Climber::Loop()
     if (m_motor == nullptr)
         return;
 
-    if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
-        m_motor->Set(0.25);
-    if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
-        m_motor->Set(-0.25);
-    else
-        m_motor->StopMotor();
-
-    Dashboard(); 
-    /*
     // if start button and back button are both held, force climber
     if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL) && 
         m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
-        m_motor->Set(0.25);
+        m_motor->Set(CLM_MOTOR_SPEED);
     else
-    // if back button is pressed, position turret at original position
-    if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
+    // if start button is pressed, position turret at original position
+    if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
     {
         m_deployrequest = true;
         // once ready and start button is also pressed at the same time, start climber motor
         if (m_deployready)
-            m_motor->Set(0.25);
+            m_motor->Set(CLM_MOTOR_SPEED);
     }
     else
-    // if start button is pressed, disable climbing again
-    if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
+    // if back button is pressed, disable climbing again
+    if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
         m_deployrequest = false;
-    
+    else
+        m_motor->StopMotor();
+
     Dashboard();
-    */
 }
 
 
@@ -117,4 +109,6 @@ void Climber::CanDeploy(bool deploy)
 {
     if (m_deployrequest)
         m_deployready = deploy;
+    else
+        m_deployready = false;
 }
