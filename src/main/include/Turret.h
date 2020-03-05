@@ -49,6 +49,7 @@ public:
     void SetFireMode(FireMode mode) { m_firemode = mode; }
     void SetTurretState(TurretState state) { m_turretstate = state; }
     TurretState GetTurretState() { return m_turretstate; }
+    void SetFieldAngle(double fieldangle) { m_fieldangle = fieldangle; }
 
 protected:
     bool NullCheck();

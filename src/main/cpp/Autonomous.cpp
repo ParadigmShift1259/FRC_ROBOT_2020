@@ -301,6 +301,7 @@ void Autonomous::CenterRendezvous()
     {
     case 0:
         m_turret->SetTurretState(Turret::TurretState::kVision);
+        m_turret->SetFieldAngle(200);
         m_stage++;
         break;
     
@@ -344,14 +345,19 @@ void Autonomous::CenterRendezvous()
         break;
     
     case 6:
-        if (m_gyrodrive->DriveAngle(135, false))
+        if (m_gyrodrive->DriveStraight(30, -0.3, false))
+            m_stage++;
+        break;
+
+    case 7:
+        if (m_gyrodrive->DriveAngle(45, false))
         {
             m_stage++;
             m_turret->SetTurretState(Turret::TurretState::kVision);
         }
         break;
     
-    case 7:
+    case 8:
         if (m_gyrodrive->DriveStraight(40, 0.2, true))
         {
             m_stage++;
@@ -359,7 +365,7 @@ void Autonomous::CenterRendezvous()
         }
         break;
     
-    case 8:
+    case 9:
         m_turret->SetTurretState(Turret::TurretState::kVision);
 
         if (m_timer.Get() > 0.1)
@@ -369,7 +375,7 @@ void Autonomous::CenterRendezvous()
         }
         break;
     
-    case 9:
+    case 10:
         break;
     }
 }
