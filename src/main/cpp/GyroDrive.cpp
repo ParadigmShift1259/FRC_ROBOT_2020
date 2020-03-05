@@ -103,7 +103,8 @@ void GyroDrive::Loop()
 		}
 		else
 		{
-			m_drivetrain->Drive(DT_TRACKING_P * ballangle, m_inputs->xBoxLeftY(0 * INP_DUAL), true);
+			double sign = fabs(ballangle) / ballangle;
+			m_drivetrain->Drive(DT_TRACKING_P * ballangle + DT_TRACKING_FF * sign, m_inputs->xBoxLeftY(0 * INP_DUAL), true);
 		}
 		break;
 
