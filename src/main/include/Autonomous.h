@@ -34,6 +34,7 @@ protected:
 	void SimpleAuto();
     void DriveStraight();
     void TrenchRun();
+    void CenterRendezvous();
 
 protected:
     OperatorInputs *m_inputs;

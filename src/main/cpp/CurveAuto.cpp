@@ -29,7 +29,7 @@ CurveAuto::CurveAuto(DriveTrainFX *drivetrain, DualGyro *gyro)
 
     m_encoderPIDController = nullptr;
     // Configure these after testing to lock them into place
-    m_encoderPIDvals[0] = 0.33;
+    m_encoderPIDvals[0] = 0.35;
     m_encoderPIDvals[1] = 0.0079;
     m_encoderPIDvals[2] = 0.00295;
     m_encoderconstraints.maxVelocity = 4_in / 1_s;
@@ -79,7 +79,7 @@ void CurveAuto::Init()
     m_gyroPIDController->SetPID(m_gyroPIDvals[0], m_gyroPIDvals[1], m_gyroPIDvals[2]);
     m_gyroPIDController->SetTolerance(units::inch_t{m_gyrotolerance.to<double>()}, DT_HIGH_NUMBER * 1_in / 1_s);
 
-    m_encodertolerance = 4_in;
+    m_encodertolerance = 10_in;
 
     m_encoderPIDController->SetConstraints(m_encoderconstraints);
 
@@ -159,7 +159,7 @@ void CurveAuto::Loop()
             double velocity2 = m_drivetrain->GetRightVelocity() / DT_TICKS_PER_METER * 10 * DT_ENCODER_INVERTED;
             double avvelocity = (velocity1 + velocity2) / 2;
 
-            if (currdist > m_setpoint)
+            if (currdist > m_setpoint || m_encoderPIDController->AtGoal())
             {
                 DriverStation::ReportError("One completed");
                 SmartDashboard::PutNumber("Setpoint", m_setpoint.to<double>());

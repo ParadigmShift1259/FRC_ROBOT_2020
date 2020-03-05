@@ -57,6 +57,7 @@ void Autonomous::Loop()
             break;
         
         case kCenterRendezvous:
+            CenterRendezvous();
             break;
     }
 
@@ -116,12 +117,12 @@ void Autonomous::DriveStraight()
     switch (m_stage)
     {
     case 0:
-        if (m_gyrodrive->StartMotion(48, 0, 0, 24, 12))
+        if (m_gyrodrive->StartMotion(-48, 0, 0, 24, 12))
             m_stage++;
         break;
     
     case 1:
-        if (m_gyrodrive->StartMotion(48, 45, 0, 24, 12))
+        if (m_gyrodrive->StartMotion(-48, 45, 0, 24, 12))
             m_stage++;
         break;
     
@@ -289,6 +290,86 @@ void Autonomous::TrenchRun()
     
     case 9:
         m_feeder->SetStuffTime(3);
+        break;
+    }
+}
+
+
+void Autonomous::CenterRendezvous()
+{
+    switch (m_stage)
+    {
+    case 0:
+        m_turret->SetTurretState(Turret::TurretState::kVision);
+        m_stage++;
+        break;
+    
+    case 1:   
+        if (m_gyrodrive->DriveStraight(96, 0.35, true))
+        {
+            m_timer.Reset();
+            m_stage++;
+        }
+        break;
+    
+    case 2:
+        if (m_timer.Get() > 0.1)
+        {
+            m_stage++;
+            m_turret->SetFireMode(Turret::FireMode::kShootWhenReady);
+            m_feeder->SetStuffTime(1.5);
+        }
+        break;
+
+    case 3:
+        if (m_turret->IsFiring())
+            m_stage++;
+        break;
+
+    case 4:
+        if (!m_turret->IsFiring())
+        {
+            m_turret->SetFireMode(Turret::FireMode::kHoldShoot);
+            m_turret->SetTurretState(Turret::TurretState::kIdle);
+            m_intake->SetGathering(true);
+            m_stage++;
+        }
+        break;
+    
+    case 5:
+        if (m_gyrodrive->DriveStraight(34, 0.3, true))
+        {
+            m_stage++;
+        }
+        break;
+    
+    case 6:
+        if (m_gyrodrive->DriveAngle(135, false))
+        {
+            m_stage++;
+            m_turret->SetTurretState(Turret::TurretState::kVision);
+        }
+        break;
+    
+    case 7:
+        if (m_gyrodrive->DriveStraight(40, 0.2, true))
+        {
+            m_stage++;
+            m_timer.Reset();
+        }
+        break;
+    
+    case 8:
+        m_turret->SetTurretState(Turret::TurretState::kVision);
+
+        if (m_timer.Get() > 0.1)
+        {
+            m_stage++;
+            m_turret->SetFireMode(Turret::FireMode::kShootWhenReady);
+        }
+        break;
+    
+    case 9:
         break;
     }
 }

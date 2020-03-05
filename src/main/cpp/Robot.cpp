@@ -103,6 +103,10 @@ void Robot::TeleopInit()
 		//m_controlpanel->Init();
 		m_climber->Init();
 	}
+	else
+	{
+		m_feeder->SetStuffTime(3.0);
+	}
 }
 
 
