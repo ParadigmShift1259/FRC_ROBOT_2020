@@ -10,6 +10,7 @@
 #include <frc/LiveWindow/LiveWindow.h>
 #include <frc/SmartDashboard/SendableChooser.h>
 #include <frc/SmartDashboard/SmartDashboard.h>
+#include <cameraserver/CameraServer.h>
 
 #include <iostream>
 
@@ -42,6 +43,8 @@ void Robot::RobotInit()
 	m_climber = new Climber(m_operatorinputs);
 	m_turret = new Turret(m_operatorinputs, m_gyrodrive, m_intake, m_feeder, m_controlpanel, m_climber, m_vision);
 	m_autonomous = new Autonomous(m_gyrodrive, m_intake, m_feeder, m_turret, m_vision);
+
+	CameraServer::GetInstance()->StartAutomaticCapture();
 }
 
 
@@ -140,7 +143,8 @@ void Robot::DisabledInit()
 	{
 		m_autonomous->Stop();
 	}
-	
+
+	m_vision->Init();
 }
 
 
@@ -148,6 +152,7 @@ void Robot::DisabledPeriodic()
 {
 	ReadChooser();
 	m_vision->SetLED(false);
+	m_vision->Loop();
 }
 
 

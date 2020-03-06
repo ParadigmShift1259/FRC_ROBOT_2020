@@ -81,7 +81,7 @@ void Autonomous::SimpleAuto()
         break;
     
     case 1:   
-        if (m_gyrodrive->DriveStraight(48, 0.3, true))
+        if (m_gyrodrive->DriveStraight(24, 0.3, true))
         {
             m_timer.Reset();
             m_stage++;
@@ -92,7 +92,7 @@ void Autonomous::SimpleAuto()
         if (m_turret->GetTurretState() == Turret::TurretState::kIdle)
             m_turret->SetTurretState(Turret::TurretState::kVision);
 
-        if (m_timer.Get() > 0.25)
+        if (m_timer.Get() > 0.5)
         {
             m_stage++;
             m_turret->SetFireMode(Turret::FireMode::kShootWhenReady);
@@ -276,7 +276,7 @@ void Autonomous::TrenchRun()
     case 7:
         m_turret->SetTurretState(Turret::TurretState::kVision);
 
-        if (m_timer.Get() > 0.1)
+        if (m_timer.Get() > 0.6)
         {
             m_stage++;
             m_turret->SetFireMode(Turret::FireMode::kShootWhenReady);

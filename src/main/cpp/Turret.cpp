@@ -200,7 +200,7 @@ void Turret::Loop()
     else
     if (m_climber->DeployRequest())
     {
-        m_turretangle = 265;
+        m_turretangle = 290;
         //m_climber->CanDeploy((m_turretrampedangle == 225));
         if (fabs(TicksToDegrees(m_turretmotor->GetSelectedSensorPosition()) - m_turretangle) < TUR_TURRET_RAMPING_RATE)
             m_climber->CanDeploy(true);
