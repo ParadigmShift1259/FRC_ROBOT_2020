@@ -183,6 +183,16 @@ void Turret::Loop()
         m_firemode = kHoldShoot;
     }
 
+    // tuning
+    if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
+        m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        m_flywheelspeedinc -= 50;
+    else
+    if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
+        m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
+        m_flywheelspeedinc += 50;
+    
+    SmartDashboard::PutNumber("TURTUNE_Increment", m_flywheelspeedinc);
     TurretStates();
     FireModes();
 
@@ -566,15 +576,6 @@ void Turret::CalculateHoodFlywheel(double distance, double &hoodangle, double &f
         return;
 
     /*
-    // tuning
-    if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
-        m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        m_flywheelspeedinc -= 50;
-    else
-    if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
-        m_inputs->xBoxDPadRight(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
-        m_flywheelspeedinc += 50;
-
     if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
         m_inputs->xBoxDPadDown(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         m_hoodangleinc -= 0.005;
@@ -582,8 +583,7 @@ void Turret::CalculateHoodFlywheel(double distance, double &hoodangle, double &f
     if (m_inputs->xBoxLeftBumper(OperatorInputs::ToggleChoice::kHold, 1 * INP_DUAL) &&
         m_inputs->xBoxDPadUp(OperatorInputs::ToggleChoice::kToggle, 1 * INP_DUAL))
         m_hoodangleinc += 0.005;
-
-    SmartDashboard::PutNumber("TURTUNE_Flywheel Inc", m_flywheelspeedinc);
+    */
     SmartDashboard::PutNumber("TURTUNE_HoodAngle Inc", m_hoodangleinc);
 
     // 2/29 Tuning
@@ -592,15 +592,18 @@ void Turret::CalculateHoodFlywheel(double distance, double &hoodangle, double &f
     //flywheelspeed += 100;       // artificially inflate flywheel speed by 100
     //if (m_turretangle < 100)    // if turret is pointing out the front, increase flywheel speed by a bit more
     //    flywheelspeed += 50;
-    */
 
     // 3/1 Tuning
     flywheelspeed = 1687.747 + 15.8111 * distance - 0.0594079 * pow(distance, 2) + 0.00008292342 * pow(distance, 3);
     hoodangle = 0.06286766 + (175598.7 - 0.06286766) / (1 + pow((distance / 0.6970016), 2.811798));
-    /*
-    flywheelspeed += m_flywheelspeedinc;
-    hoodangle += m_hoodangleinc;
-    */
+    
+    flywheelspeed += m_flywheelspeedinc;    // allow for manual control 3:05 pm 3/6
+    flywheelspeed += 75;                   // artificially increase flywheel speed across the board
+    //hoodangle += m_hoodangleinc;
+
+    if (m_distance > 250)                   // artificially inrease values past the trench
+        flywheelspeed += 100;
+
     if (hoodangle < 0)
         hoodangle = 0.001;
 }
