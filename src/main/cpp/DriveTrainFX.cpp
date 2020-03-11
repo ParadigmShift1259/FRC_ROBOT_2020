@@ -10,14 +10,13 @@
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include "frc/DriverStation.h"
 #include <cmath>
-
+#include "Logger.h"
 
 using namespace std;
 
 
 DriveTrainFX::DriveTrainFX(OperatorInputs *inputs, WPI_TalonFX *left1, WPI_TalonFX *left2, WPI_TalonFX *left3, WPI_TalonFX *right1, WPI_TalonFX *right2, WPI_TalonFX *right3)
 {
-	m_log    = g_log;
 	m_inputs = inputs;
 
 	m_mode = kFollower;
@@ -66,7 +65,7 @@ DriveTrainFX::DriveTrainFX(OperatorInputs *inputs, WPI_TalonFX *left1, WPI_Talon
 	m_prevleftdistance = 0;
 	m_prevrightdistance = 0;
 
-	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "changedirbutton,lowspeedbuttonon,lowspeedbuttonoff,ramp,lowspeedmode,battery,leftpow,rightpow,leftspeed,rightspeed,leftposition,rightposition,prevleftdistance,prevrightdistance,invertleft,invertright,direction,previousx,previousy");
+	g_log->logMsg(eInfo, __FUNCTION__, __LINE__, "changedirbutton,lowspeedbuttonon,lowspeedbuttonoff,ramp,lowspeedmode,battery,leftpow,rightpow,leftspeed,rightspeed,leftposition,rightposition,prevleftdistance,prevrightdistance,invertleft,invertright,direction,previousx,previousy");
 	m_dataInt.push_back(&m_changedirbutton);
 	m_dataInt.push_back(&m_lowspeedbuttonon);
 	m_dataInt.push_back(&m_lowspeedbuttonoff);
@@ -338,7 +337,7 @@ void DriveTrainFX::Loop()
 	SmartDashboard::PutNumber("DT01_x", x);
 	SmartDashboard::PutNumber("DT02_y", y);
 
-	m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
+	g_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 }
 
 

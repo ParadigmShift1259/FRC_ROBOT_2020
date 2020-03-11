@@ -7,8 +7,7 @@
 #ifndef SRC_OPERATORINPUTS_H_
 #define SRC_OPERATORINPUTS_H_
 
-#include "Logger.h"
-
+#include "Const.h"
 #include <frc\XboxController.h>
 #include <vector>
 

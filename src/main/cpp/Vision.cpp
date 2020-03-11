@@ -7,7 +7,7 @@
 
 #include "Vision.h"
 #include "Const.h"
-
+#include "Logger.h"
 
 using namespace std;
 
@@ -15,13 +15,12 @@ using namespace std;
  
 Vision::Vision(OperatorInputs *inputs)
 {
-    m_log = g_log;
     m_inputs = inputs;
     m_networktable = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
     m_dashboard = nt::NetworkTableInstance::GetDefault().GetTable("SmartDashboard");
     m_camerachoice = 0;
 
-	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "active,tx,ty,ta,ts,verticalangle,distance,horizontalangle,averagedistance[0],averagedistance[1],averagedistance[2],averageangle[0],averageangle[1],");
+	g_log->logMsg(eInfo, __FUNCTION__, __LINE__, "active,tx,ty,ta,ts,verticalangle,distance,horizontalangle,averagedistance[0],averagedistance[1],averagedistance[2],averageangle[0],averageangle[1],,averageangle[2]");
     m_dataInt.push_back((int*)&m_active);
 
     m_dataDouble.push_back(&m_tx);
@@ -124,7 +123,7 @@ void Vision::Loop()
     SmartDashboard::PutNumber("VIS4_Average Angle", 
     (m_averageangle[0] + m_averageangle[1] + m_averageangle[2]) / 3);
 
-	m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
+	g_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 }
 
 

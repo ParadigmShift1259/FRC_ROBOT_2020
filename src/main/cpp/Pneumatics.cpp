@@ -7,14 +7,13 @@
 
 #include "Pneumatics.h"
 #include "Const.h"
-
+#include "Logger.h"
 
 using namespace std;
 
 
 Pneumatics::Pneumatics()
 {
-	m_log = g_log;
 	m_compressor = nullptr;
 	m_pdp = nullptr;
 	m_pressureSwitch = false;
@@ -31,7 +30,7 @@ Pneumatics::Pneumatics()
 	
 	m_stage = kRun;
 
-	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "stage,pressureSwitch,compressorCurrent,totalCurrent,voltage,temperature");
+	g_log->logMsg(eInfo, __FUNCTION__, __LINE__, "stage,pressureSwitch,compressorCurrent,totalCurrent,voltage,temperature");
 	m_dataInt.push_back((int*)&m_stage);
 	m_dataInt.push_back((int*)&m_pressureSwitch);
 	
@@ -103,7 +102,7 @@ void Pneumatics::Loop()
 		break;
 	}
 
-	m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
+	g_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 }
 
 

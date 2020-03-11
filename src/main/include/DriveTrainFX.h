@@ -14,7 +14,6 @@
 #include <ctre\Phoenix.h>
 #include "OperatorInputs.h"
 #include "Const.h"
-#include "Logger.h"
 
 
 using namespace frc;
@@ -113,7 +112,6 @@ protected:
 	double m_previousy;
 	bool m_lowspeedmode;
 
-	Logger *m_log;
 	vector<int*> m_dataInt;
 	vector<double*> m_dataDouble;
 };

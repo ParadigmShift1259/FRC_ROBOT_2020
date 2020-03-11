@@ -6,9 +6,8 @@
 
 
 #include "OperatorInputs.h"
-#include "Const.h"
 #include <cmath>
-
+#include "Logger.h"
 
 #define TOGGLE_XBOXABUTTON 0
 #define TOGGLE_XBOXBBUTTON 1

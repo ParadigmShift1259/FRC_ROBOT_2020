@@ -10,11 +10,10 @@
 
 
 #include <ctre\Phoenix.h>
-#include "Logger.h"
-
+#include <vector>
 
 using namespace frc;
-
+using namespace std;
 
 class DualGyro
 {
@@ -41,7 +40,6 @@ protected:
 	bool m_gyrovalid2;
 	double m_prevheading;
 
-	Logger *m_log;
 	vector<int*> m_dataInt;
 	vector<double*> m_dataDouble;
 };

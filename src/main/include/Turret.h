@@ -15,7 +15,6 @@
 #include "ControlPanel.h"
 #include "Climber.h"
 #include "GyroDrive.h"
-#include "Logger.h"
 
 #include <rev\CANSparkMax.h>
 #include <rev\CANEncoder.h>
@@ -123,7 +122,6 @@ private:
     // Hood / Vision
     double m_distance;
 	
-    Logger *m_log;
 	vector<int*> m_dataInt;
 	vector<double*> m_dataDouble;
 };

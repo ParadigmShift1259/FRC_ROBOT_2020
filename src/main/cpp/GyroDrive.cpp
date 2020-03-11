@@ -9,14 +9,13 @@
 #include "Const.h"
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include <cmath>
-
+#include "Logger.h"
 
 using namespace std;
 
 
 GyroDrive::GyroDrive(OperatorInputs *inputs, Vision *vision)
 {
-	m_log = g_log;
 	m_inputs = inputs;
 	m_vision = vision;
 	m_drivetrain = new DriveTrainFX(inputs);
@@ -35,7 +34,7 @@ GyroDrive::GyroDrive(OperatorInputs *inputs, Vision *vision)
 	m_pidangle[2] = 0.0;
 	m_distance = 0;
 
-	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "drivemode,stage,drivestate,pidstraight[0],pidstraight[1],pidstraight[2],pidangle[0],pidangle[1],pidangle[2],distance");
+	g_log->logMsg(eInfo, __FUNCTION__, __LINE__, "drivemode,stage,drivestate,pidstraight[0],pidstraight[1],pidstraight[2],pidangle[0],pidangle[1],pidangle[2],distance");
 	m_dataInt.push_back((int*)&m_drivemode);
 	m_dataInt.push_back(&m_stage);
 	m_dataInt.push_back((int*)&m_drivestate);
@@ -144,7 +143,7 @@ void GyroDrive::Loop()
 	else
 		m_vision->SetCamera(1);		// Camera 1 is reverse camera
 
-	m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
+	g_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 }
 
 

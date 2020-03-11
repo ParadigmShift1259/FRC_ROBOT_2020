@@ -11,14 +11,13 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/Timer.h>
 #include "math.h"
-
+#include "Logger.h"
 
 
 using namespace std;
 
 ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake)
 {
-	m_log = g_log;
 	m_inputs = inputs;
 	m_gyrodrive = gyrodrive;
 	m_intake = intake;
@@ -33,11 +32,11 @@ ControlPanel::ControlPanel(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake 
 	
 	m_color[0] = "no Color";
 	m_color[1] = "yellow"; 
-	m_color[2] = "red"   ;
-	m_color[3] = "green" ;
-	m_color[4] = "blue"  ;
+	m_color[2] = "red";
+	m_color[3] = "green";
+	m_color[4] = "blue";
 
-	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "currentcolor,previouscolor,targetcolor,redCount,blueCount,direction,currentencodervalue,startencodervalue,encodertickstogoal,spinnersetpoint");
+	g_log->logMsg(eInfo, __FUNCTION__, __LINE__, "currentcolor,previouscolor,targetcolor,redCount,blueCount,direction,currentencodervalue,startencodervalue,encodertickstogoal,spinnersetpoint");
 	m_dataInt.push_back((int*)&m_currentcolor);
 	m_dataInt.push_back((int*)&m_previouscolor);
 	m_dataInt.push_back((int*)&m_targetcolor);
@@ -142,9 +141,9 @@ void ControlPanel::ControlPanelStates()
 		break;
 
 	case kRotationControl:
-		m_log->logMsg(eDebug, __FUNCTION__, __LINE__, "In Rotation Control");
+		g_log->logMsg(eDebug, __FUNCTION__, __LINE__, "In Rotation Control");
 		m_currentcolor = GetColor();	
-		m_log->logMsg(eDebug, __FUNCTION__, __LINE__, "Got Color");
+		g_log->logMsg(eDebug, __FUNCTION__, __LINE__, "Got Color");
 		
 			if (m_currentcolor == kRed && m_previouscolor != kRed)
 			{
@@ -161,9 +160,9 @@ void ControlPanel::ControlPanelStates()
 		if (m_stop)
 		{
 			// Once stopped, use Xbox Back button to restart. (TO DO: Move reading user inputs to a higher level robot class)
-			m_log->logMsg(eDebug, __FUNCTION__, __LINE__, "Going to set spinner");
+			g_log->logMsg(eDebug, __FUNCTION__, __LINE__, "Going to set spinner");
 			m_spinner->Set(ControlMode::Velocity, 0);
-			m_log->logMsg(eDebug, __FUNCTION__, __LINE__, "Started spinning");
+			g_log->logMsg(eDebug, __FUNCTION__, __LINE__, "Started spinning");
 		}
 		else
 		{
@@ -173,7 +172,7 @@ void ControlPanel::ControlPanelStates()
 			m_currentencodervalue = m_spinner->GetSelectedSensorPosition(0);
 			int encoderdelta = abs(m_currentencodervalue - m_startencodervalue);
 			m_encodertickstogoal = CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta;
-			m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
+			g_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 		}
 
 		// (TO DO: Move reading user inputs to a higher level robot class)
@@ -203,7 +202,7 @@ void ControlPanel::ControlPanelStates()
 				m_spinnersetpoint = CPL_POSITION_CONTROL_FAST;
 				string msg("Target Color = ");
 				msg += m_color[m_targetcolor];
-				m_log->logMsg(eDebug, __FUNCTION__, __LINE__, msg.c_str());
+				g_log->logMsg(eDebug, __FUNCTION__, __LINE__, msg.c_str());
 			}
 		}
 		
@@ -212,13 +211,13 @@ void ControlPanel::ControlPanelStates()
 			m_spinnersetpoint = CPL_POSITION_CONTROL_SLOW;
 			if (m_startencodervalue == 0)
 				{
-				m_log->logMsg(eDebug, __FUNCTION__, __LINE__, "found target color!");
+				g_log->logMsg(eDebug, __FUNCTION__, __LINE__, "found target color!");
 				// Record the current encoder value
 				m_startencodervalue = m_spinner->GetSelectedSensorPosition(0);
 				}
 			else if (abs(m_currentencodervalue - m_startencodervalue) >= CPL_COUNTS_PER_CW_SECTOR/2 )
 				{
-				m_log->logMsg(eDebug, __FUNCTION__, __LINE__, "done!");
+				g_log->logMsg(eDebug, __FUNCTION__, __LINE__, "done!");
 				// if the wheel has spun half a sector, then stop the motor
 				m_stop = true;
 				}
@@ -242,7 +241,7 @@ void ControlPanel::ControlPanelStates()
 			m_spinner->Set(ControlMode::Velocity, m_spinnersetpoint * m_direction); 
 			int encoderdelta = abs(m_currentencodervalue - m_startencodervalue);
 			m_encodertickstogoal = CPL_COUNTS_PER_CW_SECTOR / 2 - encoderdelta;
-			m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
+			g_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 		}
 		
 		break;
@@ -340,7 +339,7 @@ void ControlPanel::ChangeSpinnerState()
 	// back button enables 3 - 5 spin
 	if (m_inputs->xBoxDPadLeft(OperatorInputs::ToggleChoice::kToggle, 0 * INP_DUAL))
 	{
-		m_log->logMsg(eDebug, __FUNCTION__, __LINE__, "Back Button Pressed");
+		g_log->logMsg(eDebug, __FUNCTION__, __LINE__, "Back Button Pressed");
 		m_spinnerstate = kRotationControl;
 		m_stop = false;
 		m_redCount = 0;

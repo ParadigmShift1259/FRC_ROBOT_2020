@@ -12,8 +12,6 @@
 #include "frc/PowerDistributionPanel.h"
 #include "frc/Timer.h"
 
-#include "Logger.h"
-
 
 using namespace frc;
 using namespace std;
@@ -42,7 +40,6 @@ private:
 
 	Timer m_timer;
 	
-	Logger *m_log;
 	vector<int*> m_dataInt;
 	vector<double*> m_dataDouble;
 };

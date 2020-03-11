@@ -8,14 +8,13 @@
 #include "Gyro.h"
 #include "Const.h"
 #include <frc/SmartDashboard/SmartDashboard.h>
-
+#include "Logger.h"
 
 using namespace std;
 
 
 DualGyro::DualGyro(int gyro1, int gyro2)
 {
-	m_log     = g_log;
 	m_pigeon1 = nullptr;
 	m_pigeon2 = nullptr;
 	m_gyroval1[0] = 0.0;
@@ -40,7 +39,7 @@ DualGyro::DualGyro(int gyro1, int gyro2)
 	if (gyro2 != -1)
 		m_pigeon2 = new PigeonIMU(gyro2);
 
-	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "gyrovalid1,gyroval1[0],gyroval1[1],gyroval1[2],heading1");
+	g_log->logMsg(eInfo, __FUNCTION__, __LINE__, "gyrovalid1,gyroval1[0],gyroval1[1],gyroval1[2],heading1");
 	m_dataInt.push_back((int*)&m_gyrovalid1);
 	
 	m_dataDouble.push_back(&m_gyroval1[0]);
@@ -128,7 +127,7 @@ void DualGyro::Dashboard()
 	if (GetHeading(heading))
 		SmartDashboard::PutNumber("GyroFused", heading);
 
-	m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
+	g_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 }
 
 

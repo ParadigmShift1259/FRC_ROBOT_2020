@@ -14,7 +14,6 @@
 #include <networktables/NetworkTableInstance.h>
 
 #include "OperatorInputs.h"
-#include "Logger.h"
 
 
 using namespace frc;
@@ -68,7 +67,6 @@ private:
     double m_avgdistance;
     double m_averageangle[3];
 
-	Logger *m_log;
 	vector<int*> m_dataInt;
 	vector<double*> m_dataDouble;
 };

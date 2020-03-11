@@ -12,6 +12,8 @@
 #include <frc/SmartDashboard/SendableChooser.h>
 #include <frc/SmartDashboard/SmartDashboard.h>
 
+#define LOG_TEST
+
 #ifdef USE_ODO
 #include <frc/kinematics/DifferentialDriveOdometry.h>
 #include <frc/kinematics/DifferentialDriveKinematics.h>
@@ -37,7 +39,7 @@ void Robot::RobotInit()
 	SmartDashboard::PutData("Auto Modes", &m_chooser);
 
 	m_driverstation = &DriverStation::GetInstance();
-#if 1
+#ifdef LOG_TEST
 	m_operatorinputs = new OperatorInputs();
 	m_vision = new Vision(m_operatorinputs);
 	m_gyrodrive = new GyroDrive(m_operatorinputs, m_vision);
@@ -70,7 +72,7 @@ void Robot::AutonomousInit()
 
 	StartedInAuto = true;
 
-#if 1
+#ifdef LOG_TEST
 	m_autonomous->Init();
 	m_gyrodrive->Init();
 	m_pneumatics->Init();
@@ -100,7 +102,7 @@ void Robot::AutonomousInit()
 
 void Robot::AutonomousPeriodic()
 { 
-#if 1
+#ifdef LOG_TEST
 	m_autonomous->Loop();
 	m_gyrodrive->Loop();
 	m_vision->Loop();
@@ -128,7 +130,7 @@ void Robot::TeleopInit()
 	
 	if (!StartedInAuto)
 	{
-#if 1
+#ifdef LOG_TEST
 		m_gyrodrive->Init();
 		m_pneumatics->Init();
 		m_vision->Init();
@@ -144,7 +146,7 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
-#if 1
+#ifdef LOG_TEST
 #ifdef USE_ODO
     // read gyro and encoders and use to update odometry...
     double gyroHeadingDegs;
@@ -201,7 +203,7 @@ void Robot::DisabledInit()
 {
 	if (!StartedInAuto)
 	{
-#if 1
+#ifdef LOG_TEST
 		m_gyrodrive->Stop();
 		m_pneumatics->Stop();
 		m_vision->Stop();

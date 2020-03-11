@@ -9,15 +9,13 @@
 #include "Const.h"
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
-
+#include "Logger.h"
 
 using namespace std;
 
 
 Turret::Turret(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake, Feeder *feeder, ControlPanel *controlpanel, Climber *climber, Vision *vision)
 {
-    m_log = g_log;
-    
     if (TUR_ENABLED != 1)
     {
         DriverStation::ReportError("Turret Not Enabled");
@@ -59,7 +57,7 @@ Turret::Turret(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake, Fee
     double m_hoodangle;
     double m_distance;
 
-	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "turretstate,firemode,flywheelrampstate,turretrampstate,readytofire,firing,    PIDslot,flywheelsetpoint,flywheelrampedsetpoint,flywheelinitialfeedforward,fieldangle,robotangle,turretangle,turretrampedangle,turretinitialfeedforward,hoodangle,distance");
+	g_log->logMsg(eInfo, __FUNCTION__, __LINE__, "turretstate,firemode,flywheelrampstate,turretrampstate,readytofire,firing,PIDslot,flywheelsetpoint,flywheelrampedsetpoint,flywheelinitialfeedforward,fieldangle,robotangle,turretangle,turretrampedangle,turretinitialfeedforward,hoodangle,distance");
 	
     m_dataInt.push_back((int*)&m_turretstate);
 	m_dataInt.push_back((int*)&m_firemode);
@@ -79,7 +77,6 @@ Turret::Turret(OperatorInputs *inputs, GyroDrive *gyrodrive, Intake *intake, Fee
 	m_dataDouble.push_back(&m_turretinitialfeedforward);
 	m_dataDouble.push_back(&m_hoodangle);
 	m_dataDouble.push_back(&m_distance);
-
 }
 
 
@@ -289,7 +286,7 @@ void Turret::Dashboard()
         SmartDashboard::PutNumber("TUR18_Hood True Angle", m_hoodservo->Get());
 	    SmartDashboard::PutNumber("TUR19_Turret RampedAngle", m_turretrampedangle);
     }
-	m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
+	g_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 }
 
 

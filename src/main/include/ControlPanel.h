@@ -9,7 +9,6 @@
 #define SRC_ControlPanel_H_
 
 
-#include "Logger.h"
 #include "OperatorInputs.h"
 #include "GyroDrive.h"
 #include "Intake.h"
@@ -74,7 +73,6 @@ private:
 	bool m_stop;
 	double m_spinnersetpoint;
 
-	Logger *m_log;
 	vector<int*> m_dataInt;
 	vector<double*> m_dataDouble;
 };

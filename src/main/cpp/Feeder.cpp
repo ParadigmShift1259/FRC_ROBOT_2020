@@ -10,7 +10,7 @@
 #include "Const.h"
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
-
+#include "Logger.h"
 
 using namespace std;
 
@@ -22,7 +22,6 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake)
         DriverStation::ReportError("Feeder Not Enabled");
     }
 
-    m_log    = g_log;
     m_inputs = inputs;
     m_intake = intake;
 
@@ -33,7 +32,7 @@ Feeder::Feeder(OperatorInputs *inputs, Intake *intake)
     m_stuffing = false;
     m_stufftime = FDR_STUFF_TIME;
 
-	m_log->logMsg(eInfo, __FUNCTION__, __LINE__, "feederstate,feederPID,loaded,stuffing,tolerance,feederPIDvals[0],feederPIDvals[1],feederPIDvals[2],goal");
+	g_log->logMsg(eInfo, __FUNCTION__, __LINE__, "feederstate,feederPID,loaded,stuffing,tolerance,feederPIDvals[0],feederPIDvals[1],feederPIDvals[2],goal");
     m_dataInt.push_back((int*)&m_feederstate);
     m_dataInt.push_back((int*)&m_feederPID);
     m_dataInt.push_back((int*)&m_loaded);
@@ -208,7 +207,7 @@ void Feeder::Dashboard()
         SmartDashboard::PutNumber("FDR3_State", m_feederstate);
     }
 
-	m_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
+	g_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 }
 
 
