@@ -150,6 +150,38 @@ void Turret::Init()
     m_firing = false;
 
     m_distance = 0;
+
+    SmartDashboard::PutNumber("TURP", TUR_TURRET_P);
+    SmartDashboard::PutNumber("TURI", TUR_TURRET_I);
+    SmartDashboard::PutNumber("TURD", TUR_TURRET_D);
+
+    m_p = TUR_TURRET_P;
+    m_i = TUR_TURRET_I;
+    m_d = TUR_TURRET_D;
+}
+
+
+void Turret::TunePID()
+{
+    double p = SmartDashboard::GetNumber("TURP", 0);
+    double i = SmartDashboard::GetNumber("TURI", 0);
+    double d = SmartDashboard::GetNumber("TURD", 0);
+
+    if (p != m_p)
+    {
+        m_p = p;
+        m_turretmotor->Config_kP(0, m_p, TUR_TIMEOUT_MS);
+    }
+    if (i != m_i)
+    {
+        m_i = i;
+        m_turretmotor->Config_kI(0, m_i, TUR_TIMEOUT_MS);
+    }
+    if (d != m_d)
+    {
+        m_d = d;
+        m_turretmotor->Config_kD(0, m_d, TUR_TIMEOUT_MS);
+    }
 }
 
 
@@ -157,6 +189,8 @@ void Turret::Loop()
 {
     if (!NullCheck())
         return;
+
+    TunePID();
 
     m_hoodservo->ClearError();
 
@@ -341,7 +375,7 @@ void Turret::TurretStates()
                 m_hoodservo->Set(m_hoodangle);
 
                 // if certain errors are met, ready for shooting
-                if ((TicksToDegrees(m_turretmotor->GetClosedLoopError()) <= TUR_TURRET_ERROR) &&
+                if ((fabs(TicksToDegrees(m_turretmotor->GetClosedLoopError())) <= TUR_TURRET_ERROR) &&
                     (fabs(m_flywheelencoder->GetVelocity() * TUR_DIRECTION - m_flywheelsetpoint) <= TUR_SHOOTER_ERROR))
                 {
                     m_readytofire = true;
@@ -383,7 +417,7 @@ void Turret::TurretStates()
     
             // If the turret is suddenly off by a large amount (hit by robot, robot turned, etc), return to homing
             if (!m_firing &&
-                (TicksToDegrees(m_turretmotor->GetClosedLoopError()) >= TUR_TURRET_MAX_ERROR ||
+                (fabs(TicksToDegrees(m_turretmotor->GetClosedLoopError()) >= TUR_TURRET_MAX_ERROR) ||
                 !m_vision->GetActive() ||
                 fabs(m_flywheelencoder->GetVelocity() * TUR_DIRECTION - m_flywheelsetpoint) >= TUR_SHOOTER_MAX_ERROR))
             {

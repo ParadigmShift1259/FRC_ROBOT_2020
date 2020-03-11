@@ -73,6 +73,8 @@ protected:
     double TicksToDegrees(double ticks);
     double DegreesToTicks(double degrees);
 
+    void TunePID();
+
 private:
     OperatorInputs *m_inputs;
     GyroDrive *m_gyrodrive;
@@ -107,6 +109,10 @@ private:
     double m_turretrampedangle;
 
     double m_turretinitialfeedforward;
+
+    double m_p;
+    double m_i;
+    double m_d;
 
     // Hood
     Servo *m_hoodservo;
