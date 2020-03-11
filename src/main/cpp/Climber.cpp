@@ -49,33 +49,65 @@ void Climber::Init()
     
     m_deployready = false;
     m_deployrequest = false;
+
+    m_state = kIdle;
 }
 
 
 void Climber::Loop()
 {
     if (m_motor == nullptr)
-        return;
+        return;     
 
-    // if start button and back button are both held, force climber
-    if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL) && 
-        m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
-        m_motor->Set(CLM_MOTOR_SPEED);
-    else
-    // if start button is pressed, position turret at original position
-    if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
+    switch (m_state)
     {
-        m_deployrequest = true;
-        // once ready and start button is also pressed at the same time, start climber motor
-        if (m_deployready)
+    case kIdle:
+        // if start button and back button are both held, force climber
+        if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL) && 
+            m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
             m_motor->Set(CLM_MOTOR_SPEED);
+        else
+        // if start button is pressed, position turret at original position
+        if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
+        {
+            m_deployrequest = true;
+            // once ready and start button is also pressed at the same time, start climbing motor sequence
+            if (m_deployready)
+            {
+                m_motor->SetSelectedSensorPosition(0);
+                m_state = kAutoDrive;
+            }
+        }
+        else
+        // if back button is pressed and we're not in mid climb sequence, disable climbing again
+        if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
+            m_deployrequest = false;   
+        else
+            m_motor->StopMotor();
+        break;
+    
+    case kAutoDrive:
+        // if climber reaches max height, advance to manual driving
+        if (m_motor->GetSelectedSensorPosition() > CLM_MAX_HEIGHT_IN_TICKS)
+            m_state = kDrive;
+        else
+        // if back button is held, temporarily pause motor raising
+        if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
+            m_motor->StopMotor();
+        // otherwise, continue driving motor up
+        else
+            m_motor->Set(CLM_MOTOR_SPEED);
+        break;
+    
+    case kDrive:
+        // if start button pressed, manually drive motor
+        if (m_inputs->xBoxStartButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
+            m_motor->Set(CLM_MOTOR_SPEED);
+        // otherwise, hold motor
+        else
+            m_motor->StopMotor();
+        break;
     }
-    else
-    // if back button is pressed, disable climbing again
-    if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
-        m_deployrequest = false;
-    else
-        m_motor->StopMotor();
 
     Dashboard();
 }

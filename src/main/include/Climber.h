@@ -20,6 +20,9 @@ using namespace frc;
 class Climber
 {
 public:
+
+	enum ClimberState {kIdle, kAutoDrive, kDrive};
+
 	Climber(OperatorInputs *inputs);
 	~Climber();
 	void Init();
@@ -36,6 +39,8 @@ protected:
 
 	bool m_deployrequest;
 	bool m_deployready;
+
+	ClimberState m_state;
 };
 
 

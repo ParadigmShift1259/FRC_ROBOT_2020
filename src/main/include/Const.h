@@ -224,6 +224,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define CLM_MOTOR ENABLED(CLM_ENABLED, 11)
 #define CLM_MOTOR_SPEED -1
 #define CLM_RAMP_RATE 0.5
+#define CLM_MAX_HEIGHT_IN_TICKS 12000
 
 //  Turret ---------------------------------------
 #define TUR_ENABLED 1
