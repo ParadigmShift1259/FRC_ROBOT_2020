@@ -69,6 +69,9 @@ protected:
 	int m_ballcount;
 	bool m_stuffing;
 	bool m_gathering;
+
+	double m_wheelpower;
+	double m_rollerpower;
 };
 
 

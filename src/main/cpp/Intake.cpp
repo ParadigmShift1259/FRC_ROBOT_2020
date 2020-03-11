@@ -34,6 +34,9 @@ Intake::Intake(OperatorInputs *inputs, Vision *vision)
     m_ballcount = 0;
     m_stuffing = false;
     m_gathering = false;
+
+    m_wheelpower = INT_INTAKE_WHEEL_SPEED;
+    m_rollerpower = INT_INTAKE_ROLLER_SPEED;
 }
 
 
@@ -104,6 +107,9 @@ void Intake::Init()
     m_timer.Start();
     m_balltimer.Reset();
     m_balltimer.Start();
+
+    SmartDashboard::PutNumber("INTTEST_Wheel Power", m_wheelpower);
+    SmartDashboard::PutNumber("INTTEST_Roller Power", m_rollerpower);
 }
 
 
@@ -111,6 +117,9 @@ void Intake::Loop()
 {
     if (!NullCheck())
         return;
+
+    m_wheelpower = SmartDashboard::GetNumber("INTTEST_Wheel Power", m_wheelpower);
+    m_rollerpower = SmartDashboard::GetNumber("INTTEST_Roller Power", m_rollerpower);
     
     // Vision ball tracking update
     m_vision->IntakeSensorUpdate(m_rollersensor->Get());
@@ -192,13 +201,17 @@ void Intake::Loop()
         // if ball count is one less from full, slow down speed
         if (m_ballcount >= 2)
         {
-            m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED * 0.75);
-            m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED * 0.75);
+            //m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED * 0.75);
+            //m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED * 0.75);
+            m_rollermotor->Set(m_rollerpower * 0.75);
+            m_wheelmotor->Set(m_wheelpower * 0.75);
         }
         else
         {
-            m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED);
-            m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED);
+            //m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED);
+            //m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED);
+            m_rollermotor->Set(m_rollerpower);
+            m_wheelmotor->Set(m_wheelpower);
         }
         
         break;
