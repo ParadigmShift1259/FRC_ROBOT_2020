@@ -290,7 +290,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 // Autonomous -----------------------------------
 enum AutoMode
 {
-    kNoAuto, kSimpleAuto, kDriveStraight, kTrenchRun, kCenterRendezvous
+    kNoAuto, kSimpleAuto, kDriveStraight, kTrenchRun, kCenterRendezvous, kEnemyTrench
 };
 
 extern AutoMode automode;

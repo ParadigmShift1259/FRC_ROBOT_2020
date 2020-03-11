@@ -58,6 +58,7 @@ private:
 	const string kszDriveStraight = "DriveStraight";
 	const string kszTrenchRun = "TrenchRun";
 	const string kszCenterRendezvous = "CenterRendezvous";
+	const string kszEnemyTrench = "EnemyTrench";
 	string m_autoSelected;
 
 	void ReadChooser();

@@ -35,6 +35,7 @@ protected:
     void DriveStraight();
     void TrenchRun();
     void CenterRendezvous();
+    void EnemyTrench();
 
 protected:
     OperatorInputs *m_inputs;

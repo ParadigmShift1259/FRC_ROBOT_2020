@@ -29,6 +29,7 @@ void Robot::RobotInit()
 	m_chooser.AddOption(kszDriveStraight, kszDriveStraight);
 	m_chooser.AddOption(kszTrenchRun, kszTrenchRun);
 	m_chooser.AddOption(kszCenterRendezvous, kszCenterRendezvous);
+	m_chooser.AddOption(kszEnemyTrench, kszEnemyTrench);
 	SmartDashboard::PutData("Auto Modes", &m_chooser);
 
 	m_driverstation = &DriverStation::GetInstance();
@@ -175,6 +176,9 @@ void Robot::ReadChooser()
 	else
 	if (m_autoSelected == kszCenterRendezvous)
 		automode = kCenterRendezvous;
+	else
+	if (m_autoSelected == kszEnemyTrench)
+		automode = kEnemyTrench;
 
 	SmartDashboard::PutNumber("AU1_automode", automode);
 }
