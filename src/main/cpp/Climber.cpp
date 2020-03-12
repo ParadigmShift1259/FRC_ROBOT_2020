@@ -9,6 +9,7 @@
 #include "Climber.h"
 #include "Const.h"
 #include <frc/SmartDashboard/SmartDashboard.h>
+#include <frc/DriverStation.h>
 
 
 using namespace std;
@@ -51,6 +52,9 @@ void Climber::Init()
     m_deployrequest = false;
 
     m_state = kIdle;
+
+    m_timer.Start();
+    m_timer.Reset();
 }
 
 
@@ -75,6 +79,7 @@ void Climber::Loop()
             if (m_deployready)
             {
                 m_motor->SetSelectedSensorPosition(0);
+                m_timer.Reset();
                 m_state = kAutoDrive;
             }
         }
@@ -87,13 +92,22 @@ void Climber::Loop()
         break;
     
     case kAutoDrive:
+        // if encoder doesn't seem to be moving after a long time of driving, go straight to manual
+        if ((m_timer.Get() > CLM_ENCODER_TIMEOUT) && (m_motor->GetSelectedSensorPosition() == 0))
+        {
+            DriverStation::ReportError("Climber Encoder Unplugged");
+            m_state = kDrive;
+        }
         // if climber reaches max height, advance to manual driving
         if (m_motor->GetSelectedSensorPosition() > CLM_MAX_HEIGHT_IN_TICKS)
             m_state = kDrive;
         else
         // if back button is held, temporarily pause motor raising
         if (m_inputs->xBoxBackButton(OperatorInputs::ToggleChoice::kHold, 0 * INP_DUAL))
+        {
+            m_timer.Reset();
             m_motor->StopMotor();
+        }
         // otherwise, continue driving motor up
         else
             m_motor->Set(CLM_MOTOR_SPEED);

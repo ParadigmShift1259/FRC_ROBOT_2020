@@ -36,6 +36,7 @@ public:
 protected:
     OperatorInputs *m_inputs;
     WPI_TalonSRX *m_motor;
+	Timer m_timer;
 
 	bool m_deployrequest;
 	bool m_deployready;
