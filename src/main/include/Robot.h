@@ -39,8 +39,12 @@ protected:
     DifferentialDriveOdometry *m_odo;
     vector<Trajectory::State> m_StateHist;
     Pose2d m_targetPose;
+<<<<<<< HEAD
     int m_count;
     double m_gyroHeadingDegs;
+=======
+
+>>>>>>> 1a39cfe9f382dafd2c1f7a3951b6d998bbb07d20
     double m_targetRange;
     double m_targetBearing;
     double m_velocity;

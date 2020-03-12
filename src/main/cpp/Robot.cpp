@@ -66,20 +66,29 @@ void Robot::TeleopInit()
     m_turret->Init();
     m_odo->ResetPosition(Pose2d(0_m, 0_m, 0_rad), Rotation2d(0_deg));
     
-    m_targetPose = Pose2d(0_m, 3_m, 0_rad);  // target initial position 3 meters left of robot (target rotation is meaningless)
+    // target pose on field: x, y, rot (field origin = robot starting position and rotation component of target pose is meaningless)...
+    m_targetPose = Pose2d(-3_m, 0_m, 0_rad);  // target initial position 3 meters behind robot 180 deg bearing
+    // m_targetPose = Pose2d(0_m, 3_m, 0_rad);  // target initial position 3 meters left of robot 90 deg bearing
+    // m_targetPose = Pose2d(3_m, _m, 0_rad);  // target initial position 3 meters ahead of robot 0 deg bearing
+    // m_targetPose = Pose2d(10_m, 1_m, 0_rad);  // target initial position 10 meters ahead and 1 m left of robot ~6 deg bearing
 
+<<<<<<< HEAD
     // clear() does not delatocate memory
     m_StateHist.clear();	
+=======
+    // m_PoseHist->clear() may de-allocate the vector memory so instead delete and create new pre-allocating size-10k...
+    delete m_StateHist;
+    m_StateHist = new vector<Trajectory::State> (10000);
+
+>>>>>>> 1a39cfe9f382dafd2c1f7a3951b6d998bbb07d20
 }
 
 
 void Robot::TeleopPeriodic()
 {
-    m_drivetrain->Loop();
-    // m_turret->Loop();
-
     m_gyro->Loop(); // is this needed????
 
+<<<<<<< HEAD
     m_turret->Loop();
 
     m_gyro->GetHeading(m_gyroHeadingDegs);
@@ -89,10 +98,18 @@ void Robot::TeleopPeriodic()
 //    m_odo->Update(Rotation2d(gyroHeadingRads), m_drivetrain->getLeftDist(), m_drivetrain->getRightDist());
     m_odo->Update(Rotation2d(1_deg * m_gyroHeadingDegs), m_drivetrain->getLeftDist(), m_drivetrain->getRightDist());
     Pose2d pose = m_odo->GetPose();
+=======
+    // read gyro and encoders and use to update odometry...
+    double gyroHeadingDegs;
+    m_gyro->GetHeading(gyroHeadingDegs);
+    Pose2d pose = m_odo->Update(Rotation2d(1_deg*gyroHeadingDegs), m_drivetrain->getLeftDist(), m_drivetrain->getRightDist());
+>>>>>>> 1a39cfe9f382dafd2c1f7a3951b6d998bbb07d20
 
+    // store current robot state (i.e. time + pose + vel + accel) in state history list...
     Trajectory::State state;
     state.t = 1_s * m_timer.GetFPGATimestamp();
     state.pose = pose;
+<<<<<<< HEAD
 	auto& prevState = m_StateHist.back();
     state.velocity = (pose - prevState.pose).Translation().Norm() / (state.t - prevState.t);
     state.acceleration = (state.velocity - prevState.velocity) / (state.t - prevState.t);
@@ -100,9 +117,22 @@ void Robot::TeleopPeriodic()
     m_acceleration = (double)state.acceleration;
 
     m_StateHist.push_back(state);
+=======
+    state.velocity = (pose - m_StateHist->end()->pose).Translation().Norm() / (state.t - m_StateHist->end()->t);
+    state.acceleration = (state.velocity - m_StateHist->end()->velocity) / (state.t - m_StateHist->end()->t);    
+    m_StateHist->push_back(state);
+>>>>>>> 1a39cfe9f382dafd2c1f7a3951b6d998bbb07d20
 
+    // compute range and robot-relative bearing angle to target...
     m_targetRange = (double)(m_targetPose - pose).Translation().Norm();
-    m_targetBearing = 180/3.14159 * atan2((double)(m_targetPose - pose).Translation().Y(), (double)(m_targetPose - pose).Translation().X());
+    m_targetBearing = fmod(360 + 180/3.14159 * atan2((double)(m_targetPose - pose).Translation().Y(), (double)(m_targetPose - pose).Translation().X()), 360);
+
+    // point turret at target...
+	m_turret->SetTurretAngle(m_targetBearing);
+
+    m_drivetrain->Loop();    // execute teleop
+
+    // cout << "t: " << state.t << "  X: " << state.pose.Translation().X() << "  Y: " << state.pose.Translation().Y() << "  Heading: " << state.pose.Rotation().Degrees() << "  Speed: " << state.velocity() << "  Accel: " << state.acceleration() << endl;
 
 	g_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 
@@ -112,8 +142,7 @@ void Robot::TeleopPeriodic()
     SmartDashboard::PutNumber("Gyro Heading", m_gyroHeadingDegs);
     SmartDashboard::PutNumber("Target range", m_targetRange);
     SmartDashboard::PutNumber("Target bearing", m_targetBearing);
-
- //   cout << "t: " << state.t << "  X: " << state.pose.Translation().X() << "  Y: " << state.pose.Translation().Y() << "  Heading: " << state.pose.Rotation().Degrees() << "  Speed: " << state.velocity() << "  Accel: " << state.acceleration() << endl;
+	SmartDashboard::PutNumber("Current Turret Angle", m_turret->GetTurretAngle());
 }
 
 

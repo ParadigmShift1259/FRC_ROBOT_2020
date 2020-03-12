@@ -40,7 +40,8 @@ public:
     void Loop();
     void Stop();
     void Dashboard();
-
+    void SetTurretAngle(double angle);
+    double GetTurretAngle(void);
 
 protected:
     bool NullCheck();
