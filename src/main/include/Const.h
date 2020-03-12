@@ -193,7 +193,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define INT_ROLLER_SENSOR ENABLED(INT_ENABLED, 1)
 #define INT_CHUTE_SENSOR ENABLED(INT_ENABLED, 0)
 #define INT_STUFF_TIME 4.0
-#define INT_INTAKE_WHEEL_SPEED -0.5
+#define INT_INTAKE_WHEEL_SPEED -0.7     // -0.5
 #define INT_INTAKE_ROLLER_SPEED -0.6
 #define INT_BALL_CHECK_TIME 0.5
 
