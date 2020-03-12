@@ -12,7 +12,7 @@
 extern bool Debug;                  // Set to true to enable additional debugging
 
 
-// OperatorInputs
+// OperatorInputs --------------------------------------------------------------------------------------------------------------
 //   Controllers
 #define INP_DUAL 1
 #define INP_JOYSTICK -1
@@ -62,7 +62,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define ENABLED(a, b) ((a) == 0 ? (-1) : (b))
 
 
-//   Drivetrain
+//   Drivetrain -------------------------------------------------------------------------------------------------------------
 #define DT_ENABLED 1            // set to 1 to enable drivetrain
 //   Direction
 #define DT_DEFAULT_DIRECTION -1.0
@@ -128,7 +128,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define DT_HIGH_NUMBER 1000000
 
 
-//   Compressor
+//   Compressor ---------------------------------------------------------------------------------------------------------------
 #define PCM_ENABLED 1            // set to 1 to enable compressor
 #define PCM_COMPRESSOR_SOLENOID ENABLED(PCM_ENABLED, 0)
 #define CAN_POWER_DISTRIBUTION_PANEL 0
@@ -137,7 +137,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define PNE_WAITTIME 1.0
 
 
-// Gyro
+// Gyro --------------------------------------------------------------------------------------------------------------------
 #define GRY_ENABLED 1            // set to 1 to enable gyro
 #define CAN_GYRO1 ENABLED(GRY_ENABLED, 0)
 #define CAN_GYRO2 -1
@@ -149,14 +149,14 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define MINUTES_TO_HUNDRED_MS 0.00166666
 
 
-// Autonomous ---------------------------------------
+// Autonomous ---------------------------------------------------------------------------------------------------------------
 //   PID Constants
 #define AUT_P 0.025              // 0.05
 #define AUT_I 0.0001            // 0.0003
 #define AUT_D 0.05              // 0.11
 
 
-// ControlPanel ---------------------------------------
+// ControlPanel -------------------------------------------------------------------------------------------------------------
 #define CPL_ENABLED 1           // set to 1 to enable control panel motor
 #define CPL_MOTOR ENABLED(CPL_ENABLED, 13)     // changed 3/3/20
 #define CPL_SOLENOID ENABLED(CPL_ENABLED, 1)
@@ -185,7 +185,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define CPL_I 0.00002
 #define CPL_F 0.085
 
-// Intake ---------------------------------------
+// Intake --------------------------------------------------------------------------------------------------------------------
 #define INT_ENABLED 1           // set to 1 to enable intake motors
 #define INT_SOLENOID ENABLED(INT_ENABLED, 0)
 #define INT_ROLLER_MOTOR ENABLED(INT_ENABLED, 7)
@@ -198,7 +198,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define INT_BALL_CHECK_TIME 0.5
 
 
-// Feeder ---------------------------------------
+// Feeder --------------------------------------------------------------------------------------------------------------------
 #define FDR_ENABLED 1           // set to 1 to enable feeder motor
 #define FDR_MOTOR ENABLED(FDR_ENABLED, 9)
 #define FDR_STUFF_SPEED 0.3
@@ -219,14 +219,14 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define FDR_GEAR_RATIO 4.167
 #define FDR_INVERTED 1.0
 
-// Climber ---------------------------------------
+// Climber --------------------------------------------------------------------------------------------------------------------
 #define CLM_ENABLED 1           // set to 1 to enable intake motor
 #define CLM_MOTOR ENABLED(CLM_ENABLED, 11)
 #define CLM_MOTOR_SPEED -1
 #define CLM_RAMP_RATE 0.5
 #define CLM_MAX_HEIGHT_IN_TICKS 12000
 
-//  Turret ---------------------------------------
+//  Turret --------------------------------------------------------------------------------------------------------------------
 #define TUR_ENABLED 1
 #define TUR_SHOOTER_ID ENABLED(TUR_ENABLED, 1)
 #define TUR_TURRET_ID ENABLED(TUR_ENABLED, 7)
@@ -237,8 +237,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_DIRECTION -1.0
 // Shooter / Flywheel
 #define TUR_SHOOTER_RAMPING_RATE 100       // in rpm
-#define TUR_SHOOTER_IDLE_STATE_RPM 2000      // 2000
-#define TUR_SHOOTER_RAMPUP_STATE_RPM 2500   // 2500
+#define TUR_SHOOTER_IDLE_STATE_RPM 2500      // 2000
+#define TUR_SHOOTER_RAMPUP_STATE_RPM 3000   // 2500
 // kS, kV, kA values tuned using frc-characterization 2/20/20 for the Metal V2 Shooter Flywheel by Geoffrey
 #define TUR_SHOOTER_KS 0.0876
 #define TUR_SHOOTER_KV 0.124
@@ -267,10 +267,10 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_TURRET_D 0.0975
 // Maximum percent output that PID loop can output
 #define TUR_TURRET_MINOUT 0.0
-#define TUR_TURRET_MAXOUT 0.2
+#define TUR_TURRET_MAXOUT 0.175  // .2
 // Allowable error before shooting
-#define TUR_TURRET_ERROR 0.5
-#define TUR_TURRET_MAX_ERROR 5
+#define TUR_TURRET_ERROR 0.75   // .5
+#define TUR_TURRET_MAX_ERROR 3  // 5
 // Miscellaneous Values for Turret
 #define TUR_WHEEL_DIAMETER 0.1524    // in meters
 #define TUR_ROTATIONS_TO_METERS (3.1415926535 * TUR_WHEEL_DIAMETER)
@@ -281,13 +281,13 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TURRET_REV_TO_DEGREES 360
 #define TURRET_DEGREE_STOP_RANGE 0.125
 
-// Vision ---------------------------------------
+// Vision --------------------------------------------------------------------------------------------------------------------
 #define VIS_MOUNTING_ANGLE 18.0     // degrees
 #define VIS_MOUNTING_HEIGHT 21.5      // inches, used to be 21.75
 #define VIS_TARGET_HEIGHT 98.25     // inches
 #define VIS_TARGET_SIZE 15          // inches
 
-// Autonomous -----------------------------------
+// Autonomous -----------------------------------------------------------------------------------------------------------------
 enum AutoMode
 {
     kNoAuto, kSimpleAuto, kDriveStraight, kTrenchRun, kCenterRendezvous, kEnemyTrench
