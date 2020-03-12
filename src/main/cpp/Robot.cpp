@@ -124,6 +124,9 @@ void Robot::TeleopPeriodic()
 	m_turret->Loop();
 	//m_controlpanel->Loop();
 	m_climber->Loop();
+
+	//if (m_operatorinputs->xBoxStartButton(OperatorInputs::ToggleChoice::kHold, 1))
+	m_operatorinputs->xBoxRumble(1, 1);
 }
 
 

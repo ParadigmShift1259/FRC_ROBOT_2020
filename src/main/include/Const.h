@@ -196,6 +196,7 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define INT_INTAKE_WHEEL_SPEED -0.7     // -0.5
 #define INT_INTAKE_ROLLER_SPEED -0.6
 #define INT_BALL_CHECK_TIME 0.5
+#define INT_POWER_PER_VOLT_COMPENSATION 0.035
 
 
 // Feeder --------------------------------------------------------------------------------------------------------------------
@@ -238,8 +239,8 @@ extern bool Debug;                  // Set to true to enable additional debuggin
 #define TUR_DIRECTION -1.0
 // Shooter / Flywheel
 #define TUR_SHOOTER_RAMPING_RATE 100       // in rpm
-#define TUR_SHOOTER_IDLE_STATE_RPM 2500      // 2000
-#define TUR_SHOOTER_RAMPUP_STATE_RPM 3000   // 2500
+#define TUR_SHOOTER_IDLE_STATE_RPM 0 //2500      // 2000
+#define TUR_SHOOTER_RAMPUP_STATE_RPM 0 //3000   // 2500
 // kS, kV, kA values tuned using frc-characterization 2/20/20 for the Metal V2 Shooter Flywheel by Geoffrey
 #define TUR_SHOOTER_KS 0.0876
 #define TUR_SHOOTER_KV 0.124

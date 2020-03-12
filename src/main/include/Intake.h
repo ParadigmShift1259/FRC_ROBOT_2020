@@ -72,6 +72,8 @@ protected:
 
 	double m_wheelpower;
 	double m_rollerpower;
+
+	double m_batterycompensation;
 };
 
 

@@ -55,6 +55,7 @@ public:
 	bool xBoxL3(ToggleChoice choice = kToggle, unsigned int i = 0);
 	bool xBoxR3(ToggleChoice choice = kToggle, unsigned int i = 0);
 	bool xBox(int Button, ToggleChoice choice = kToggle, unsigned int i = 0);
+	void xBoxRumble(double rumble, unsigned int i = 0);
 	// joystick
 	double joystickX();
 	double joystickY();

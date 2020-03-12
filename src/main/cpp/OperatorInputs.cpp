@@ -434,6 +434,13 @@ bool OperatorInputs::xBox(int Button, ToggleChoice choice, unsigned int i)
 }
 
 
+void OperatorInputs::xBoxRumble(double rumble, unsigned int i)
+{
+	m_xbox[i]->SetRumble(GenericHID::RumbleType::kLeftRumble, rumble);
+	m_xbox[i]->SetRumble(GenericHID::RumbleType::kRightRumble, rumble);
+}
+
+
 double OperatorInputs::joystickX()
 {
 	if (m_joystick != nullptr)

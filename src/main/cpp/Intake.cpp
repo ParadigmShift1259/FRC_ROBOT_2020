@@ -120,6 +120,10 @@ void Intake::Loop()
 
     m_wheelpower = SmartDashboard::GetNumber("INTTEST_Wheel Power", m_wheelpower);
     m_rollerpower = SmartDashboard::GetNumber("INTTEST_Roller Power", m_rollerpower);
+
+    // testing battery compensation
+    double battery = DriverStation::GetInstance().GetBatteryVoltage();
+    m_batterycompensation = (12.0 - battery) * INT_POWER_PER_VOLT_COMPENSATION;
     
     // Vision ball tracking update
     m_vision->IntakeSensorUpdate(m_rollersensor->Get());
@@ -203,15 +207,15 @@ void Intake::Loop()
         {
             //m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED * 0.75);
             //m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED * 0.75);
-            m_rollermotor->Set(m_rollerpower * 0.75);
-            m_wheelmotor->Set(m_wheelpower * 0.75);
+            m_rollermotor->Set((m_rollerpower + m_batterycompensation) * 0.75);
+            m_wheelmotor->Set((m_wheelpower + m_batterycompensation) * 0.75);
         }
         else
         {
             //m_rollermotor->Set(INT_INTAKE_ROLLER_SPEED);
             //m_wheelmotor->Set(INT_INTAKE_WHEEL_SPEED);
-            m_rollermotor->Set(m_rollerpower);
-            m_wheelmotor->Set(m_wheelpower);
+            m_rollermotor->Set(m_rollerpower + m_batterycompensation);
+            m_wheelmotor->Set(m_wheelpower + m_batterycompensation);
         }
         
         break;
@@ -366,6 +370,8 @@ void Intake::Dashboard()
     if (!NullCheck())
         return;
     
+    SmartDashboard::PutNumber("INT Battery Compensation", m_batterycompensation);
+
     SmartDashboard::PutNumber("INT0_Ball Count", m_ballcount);
     SmartDashboard::PutBoolean("INT1_Intake On", (m_intakestate != kIdle));
     SmartDashboard::PutBoolean("INT2_Roller", m_rollersensor->Get());
