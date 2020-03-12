@@ -25,6 +25,7 @@ public:
 	void Loop();
 	void Stop();
     bool GetHeading(double &heading);
+	bool GetYawPitchRoll(double* yawPitchRoll);
     void Dashboard();
     void ZeroHeading();
 

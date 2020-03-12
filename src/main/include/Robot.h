@@ -2,7 +2,7 @@
 #define SRC_ROBOT_H_
 
 
-#include <frc\WPILib.h>
+//#include <frc\WPILib.h>
 #include "Const.h"
 #include "OperatorInputs.h"
 #include "Drivetrain.h"
@@ -10,6 +10,7 @@
 #include "Gyro.h"
 #include <frc/kinematics/DifferentialDriveOdometry.h>
 #include <frc/kinematics/DifferentialDriveKinematics.h>
+#include <vector>
 
 
 using namespace frc;
@@ -36,10 +37,18 @@ protected:
     Turret *m_turret;
     DualGyro *m_gyro;
     DifferentialDriveOdometry *m_odo;
-    vector<Trajectory::State> *m_StateHist;
+    vector<Trajectory::State> m_StateHist;
     Pose2d m_targetPose;
+    int m_count;
+    double m_gyroHeadingDegs;
     double m_targetRange;
     double m_targetBearing;
+    double m_velocity;
+    double m_acceleration;
+    double m_yawPitchRoll[3];
+
+    vector<int*> m_dataInt;
+	vector<double*> m_dataDouble;
 private: 
     
 };

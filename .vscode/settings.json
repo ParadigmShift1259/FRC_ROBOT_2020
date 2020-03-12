@@ -13,5 +13,11 @@
     "**/.settings": true,
     "**/.factorypath": true
   },
-  "C_Cpp.default.configurationProvider": "vscode-wpilib"
+  "C_Cpp.default.configurationProvider": "vscode-wpilib",
+  "files.associations": {
+    "*.inc": "cpp",
+    "deque": "cpp",
+    "string": "cpp",
+    "vector": "cpp"
+  }
 }

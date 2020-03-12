@@ -97,6 +97,21 @@ bool DualGyro::GetHeading(double &heading)
     return false;
 }
 
+bool DualGyro::GetYawPitchRoll(double* yawPitchRoll)
+{
+    if (m_gyrovalid1)
+    {
+		m_pigeon1->GetYawPitchRoll(yawPitchRoll);
+        return true;
+    }
+    else
+    if (m_gyrovalid2)
+    {
+		m_pigeon2->GetYawPitchRoll(yawPitchRoll);
+        return true;
+    }
+    return false;
+}
 
 void DualGyro::Dashboard()
 {
