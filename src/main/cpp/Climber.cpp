@@ -92,6 +92,7 @@ void Climber::Loop()
         break;
     
     case kAutoDrive:
+        m_state = kDrive;
         // if encoder doesn't seem to be moving after a long time of driving, go straight to manual
         if ((m_timer.Get() > CLM_ENCODER_TIMEOUT) && (m_motor->GetSelectedSensorPosition() == 0))
         {

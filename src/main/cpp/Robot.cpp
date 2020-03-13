@@ -125,8 +125,10 @@ void Robot::TeleopPeriodic()
 	//m_controlpanel->Loop();
 	m_climber->Loop();
 
-	//if (m_operatorinputs->xBoxStartButton(OperatorInputs::ToggleChoice::kHold, 1))
-	m_operatorinputs->xBoxRumble(1, 1);
+	if (m_operatorinputs->xBoxStartButton(OperatorInputs::ToggleChoice::kHold, 1))
+		m_operatorinputs->xBoxRumble(.5, 1);
+	else
+		m_operatorinputs->xBoxRumble(0, 1);
 }
 
 
@@ -149,6 +151,7 @@ void Robot::DisabledInit()
 	}
 
 	m_vision->Init();
+	m_operatorinputs->xBoxRumble(0, 1);
 }
 
 
