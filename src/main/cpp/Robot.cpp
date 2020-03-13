@@ -6,7 +6,7 @@
 /*----------------------------------------------------------------------------*/
 
 
-#include <iostream>
+//#include <iostream>
 #include <string>
 #include <frc/LiveWindow/LiveWindow.h>
 #include <frc/SmartDashboard/SendableChooser.h>
@@ -24,7 +24,7 @@ Logger *g_log = nullptr;
 
 void Robot::RobotInit()
 {
-	g_log = new Logger("/tmp/logfile.csv", true);
+	g_log = new Logger("/tmp/logfile.csv", false);
     m_operatorinputs = new OperatorInputs();
     m_drivetrain = new Drivetrain(m_operatorinputs);
     m_gyro = new DualGyro(CAN_GYRO1, CAN_GYRO2);
@@ -34,13 +34,14 @@ void Robot::RobotInit()
     m_StateHist.reserve(10000);
 
 	m_count = 0;
-	g_log->logMsg(eInfo, __FUNCTION__, __LINE__, "count,velocity,acceleration,targetrange,targetbearing,yaw,pitch,roll");
+	g_log->logMsg(eInfo, __FUNCTION__, __LINE__, "count,velocity,acceleration,targetrange,targetbearing,gyroHeadingDegs,yaw,pitch,roll");
 	m_dataInt.push_back(&m_count);
 
 	m_dataDouble.push_back(&m_velocity);	
 	m_dataDouble.push_back(&m_acceleration);	
 	m_dataDouble.push_back(&m_targetRange);	
 	m_dataDouble.push_back(&m_targetBearing);
+    m_dataDouble.push_back(&m_gyroHeadingDegs);
 	m_dataDouble.push_back(&m_yawPitchRoll[0]);	
 	m_dataDouble.push_back(&m_yawPitchRoll[1]);	
 	m_dataDouble.push_back(&m_yawPitchRoll[2]);	
@@ -50,8 +51,9 @@ void Robot::RobotInit()
 void Robot::RobotPeriodic(){}
 void Robot::AutonomousInit()
 {
-	g_log->openLog("/tmp/logfile.csv");
+	g_log->openLog();
 }
+
 void Robot::AutonomousPeriodic(){}
 void Robot::TestInit(){}
 void Robot::TestPeriodic(){}
@@ -59,7 +61,7 @@ void Robot::TestPeriodic(){}
 
 void Robot::TeleopInit()
 {
-	g_log->openLog("/tmp/logfile.csv");
+	g_log->openLog();
 
     m_drivetrain->Init();
     m_gyro->Init();
@@ -72,15 +74,8 @@ void Robot::TeleopInit()
     // m_targetPose = Pose2d(3_m, _m, 0_rad);  // target initial position 3 meters ahead of robot 0 deg bearing
     // m_targetPose = Pose2d(10_m, 1_m, 0_rad);  // target initial position 10 meters ahead and 1 m left of robot ~6 deg bearing
 
-<<<<<<< HEAD
     // clear() does not delatocate memory
     m_StateHist.clear();	
-=======
-    // m_PoseHist->clear() may de-allocate the vector memory so instead delete and create new pre-allocating size-10k...
-    delete m_StateHist;
-    m_StateHist = new vector<Trajectory::State> (10000);
-
->>>>>>> 1a39cfe9f382dafd2c1f7a3951b6d998bbb07d20
 }
 
 
@@ -88,7 +83,6 @@ void Robot::TeleopPeriodic()
 {
     m_gyro->Loop(); // is this needed????
 
-<<<<<<< HEAD
     m_turret->Loop();
 
     m_gyro->GetHeading(m_gyroHeadingDegs);
@@ -98,18 +92,11 @@ void Robot::TeleopPeriodic()
 //    m_odo->Update(Rotation2d(gyroHeadingRads), m_drivetrain->getLeftDist(), m_drivetrain->getRightDist());
     m_odo->Update(Rotation2d(1_deg * m_gyroHeadingDegs), m_drivetrain->getLeftDist(), m_drivetrain->getRightDist());
     Pose2d pose = m_odo->GetPose();
-=======
-    // read gyro and encoders and use to update odometry...
-    double gyroHeadingDegs;
-    m_gyro->GetHeading(gyroHeadingDegs);
-    Pose2d pose = m_odo->Update(Rotation2d(1_deg*gyroHeadingDegs), m_drivetrain->getLeftDist(), m_drivetrain->getRightDist());
->>>>>>> 1a39cfe9f382dafd2c1f7a3951b6d998bbb07d20
 
     // store current robot state (i.e. time + pose + vel + accel) in state history list...
     Trajectory::State state;
     state.t = 1_s * m_timer.GetFPGATimestamp();
     state.pose = pose;
-<<<<<<< HEAD
 	auto& prevState = m_StateHist.back();
     state.velocity = (pose - prevState.pose).Translation().Norm() / (state.t - prevState.t);
     state.acceleration = (state.velocity - prevState.velocity) / (state.t - prevState.t);
@@ -117,11 +104,6 @@ void Robot::TeleopPeriodic()
     m_acceleration = (double)state.acceleration;
 
     m_StateHist.push_back(state);
-=======
-    state.velocity = (pose - m_StateHist->end()->pose).Translation().Norm() / (state.t - m_StateHist->end()->t);
-    state.acceleration = (state.velocity - m_StateHist->end()->velocity) / (state.t - m_StateHist->end()->t);    
-    m_StateHist->push_back(state);
->>>>>>> 1a39cfe9f382dafd2c1f7a3951b6d998bbb07d20
 
     // compute range and robot-relative bearing angle to target...
     m_targetRange = (double)(m_targetPose - pose).Translation().Norm();
@@ -134,6 +116,7 @@ void Robot::TeleopPeriodic()
 
     // cout << "t: " << state.t << "  X: " << state.pose.Translation().X() << "  Y: " << state.pose.Translation().Y() << "  Heading: " << state.pose.Rotation().Degrees() << "  Speed: " << state.velocity() << "  Accel: " << state.acceleration() << endl;
 
+    m_count++;
 	g_log->logData(__FUNCTION__, __LINE__, m_dataInt, m_dataDouble);
 
     SmartDashboard::PutNumber("Field X", (double)pose.Translation().X());
@@ -143,6 +126,9 @@ void Robot::TeleopPeriodic()
     SmartDashboard::PutNumber("Target range", m_targetRange);
     SmartDashboard::PutNumber("Target bearing", m_targetBearing);
 	SmartDashboard::PutNumber("Current Turret Angle", m_turret->GetTurretAngle());
+	SmartDashboard::PutNumber("Yaw", m_yawPitchRoll[0]);	
+	SmartDashboard::PutNumber("Pitch", m_yawPitchRoll[1]);	
+	SmartDashboard::PutNumber("Roll", m_yawPitchRoll[2]);	
 }
 
 

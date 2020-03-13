@@ -33,17 +33,17 @@ class Logger
 {
     FILE *m_fd;
     Timer m_timer;
-    bool m_console_echo;
+    bool m_console_echo = false;
     string m_path;
 
   public:
     Logger(const char *path, bool console_echo);
     ~Logger();
 
-    void openLog(const char *path);
+    void openLog();
     void closeLog();
 
-    void logMsg(ELogLevel level, const char* func, const int line, const char* msg);
+    void logMsg(ELogLevel level, const char* func, const int line, const char* msg, const char* msg2 = nullptr);
     void logData(const char* func, const int line, const vector<double*>& data);
     void logData(const char* func, const int line, const vector<int*>& data);
     void logData(const char* func, const int line, const vector<int*>& dataInt, const vector<double*>& dataDouble);
@@ -51,7 +51,8 @@ class Logger
   protected:
     void formatData(const vector<double*>& data);
     void formatData(const vector<int*>& data);
-    string m_formattedData;
+    string m_formattedIntData;
+    string m_formattedDoubleData;
 };
 
 #endif /* SRC_Logger_H_ */
