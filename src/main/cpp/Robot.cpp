@@ -63,7 +63,7 @@ void Robot::TeleopInit()
 {
 	g_log->openLog();
 
-    m_drivetrain->Init();
+    m_drivetrain->Init(Drivetrain::DriveMotors::k6Motors);
     m_gyro->Init();
     m_turret->Init();
     m_odo->ResetPosition(Pose2d(0_m, 0_m, 0_rad), Rotation2d(0_deg));
